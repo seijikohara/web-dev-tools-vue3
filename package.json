@@ -28,7 +28,7 @@
     "primevue": "^3.7.2",
     "switch-ts": "^1.0.8",
     "ua-parser-js": "^0.7.28",
-    "vue": "^3.2.14",
+    "vue": "^3.2.19",
     "vue-gtag-next": "^1.14.0",
     "vue-router": "^4.0.11",
     "vue3-ace-editor": "^2.2.1",
