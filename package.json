@@ -11,71 +11,48 @@
   "dependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.0.2",
-    "@types/dompurify": "^2.2.3",
-    "@types/marked": "^3.0.1",
+    "@types/dompurify": "^2.3.1",
+    "@types/marked": "^3.0.2",
     "@types/ua-parser-js": "^0.7.36",
-    "axios": "^0.21.4",
+    "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
-    "core-js": "^3.18.0",
+    "core-js": "^3.19.0",
     "crypto-js": "^4.1.1",
     "dayjs": "^1.10.7",
     "dompurify": "^2.3.3",
     "json-to-ts": "^1.7.0",
-    "json-tree-view-vue3": "^0.1.15",
-    "marked": "^3.0.4",
+    "json-tree-view-vue3": "^0.1.16",
+    "marked": "^3.0.8",
     "primeflex": "^2.0.0",
     "primeicons": "^4.1.0",
-    "primevue": "^3.7.2",
-    "switch-ts": "^1.0.8",
-    "ua-parser-js": "^0.7.28",
-    "vue": "^3.2.14",
+    "primevue": "^3.8.2",
+    "switch-ts": "^1.0.9",
+    "ua-parser-js": "^1.0.2",
+    "vue": "^3.2.20",
     "vue-gtag-next": "^1.14.0",
-    "vue-router": "^4.0.11",
+    "vue-router": "^4.0.12",
     "vue3-ace-editor": "^2.2.1",
     "vuex": "^4.0.2",
-    "xml-formatter": "^2.4.1"
+    "xml-formatter": "^2.5.1"
   },
   "devDependencies": {
-    "@types/jest": "^27.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.31.2",
-    "@typescript-eslint/parser": "^4.31.2",
-    "@vue/cli-plugin-babel": "^4.5.13",
-    "@vue/cli-plugin-eslint": "^4.5.13",
-    "@vue/cli-plugin-router": "^4.5.13",
-    "@vue/cli-plugin-typescript": "^4.5.13",
-    "@vue/cli-plugin-vuex": "^4.5.13",
-    "@vue/cli-service": "^4.5.13",
-    "@vue/compiler-sfc": "^3.2.14",
+    "@typescript-eslint/eslint-plugin": "^5.2.0",
+    "@typescript-eslint/parser": "^5.2.0",
+    "@vue/cli-plugin-babel": "^4.5.15",
+    "@vue/cli-plugin-eslint": "^4.5.15",
+    "@vue/cli-plugin-router": "^4.5.15",
+    "@vue/cli-plugin-typescript": "^4.5.15",
+    "@vue/cli-plugin-vuex": "^4.5.15",
+    "@vue/cli-service": "^4.5.15",
+    "@vue/compiler-sfc": "^3.2.20",
     "@vue/eslint-config-prettier": "^6.0.0",
-    "@vue/eslint-config-typescript": "^7.0.0",
-    "eslint": "^7.32.0",
+    "@vue/eslint-config-typescript": "^9.0.0",
+    "eslint": "^8.1.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-vue": "^7.18.0",
+    "eslint-plugin-vue": "^8.0.3",
     "prettier": "^2.4.1",
-    "sass": "^1.42.1",
+    "sass": "^1.43.4",
     "sass-loader": "^10.2.0",
-    "typescript": "^4.4.3"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended",
-      "@vue/typescript/recommended",
-      "@vue/prettier",
-      "@vue/prettier/@typescript-eslint"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2020
-    },
-    "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+    "typescript": "^4.4.4"
+  }
 }
