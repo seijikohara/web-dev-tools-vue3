@@ -5,7 +5,7 @@
     <template #content>
       <div class="p-fluid">
         <div class="p-field">
-          <Editor v-model:value="state.text" mode="text" height="200px" />
+          <CodeEditor v-model:value="state.text" mode="text" height="200px" />
         </div>
         <div class="p-field">
           <DataTable :value="hashedValues" class="p-datatable-sm">
@@ -36,10 +36,10 @@ import Card from "primevue/card";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 
-import Editor from "@/components/Editor.vue";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 export default defineComponent({
-  components: { Card, DataTable, Column, Editor },
+  components: { Card, DataTable, Column, CodeEditor },
   async setup() {
     const state = reactive({
       text: "",

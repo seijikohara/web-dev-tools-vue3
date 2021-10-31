@@ -6,7 +6,7 @@
       <div class="p-grid">
         <div class="p-col-12 p-md-6 p-lg-6">
           <Panel header="Markdown">
-            <Editor
+            <CodeEditor
               v-model:value="state.markdown"
               mode="markdown"
               height="500px"
@@ -31,10 +31,10 @@ import DOMPurify from "dompurify";
 import Card from "primevue/card";
 import Panel from "primevue/panel";
 
-import Editor from "@/components/Editor.vue";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 export default defineComponent({
-  components: { Card, Editor, Panel },
+  components: { Card, CodeEditor, Panel },
   async setup() {
     const state = reactive({
       markdown: "",

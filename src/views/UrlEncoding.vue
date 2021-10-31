@@ -3,7 +3,7 @@
     <template #title> URL Encoding </template>
     <template #subtitle> URL Encoding & Decoding </template>
     <template #content>
-      <Editor v-model:value="state.content" mode="text" height="500px" />
+      <CodeEditor v-model:value="state.content" mode="text" height="500px" />
     </template>
     <template #footer>
       <div class="p-formgroup-inline">
@@ -20,10 +20,10 @@ import { defineComponent, reactive } from "vue";
 import Button from "primevue/button";
 import Card from "primevue/card";
 
-import Editor from "@/components/Editor.vue";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 export default defineComponent({
-  components: { Button, Card, Editor },
+  components: { Button, Card, CodeEditor },
   async setup() {
     const state = reactive({
       content: "",

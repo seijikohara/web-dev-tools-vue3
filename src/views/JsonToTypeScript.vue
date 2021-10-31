@@ -6,12 +6,12 @@
       <div class="p-grid">
         <div class="p-col-12 p-md-6 p-lg-6">
           <Panel header="JSON">
-            <Editor v-model:value="state.json" mode="json" height="500px" />
+            <CodeEditor v-model:value="state.json" mode="json" height="500px" />
           </Panel>
         </div>
         <div class="p-col-12 p-md-6 p-lg-6">
           <Panel header="TypeScript interface">
-            <Editor
+            <CodeEditor
               v-model:value="state.typeScript"
               mode="typescript"
               height="500px"
@@ -30,10 +30,10 @@ import JsonToTS from "json-to-ts";
 import Card from "primevue/card";
 import Panel from "primevue/panel";
 
-import Editor from "@/components/Editor.vue";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 export default defineComponent({
-  components: { Card, Editor, Panel },
+  components: { Card, CodeEditor, Panel },
   async setup() {
     const state = reactive({
       json: "{}",

@@ -3,7 +3,7 @@
     <template #title> XML Formatter </template>
     <template #subtitle> Formatting XML </template>
     <template #content>
-      <Editor v-model:value="state.content" mode="xml" height="500px" />
+      <CodeEditor v-model:value="state.content" mode="xml" height="500px" />
     </template>
     <template #footer>
       <h3>Options</h3>
@@ -63,7 +63,7 @@ import Checkbox from "primevue/checkbox";
 import Dropdown from "primevue/dropdown";
 import Tooltip from "primevue/tooltip";
 
-import Editor from "@/components/Editor.vue";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 type FormatOption = {
   text: string;
@@ -71,7 +71,7 @@ type FormatOption = {
 };
 
 export default defineComponent({
-  components: { Button, Card, Checkbox, Dropdown, Editor },
+  components: { Button, Card, Checkbox, Dropdown, CodeEditor },
   directives: { Tooltip },
   async setup() {
     const formatOptions = readonly([

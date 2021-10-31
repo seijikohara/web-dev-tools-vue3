@@ -3,7 +3,7 @@
     <template #title> JSON Formatter </template>
     <template #subtitle> Formatting JSON </template>
     <template #content>
-      <Editor v-model:value="state.content" mode="json" height="500px" />
+      <CodeEditor v-model:value="state.content" mode="json" height="500px" />
     </template>
     <template #footer>
       <div class="p-inputgroup">
@@ -26,7 +26,7 @@ import Button from "primevue/button";
 import Card from "primevue/card";
 import Dropdown from "primevue/dropdown";
 
-import Editor from "@/components/Editor.vue";
+import CodeEditor from "@/components/CodeEditor.vue";
 
 type FormatOption = {
   text: string;
@@ -34,7 +34,7 @@ type FormatOption = {
 };
 
 export default defineComponent({
-  components: { Button, Card, Dropdown, Editor },
+  components: { Button, Card, Dropdown, CodeEditor },
   async setup() {
     const formatOptions = readonly([
       { text: "2 Spaces", value: " ".repeat(2) },

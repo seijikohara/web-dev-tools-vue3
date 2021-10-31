@@ -241,7 +241,7 @@ type Props = {
 };
 
 export default defineComponent({
-  name: "Editor",
+  name: "CodeEditor",
   components: { VAceEditor },
   props: {
     mode: {
