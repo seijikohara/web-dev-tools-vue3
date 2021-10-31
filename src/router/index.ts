@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    component: () => import("@/views/Dashboard.vue"),
+    component: () => import("@/views/DashboardView.vue"),
     meta: {
       menu: true,
     },
@@ -23,7 +23,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/json-formatter",
     name: "JSON Formatter",
-    component: () => import("@/views/JsonFormatter.vue"),
+    component: () => import("@/views/JsonFormatterView.vue"),
     meta: {
       menu: true,
     },
@@ -31,7 +31,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/xml-formatter",
     name: "XML Formatter",
-    component: () => import("@/views/XmlFormatter.vue"),
+    component: () => import("@/views/XmlFormatterView.vue"),
     meta: {
       menu: true,
     },
@@ -39,7 +39,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/url-encoding",
     name: "URL Encoding",
-    component: () => import("@/views/UrlEncoding.vue"),
+    component: () => import("@/views/UrlEncodingView.vue"),
     meta: {
       menu: true,
     },
@@ -47,15 +47,15 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/hash",
     name: "Hash",
-    component: () => import("@/views/HashCalculator.vue"),
+    component: () => import("@/views/HashView.vue"),
     meta: {
       menu: true,
     },
   },
   {
-    path: "/b-crypt",
-    name: "BCrypt",
-    component: () => import("@/views/BCryptHashCalculator.vue"),
+    path: "/b-crypt-hash",
+    name: "BCrypt Hash",
+    component: () => import("@/views/BCryptHashView.vue"),
     meta: {
       menu: true,
     },
@@ -63,7 +63,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/html-entities",
     name: "HTML Entities",
-    component: () => import("@/views/HtmlEntities.vue"),
+    component: () => import("@/views/HtmlEntitiesView.vue"),
     meta: {
       menu: true,
     },
@@ -71,15 +71,15 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/json-to-typescript",
     name: "JSON to TypeScript",
-    component: () => import("@/views/JsonToTypeScript.vue"),
+    component: () => import("@/views/JsonToTypeScriptView.vue"),
     meta: {
       menu: true,
     },
   },
   {
-    path: "/markdown-editor",
-    name: "Markdown Editor",
-    component: () => import("@/views/MarkdownEditor.vue"),
+    path: "/markdown",
+    name: "Markdown",
+    component: () => import("@/views/MarkdownView.vue"),
     meta: {
       menu: true,
     },
