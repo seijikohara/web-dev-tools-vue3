@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, watch } from "vue";
-import marked from "marked";
+import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 import Card from "primevue/card";
