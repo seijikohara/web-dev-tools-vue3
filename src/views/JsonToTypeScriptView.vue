@@ -3,13 +3,13 @@
     <template #title> JSON to TypeScript </template>
     <template #subtitle> Convert JSON to TypeScript interface </template>
     <template #content>
-      <div class="p-grid">
-        <div class="p-col-12 p-md-6 p-lg-6">
+      <div class="grid">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="JSON">
             <CodeEditor v-model:value="state.json" mode="json" height="500px" />
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="TypeScript interface">
             <CodeEditor
               v-model:value="state.typeScript"

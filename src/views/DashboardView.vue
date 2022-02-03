@@ -3,13 +3,13 @@
     <template v-slot:title> Browser </template>
     <template v-slot:subtitle> Browser information </template>
     <template v-slot:content>
-      <div class="p-grid">
-        <div class="p-col-12">
+      <div class="grid">
+        <div class="col-12">
           <Panel header="User agent">
             {{ userAgent }}
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Browser">
             <DataTable :value="browserInformation.browser">
               <Column field="name" header="Name" />
@@ -17,7 +17,7 @@
             </DataTable>
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Engine">
             <DataTable :value="browserInformation.engine">
               <Column field="name" header="Name" />
@@ -25,7 +25,7 @@
             </DataTable>
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="OS">
             <DataTable :value="browserInformation.os">
               <Column field="name" header="Name" />
@@ -33,7 +33,7 @@
             </DataTable>
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Device">
             <DataTable :value="browserInformation.device">
               <Column field="model" header="Model" />
@@ -42,14 +42,14 @@
             </DataTable>
           </Panel>
         </div>
-        <div class="p-col-12">
+        <div class="col-12">
           <Panel header="HTTP headers">
             <DataTable
               :value="httpHeaders.headers"
               :paginator="true"
               :rows="10"
               :rowsPerPageOptions="[10, 20, 50]"
-              class="p-datatable-sm"
+              class="datatable-sm"
             >
               <Column
                 field="name"
@@ -68,23 +68,23 @@
     <template v-slot:title> Network </template>
     <template v-slot:subtitle> Client network information </template>
     <template v-slot:content>
-      <div class="p-grid">
-        <div class="p-col-12 p-md-6 p-lg-6">
+      <div class="grid">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="IP address">
             {{ ipInfo.ipAddress }}
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Host name">
             {{ ipInfo.hostName }}
           </Panel>
         </div>
-        <div class="p-col-12 p-md-12 p-lg-6">
+        <div class="col-12 md:col-12 lg:col-6">
           <Panel header="Geo location">
             <JsonTreeView :data="JSON.stringify(geo)" :maxDepth="100" />
           </Panel>
         </div>
-        <div class="p-col-12 p-md-12 p-lg-6">
+        <div class="col-12 md:col-12 lg:col-6">
           <Panel header="RDAP infromation">
             <JsonTreeView :data="JSON.stringify(rdap)" :maxDepth="100" />
           </Panel>

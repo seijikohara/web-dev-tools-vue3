@@ -3,8 +3,8 @@
     <template #title> Markdown Editor </template>
     <template #subtitle> Editor and preview </template>
     <template #content>
-      <div class="p-grid">
-        <div class="p-col-12 p-md-6 p-lg-6">
+      <div class="grid">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Markdown">
             <CodeEditor
               v-model:value="state.markdown"
@@ -13,7 +13,7 @@
             />
           </Panel>
         </div>
-        <div class="p-col-12 p-md-6 p-lg-6">
+        <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Preview">
             <div v-html="state.html" />
           </Panel>

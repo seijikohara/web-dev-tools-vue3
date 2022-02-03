@@ -16,8 +16,8 @@
         @page="onPage($event)"
       >
         <template #header>
-          <div class="p-grid p-nogutter">
-            <div class="p-col-6" style="text-align: left">
+          <div class="grid nogutter">
+            <div class="col-6" style="text-align: left">
               <div class="p-inputgroup">
                 <InputText
                   placeholder="Search..."
@@ -27,16 +27,16 @@
                 <Button icon="pi pi-search" @click="onClickSearch" />
               </div>
             </div>
-            <div class="p-col-6" style="text-align: right">
+            <div class="col-6" style="text-align: right">
               <DataViewLayoutOptions v-model="state.layout" />
             </div>
           </div>
         </template>
         <template #list="slotProps">
-          <div class="p-col-12 p-md-1">
+          <div class="col-12 md:col-1">
             <div class="char" v-html="slotProps.data.entityReference" />
           </div>
-          <div class="p-col-12 p-md-11">
+          <div class="col-12 md:col-11">
             <table class="list-table">
               <tr>
                 <th>Code</th>

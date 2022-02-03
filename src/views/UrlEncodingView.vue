@@ -6,9 +6,13 @@
       <CodeEditor v-model:value="state.content" mode="text" height="500px" />
     </template>
     <template #footer>
-      <div class="p-formgroup-inline">
+      <div class="p-inputgroup">
         <Button label="Encode" @click="onClickEncode" />
-        <Button label="Decode" @click="onClickDecode" />
+        <Button
+          label="Decode"
+          class="p-button-secondary"
+          @click="onClickDecode"
+        />
       </div>
     </template>
   </Card>
@@ -40,7 +44,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.p-button {
+.button {
   margin-right: 0.5rem;
 }
 </style>

@@ -7,7 +7,7 @@
     </template>
     <template #footer>
       <h3>Options</h3>
-      <div class="p-field-checkbox">
+      <div class="field-checkbox">
         <Checkbox
           id="collapseContent"
           v-model="state.collapseContent"
@@ -18,7 +18,7 @@
         />
         <label for="collapseContent">Collapse</label>
       </div>
-      <div class="p-field-checkbox">
+      <div class="field-checkbox">
         <Checkbox
           id="whiteSpaceAtEndOfSelfclosingTag"
           v-model="state.whiteSpaceAtEndOfSelfclosingTag"
@@ -31,7 +31,7 @@
           >Self closing tag space</label
         >
       </div>
-      <div class="p-field-checkbox">
+      <div class="field-checkbox">
         <Checkbox
           id="excludeComments"
           v-model="state.excludeComments"

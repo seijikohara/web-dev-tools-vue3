@@ -3,12 +3,12 @@
     <template #title> Hash </template>
     <template #subtitle> Hash calculator </template>
     <template #content>
-      <div class="p-fluid">
-        <div class="p-field">
+      <div class="fluid">
+        <div class="field">
           <CodeEditor v-model:value="state.text" mode="text" height="200px" />
         </div>
-        <div class="p-field">
-          <DataTable :value="hashedValues" class="p-datatable-sm">
+        <div class="field">
+          <DataTable :value="hashedValues" class="datatable-sm">
             <template #header> Hash values </template>
             <Column
               field="method"
