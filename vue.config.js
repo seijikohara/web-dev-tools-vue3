@@ -1,4 +1,11 @@
 module.exports = {
+  configureWebpack: {
+    resolve: {
+      fallback: {
+        crypto: false,
+      },
+    },
+  },
   css: {
     loaderOptions: {
       scss: {
