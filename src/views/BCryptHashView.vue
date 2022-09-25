@@ -32,8 +32,8 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, computed } from "vue";
+<script setup lang="ts">
+import { reactive, computed } from "vue";
 import * as bcrypt from "bcryptjs";
 
 import Card from "primevue/card";
@@ -42,20 +42,11 @@ import InputNumber from "primevue/inputnumber";
 import InputText from "primevue/inputtext";
 import Slider from "primevue/slider";
 
-export default defineComponent({
-  components: { Card, Fieldset, InputNumber, InputText, Slider },
-  async setup() {
-    const state = reactive({
-      password: "",
-      rounds: 8,
-    });
-    const hashedValue = computed(() =>
-      bcrypt.hashSync(state.password, state.rounds)
-    );
-    return {
-      state,
-      hashedValue,
-    };
-  },
+const state = reactive({
+  password: "",
+  rounds: 8,
 });
+const hashedValue = computed(() =>
+  bcrypt.hashSync(state.password, state.rounds)
+);
 </script>

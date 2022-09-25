@@ -63,11 +63,7 @@
         </template>
         <template #grid="slotProps">
           <div class="grid-container">
-            <div
-              class="char"
-              v-html="slotProps.data.entityReference"
-              :v-tooltip="slotProps.data.name"
-            />
+            <div class="char" v-html="slotProps.data.entityReference" />
             <div class="code">
               {{ slotProps.data.entityReference }}
             </div>
@@ -81,15 +77,14 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive } from "vue";
+<script setup lang="ts">
+import { reactive } from "vue";
 
 import Button from "primevue/button";
 import Card from "primevue/card";
 import DataView from "primevue/dataview";
 import DataViewLayoutOptions from "primevue/dataviewlayoutoptions";
 import InputText from "primevue/inputtext";
-import Tooltip from "primevue/tooltip";
 
 import ApiService, { Content } from "@/services/ApiService";
 
@@ -99,51 +94,32 @@ type PageEvent = {
   rows: number;
   pageCount?: number;
 };
-
-export default defineComponent({
-  components: {
-    Button,
-    Card,
-    DataView,
-    DataViewLayoutOptions,
-    InputText,
-  },
-  directives: { Tooltip },
-  async setup() {
-    const state = reactive({
-      layout: "list",
-      searchWord: "",
-      page: 0,
-      size: 50,
-      totalRecords: 0,
-      entities: [] as Content[],
-    });
-
-    const onPage = async (event: PageEvent) => {
-      state.page = event.page;
-      state.size = event.rows;
-      const pagedEntities = await ApiService.getHtmlEntities(
-        state.searchWord,
-        state.page,
-        state.size
-      );
-      state.entities = pagedEntities.content;
-      state.totalRecords = pagedEntities.totalElements;
-    };
-
-    const onClickSearch = async () => {
-      await onPage({ page: 0, rows: state.size });
-    };
-
-    await onClickSearch();
-
-    return {
-      state,
-      onClickSearch,
-      onPage,
-    };
-  },
+const state = reactive({
+  layout: "list",
+  searchWord: "",
+  page: 0,
+  size: 50,
+  totalRecords: 0,
+  entities: [] as Content[],
 });
+
+const onPage = async (event: PageEvent) => {
+  state.page = event.page;
+  state.size = event.rows;
+  const pagedEntities = await ApiService.getHtmlEntities(
+    state.searchWord,
+    state.page,
+    state.size
+  );
+  state.entities = pagedEntities.content;
+  state.totalRecords = pagedEntities.totalElements;
+};
+
+const onClickSearch = async () => {
+  await onPage({ page: 0, rows: state.size });
+};
+
+await onClickSearch();
 </script>
 
 <style lang="scss" scoped>

@@ -19,8 +19,8 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, readonly } from "vue";
+<script setup lang="ts">
+import { reactive, readonly } from "vue";
 
 import Button from "primevue/button";
 import Card from "primevue/card";
@@ -33,31 +33,21 @@ type FormatOption = {
   value: string;
 };
 
-export default defineComponent({
-  components: { Button, Card, Dropdown, CodeEditor },
-  async setup() {
-    const formatOptions = readonly([
-      { text: "2 Spaces", value: " ".repeat(2) },
-      { text: "4 Spaces", value: " ".repeat(4) },
-      { text: "1 Tab", value: "\t" },
-      { text: "Compact", value: "" },
-    ] as FormatOption[]);
-    const state = reactive({
-      content: "{}",
-      formatOptionValue: formatOptions[0].value,
-    });
-    const onClickFormat = () => {
-      const parsed = JSON.parse(state.content);
-      const padString = state.formatOptionValue;
-      state.content = JSON.stringify(parsed, undefined, padString);
-    };
-    return {
-      formatOptions,
-      state,
-      onClickFormat,
-    };
-  },
+const formatOptions = readonly([
+  { text: "2 Spaces", value: " ".repeat(2) },
+  { text: "4 Spaces", value: " ".repeat(4) },
+  { text: "1 Tab", value: "\t" },
+  { text: "Compact", value: "" },
+] as FormatOption[]);
+const state = reactive({
+  content: "{}",
+  formatOptionValue: formatOptions[0].value,
 });
+const onClickFormat = () => {
+  const parsed = JSON.parse(state.content);
+  const padString = state.formatOptionValue;
+  state.content = JSON.stringify(parsed, undefined, padString);
+};
 </script>
 
 <style lang="scss" scoped>

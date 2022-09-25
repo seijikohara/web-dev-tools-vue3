@@ -11,8 +11,15 @@
   />
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, reactive, SetupContext, watch } from "vue";
+<script setup lang="ts">
+import {
+  computed,
+  defineEmits,
+  defineProps,
+  reactive,
+  watch,
+  withDefaults,
+} from "vue";
 
 import { VAceEditor } from "vue3-ace-editor";
 
@@ -240,61 +247,32 @@ type Props = {
   options?: unknown;
 };
 
-export default defineComponent({
-  name: "CodeEditor",
-  components: { VAceEditor },
-  props: {
-    mode: {
-      type: String,
-      default: "text",
-      required: false,
-    },
-    theme: {
-      type: String,
-      default: "chrome",
-      required: false,
-    },
-    width: {
-      type: String,
-      default: "100%",
-      required: false,
-    },
-    height: {
-      type: String,
-      default: "100%",
-      required: false,
-    },
-    value: {
-      type: String,
-      default: "",
-    },
-    options: {
-      type: Object,
-      required: false,
-    },
-  },
-  setup(props: Props, context: SetupContext) {
-    const state = reactive({
-      content: props.value,
-    });
-    const styles = computed(() => {
-      return {
-        height: props.height,
-        width: props.width,
-      };
-    });
-    watch(
-      () => props.value,
-      (value) => (state.content = value)
-    );
-    watch(
-      () => state.content,
-      (value) => context.emit("update:value", value)
-    );
-    return {
-      state,
-      styles,
-    };
-  },
+const props = withDefaults(defineProps<Props>(), {
+  mode: "text",
+  theme: "chrome",
+  width: "100%",
+  height: "100%",
+  value: "",
 });
+const emits = defineEmits<{
+  (e: "update:value", text: string): void;
+}>();
+
+const state = reactive({
+  content: props.value,
+});
+const styles = computed(() => {
+  return {
+    height: props.height,
+    width: props.width,
+  };
+});
+watch(
+  () => props.value,
+  (value) => (state.content = value)
+);
+watch(
+  () => state.content,
+  (value) => emits("update:value", value)
+);
 </script>

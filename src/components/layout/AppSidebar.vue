@@ -21,40 +21,29 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 
 import { ActionTypes } from "@/store";
 
-export default defineComponent({
-  setup() {
-    const store = useStore();
-    const isDrawerVisible = computed(() => store.getters.getDrawer);
-    const router = useRouter();
-    const routes = computed(() =>
-      router
-        .getRoutes()
-        .filter((route) => route.meta["menu"])
-        .map((route) => {
-          return {
-            name: route.name,
-            path: route.path,
-          };
-        })
-    );
-    const currentRouteName = computed(() => useRoute().name);
-    const onClick = () => store.dispatch(ActionTypes.SET_DRAWER, false);
-
-    return {
-      isDrawerVisible,
-      routes,
-      currentRouteName,
-      onClick,
-    };
-  },
-});
+const store = useStore();
+const isDrawerVisible = computed(() => store.getters.getDrawer);
+const router = useRouter();
+const routes = computed(() =>
+  router
+    .getRoutes()
+    .filter((route) => route.meta["menu"])
+    .map((route) => {
+      return {
+        name: route.name,
+        path: route.path,
+      };
+    })
+);
+const currentRouteName = computed(() => useRoute().name);
+const onClick = () => store.dispatch(ActionTypes.SET_DRAWER, false);
 </script>
 
 <style lang="scss">

@@ -23,8 +23,8 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, watch } from "vue";
+<script setup lang="ts">
+import { reactive, watch } from "vue";
 import JsonToTS from "json-to-ts";
 
 import Card from "primevue/card";
@@ -32,34 +32,26 @@ import Panel from "primevue/panel";
 
 import CodeEditor from "@/components/CodeEditor.vue";
 
-export default defineComponent({
-  components: { Card, CodeEditor, Panel },
-  async setup() {
-    const state = reactive({
-      json: "{}",
-      typeScript: "",
-    });
-
-    watch(
-      () => state.json,
-      (json: string) => {
-        const jsonToObject = (json: string): unknown => {
-          try {
-            return JSON.parse(json);
-          } catch (e) {
-            return {};
-          }
-        };
-
-        const object = jsonToObject(json);
-        state.typeScript = JsonToTS(object).join("\r\n\r\n");
-      }
-    );
-    return {
-      state,
-    };
-  },
+const state = reactive({
+  json: "{}",
+  typeScript: "",
 });
+
+watch(
+  () => state.json,
+  (json: string) => {
+    const jsonToObject = (json: string): unknown => {
+      try {
+        return JSON.parse(json);
+      } catch (e) {
+        return {};
+      }
+    };
+
+    const object = jsonToObject(json);
+    state.typeScript = JsonToTS(object).join("\r\n\r\n");
+  }
+);
 </script>
 
 <style lang="scss" scoped>

@@ -23,8 +23,8 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, watch } from "vue";
+<script setup lang="ts">
+import { reactive, watch } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -33,25 +33,17 @@ import Panel from "primevue/panel";
 
 import CodeEditor from "@/components/CodeEditor.vue";
 
-export default defineComponent({
-  components: { Card, CodeEditor, Panel },
-  async setup() {
-    const state = reactive({
-      markdown: "",
-      html: "",
-    });
-
-    watch(
-      () => state.markdown,
-      (markdown: string) => {
-        state.html = DOMPurify.sanitize(marked(markdown));
-      }
-    );
-    return {
-      state,
-    };
-  },
+const state = reactive({
+  markdown: "",
+  html: "",
 });
+
+watch(
+  () => state.markdown,
+  (markdown: string) => {
+    state.html = DOMPurify.sanitize(marked(markdown));
+  }
+);
 </script>
 
 <style lang="scss" scoped>

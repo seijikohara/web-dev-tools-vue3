@@ -18,32 +18,24 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onErrorCaptured, Ref, ref, watch } from "vue";
+<script setup lang="ts">
+import { onErrorCaptured, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import Message from "primevue/message";
 
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
-export default defineComponent({
-  components: { Message, LoadingSpinner },
-  setup() {
-    const error: Ref<unknown> = ref(null);
-    onErrorCaptured((e) => {
-      error.value = e;
-      return true;
-    });
-    const route = useRoute();
-    watch(
-      () => route.params,
-      () => (error.value = null)
-    );
-    return {
-      error,
-    };
-  },
+const error: Ref<unknown> = ref(null);
+onErrorCaptured((e) => {
+  error.value = e;
+  return true;
 });
+const route = useRoute();
+watch(
+  () => route.params,
+  () => (error.value = null)
+);
 </script>
 
 <style lang="scss" scoped>

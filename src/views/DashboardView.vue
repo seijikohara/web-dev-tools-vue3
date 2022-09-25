@@ -94,8 +94,7 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import UAParser from "ua-parser-js";
 import { JsonTreeView } from "json-tree-view-vue3";
 
@@ -110,29 +109,24 @@ const userAgent = window.navigator.userAgent;
 const uaParser = new UAParser();
 const bowserResult = uaParser.getResult();
 
-export default defineComponent({
-  components: { Card, Panel, DataTable, Column, JsonTreeView },
-  async setup() {
-    const ipInfo = await ApiService.getIpAddress();
-    const httpHeaders = await ApiService.getHttpHeader();
-    const ipAddress = ipInfo.ipAddress;
-    const geo = await ApiService.getGeo(ipAddress);
-    const rdap = await ApiService.getRdap(ipAddress);
-    return {
-      userAgent,
-      browserInformation: {
-        browser: [bowserResult.browser],
-        engine: [bowserResult.engine],
-        os: [bowserResult.os],
-        device: [bowserResult.device],
-      },
-      ipInfo,
-      httpHeaders,
-      geo,
-      rdap,
-    };
-  },
-});
+const [ipInfo, httpHeaders] = await Promise.all([
+  ApiService.getIpAddress(),
+  ApiService.getHttpHeader(),
+]);
+
+const ipAddress = ipInfo.ipAddress;
+
+const [geo, rdap] = await Promise.all([
+  ApiService.getGeo(ipAddress),
+  ApiService.getRdap(ipAddress),
+]);
+
+const browserInformation = {
+  browser: [bowserResult.browser],
+  engine: [bowserResult.engine],
+  os: [bowserResult.os],
+  device: [bowserResult.device],
+};
 </script>
 
 <style lang="scss" scoped>

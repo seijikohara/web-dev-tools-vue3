@@ -7,21 +7,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import { useStore } from "vuex";
 
 import { ActionTypes } from "@/store";
 
-export default defineComponent({
-  setup() {
-    const store = useStore();
-    const onClickMenu = () => store.dispatch(ActionTypes.SET_DRAWER, true);
-    return {
-      onClickMenu,
-    };
-  },
-});
+const store = useStore();
+const onClickMenu = () => store.dispatch(ActionTypes.SET_DRAWER, true);
 </script>
 
 <style lang="scss">

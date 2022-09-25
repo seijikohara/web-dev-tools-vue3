@@ -18,29 +18,19 @@
   </Card>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive } from "vue";
+<script setup lang="ts">
+import { reactive } from "vue";
 
 import Button from "primevue/button";
 import Card from "primevue/card";
 
 import CodeEditor from "@/components/CodeEditor.vue";
 
-export default defineComponent({
-  components: { Button, Card, CodeEditor },
-  async setup() {
-    const state = reactive({
-      content: "",
-    });
-    const onClickEncode = () => (state.content = encodeURI(state.content));
-    const onClickDecode = () => (state.content = decodeURI(state.content));
-    return {
-      state,
-      onClickEncode,
-      onClickDecode,
-    };
-  },
+const state = reactive({
+  content: "",
 });
+const onClickEncode = () => (state.content = encodeURI(state.content));
+const onClickDecode = () => (state.content = decodeURI(state.content));
 </script>
 
 <style lang="scss" scoped>

@@ -4,15 +4,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-
+<script setup lang="ts">
 import ProgressSpinner from "primevue/progressspinner";
-
-export default defineComponent({
-  name: "LoadingSpinner",
-  components: { ProgressSpinner },
-});
 </script>
 
 <style lang="scss" scoped>

@@ -2,17 +2,11 @@
   <div class="layout-footer">Seiji Kohara &copy; {{ year }}</div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 import dayjs from "dayjs";
 
-export default defineComponent({
-  setup() {
-    return {
-      year: computed(() => dayjs().format("YYYY")),
-    };
-  },
-});
+const year = computed(() => dayjs().format("YYYY"));
 </script>
 
 <style lang="scss">
