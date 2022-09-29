@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import VueGtag from "vue-gtag-next";
+import VueGtag from "vue-gtag";
 import App from "./App.vue";
 import router from "./router";
 
@@ -16,7 +16,7 @@ app.use(PrimeVue, { ripple: true, inputStyle: "outlined" });
 const gaMeasurementId = process.env.VUE_APP_GA_MEASUREMENT_ID;
 if (gaMeasurementId) {
   app.use(VueGtag, {
-    property: {
+    config: {
       id: gaMeasurementId,
     },
   });

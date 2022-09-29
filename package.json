@@ -31,7 +31,7 @@
     "switch-ts": "^1.0.9",
     "ua-parser-js": "^1.0.2",
     "vue": "^3.2.40",
-    "vue-gtag-next": "^1.14.0",
+    "vue-gtag": "^2.0.1",
     "vue-router": "^4.1.5",
     "vue3-ace-editor": "^2.2.2",
     "xml-formatter": "^2.6.1"
