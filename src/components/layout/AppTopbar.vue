@@ -8,12 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import { useStore } from "vuex";
+import { useDrawerStore } from "@/stores/drawer";
 
-import { ActionTypes } from "@/store";
-
-const store = useStore();
-const onClickMenu = () => store.dispatch(ActionTypes.SET_DRAWER, true);
+const drawerStore = useDrawerStore();
+const onClickMenu = () => drawerStore.open();
 </script>
 
 <style lang="scss">

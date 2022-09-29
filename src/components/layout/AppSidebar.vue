@@ -1,7 +1,7 @@
 <template>
   <div
     class="layout-sidebar"
-    :class="{ active: isDrawerVisible }"
+    :class="{ active: isDrawerOpened }"
     @click="onClick"
   >
     <ul class="layout-menu">
@@ -23,13 +23,11 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
+import { useDrawerStore } from "@/stores/drawer";
 
-import { ActionTypes } from "@/store";
-
-const store = useStore();
-const isDrawerVisible = computed(() => store.getters.getDrawer);
+const drawerStore = useDrawerStore();
+const isDrawerOpened = computed(() => drawerStore.$state.isDrawerOpened);
 const router = useRouter();
 const routes = computed(() =>
   router
@@ -43,7 +41,7 @@ const routes = computed(() =>
     })
 );
 const currentRouteName = computed(() => useRoute().name);
-const onClick = () => store.dispatch(ActionTypes.SET_DRAWER, false);
+const onClick = () => drawerStore.close();
 </script>
 
 <style lang="scss">
