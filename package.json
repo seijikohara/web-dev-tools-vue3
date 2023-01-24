@@ -29,7 +29,7 @@
     "primeicons": "^6.0.1",
     "primevue": "^3.20.0",
     "switch-ts": "^1.1.1",
-    "ua-parser-js": "^1.0.32",
+    "ua-parser-js": "^1.0.33",
     "vue": "^3.2.45",
     "vue-gtag": "^2.0.1",
     "vue-router": "^4.1.6",
