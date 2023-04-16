@@ -20,34 +20,34 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, readonly } from "vue";
+import { reactive } from 'vue'
 
-import Button from "primevue/button";
-import Card from "primevue/card";
-import Dropdown from "primevue/dropdown";
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Dropdown from 'primevue/dropdown'
 
-import CodeEditor from "@/components/CodeEditor.vue";
+import CodeEditor from '@/components/CodeEditor.vue'
 
 type FormatOption = {
-  text: string;
-  value: string;
-};
+  text: string
+  value: string
+}
 
-const formatOptions = readonly([
-  { text: "2 Spaces", value: " ".repeat(2) },
-  { text: "4 Spaces", value: " ".repeat(4) },
-  { text: "1 Tab", value: "\t" },
-  { text: "Compact", value: "" },
-] as FormatOption[]);
+const formatOptions = [
+  { text: '2 Spaces', value: ' '.repeat(2) },
+  { text: '4 Spaces', value: ' '.repeat(4) },
+  { text: '1 Tab', value: '\t' },
+  { text: 'Compact', value: '' },
+] as FormatOption[]
 const state = reactive({
-  content: "{}",
+  content: '{}',
   formatOptionValue: formatOptions[0].value,
-});
+})
 const onClickFormat = () => {
-  const parsed = JSON.parse(state.content);
-  const padString = state.formatOptionValue;
-  state.content = JSON.stringify(parsed, undefined, padString);
-};
+  const parsed = JSON.parse(state.content)
+  const padString = state.formatOptionValue
+  state.content = JSON.stringify(parsed, undefined, padString)
+}
 </script>
 
 <style lang="scss" scoped>

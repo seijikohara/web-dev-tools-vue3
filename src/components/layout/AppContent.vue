@@ -2,7 +2,7 @@
   <div class="layout-content">
     <div class="content-section">
       <router-view v-slot="{ Component }">
-        <Message v-if="error" severity="error" :closable="false">
+        <Message v-if="error.message" severity="error" :closable="false">
           {{ error.message }}
         </Message>
         <Suspense v-else timeout="0">
@@ -19,23 +19,23 @@
 </template>
 
 <script setup lang="ts">
-import { onErrorCaptured, Ref, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { onErrorCaptured, reactive, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
-import Message from "primevue/message";
+import Message from 'primevue/message'
 
-import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
-const error: Ref<unknown> = ref(null);
+const error = reactive({ message: null as string | null })
 onErrorCaptured((e) => {
-  error.value = e;
-  return true;
-});
-const route = useRoute();
+  error.message = e.message
+  return true
+})
+const route = useRoute()
 watch(
   () => route.params,
-  () => (error.value = null)
-);
+  () => (error.message = null),
+)
 </script>
 
 <style lang="scss" scoped>

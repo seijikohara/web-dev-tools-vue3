@@ -8,10 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import { useDrawerStore } from "@/stores/drawer";
+import { useDrawerStore } from '@/stores/drawer'
 
-const drawerStore = useDrawerStore();
-const onClickMenu = () => drawerStore.open();
+const drawerStore = useDrawerStore()
+const onClickMenu = () => drawerStore.open()
 </script>
 
 <style lang="scss">

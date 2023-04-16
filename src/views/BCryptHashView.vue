@@ -33,20 +33,20 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from "vue";
-import * as bcrypt from "bcryptjs";
+import { reactive, computed } from 'vue'
+import * as bcrypt from 'bcryptjs'
 
-import Card from "primevue/card";
-import Fieldset from "primevue/fieldset";
-import InputNumber from "primevue/inputnumber";
-import InputText from "primevue/inputtext";
-import Slider from "primevue/slider";
+import Card from 'primevue/card'
+import Fieldset from 'primevue/fieldset'
+import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
+import Slider from 'primevue/slider'
 
 const state = reactive({
-  password: "",
+  password: '',
   rounds: 8,
-});
+})
 const hashedValue = computed(() =>
-  bcrypt.hashSync(state.password, state.rounds)
-);
+  bcrypt.hashSync(state.password, state.rounds),
+)
 </script>

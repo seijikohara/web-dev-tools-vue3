@@ -1,25 +1,31 @@
-import { createApp } from "vue";
-import { createPinia } from "pinia";
-import VueGtag from "vue-gtag";
-import App from "./App.vue";
-import router from "./router";
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
-import "@/assets/scss/layout.scss";
+import App from './App.vue'
+import router from './router'
 
-import PrimeVue from "primevue/config";
+import VueGtag from 'vue-gtag'
+import PrimeVue from 'primevue/config'
 
-const app = createApp(App);
-app.use(createPinia());
-app.use(router);
-app.use(PrimeVue, { ripple: true, inputStyle: "outlined" });
+import 'primeflex/primeflex.css'
+import 'primevue/resources/themes/saga-blue/theme.css'
+import 'primevue/resources/primevue.min.css'
+import 'primeicons/primeicons.css'
 
-const gaMeasurementId = process.env.VUE_APP_GA_MEASUREMENT_ID;
+const app = createApp(App)
+
+app.use(createPinia())
+app.use(router)
+
+app.use(PrimeVue, { ripple: true, inputStyle: 'outlined' })
+
+const gaMeasurementId = import.meta.env.VUE_APP_GA_MEASUREMENT_ID
 if (gaMeasurementId) {
   app.use(VueGtag, {
     config: {
       id: gaMeasurementId,
     },
-  });
+  })
 }
 
-app.mount("#app");
+app.mount('#app')

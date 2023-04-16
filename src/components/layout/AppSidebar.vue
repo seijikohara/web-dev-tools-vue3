@@ -22,26 +22,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useDrawerStore } from "@/stores/drawer";
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useDrawerStore } from '@/stores/drawer'
 
-const drawerStore = useDrawerStore();
-const isDrawerOpened = computed(() => drawerStore.$state.isDrawerOpened);
-const router = useRouter();
+const drawerStore = useDrawerStore()
+const isDrawerOpened = computed(() => drawerStore.$state.isDrawerOpened)
+const router = useRouter()
 const routes = computed(() =>
   router
     .getRoutes()
-    .filter((route) => route.meta["menu"])
+    .filter((route) => route.meta['menu'])
     .map((route) => {
       return {
         name: route.name,
         path: route.path,
-      };
-    })
-);
-const currentRouteName = computed(() => useRoute().name);
-const onClick = () => drawerStore.close();
+      }
+    }),
+)
+const currentRouteName = computed(() => useRoute().name)
+const onClick = () => drawerStore.close()
 </script>
 
 <style lang="scss">

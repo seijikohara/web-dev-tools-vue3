@@ -1,21 +1,21 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia'
 
 interface State {
-  isDrawerOpened: boolean;
+  isDrawerOpened: boolean
 }
 
-export const useDrawerStore = defineStore("drawer", {
+export const useDrawerStore = defineStore('drawer', {
   state: (): State => {
     return {
       isDrawerOpened: false,
-    };
+    }
   },
   actions: {
     open() {
-      this.isDrawerOpened = true;
+      this.isDrawerOpened = true
     },
     close() {
-      this.isDrawerOpened = false;
+      this.isDrawerOpened = false
     },
   },
-});
+})

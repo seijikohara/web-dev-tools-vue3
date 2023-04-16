@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import ProgressSpinner from "primevue/progressspinner";
+import ProgressSpinner from 'primevue/progressspinner'
 </script>
 
 <style lang="scss" scoped>

@@ -54,45 +54,45 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, readonly } from "vue";
-import format from "xml-formatter";
+import { reactive } from 'vue'
+import format from 'xml-formatter'
 
-import Button from "primevue/button";
-import Card from "primevue/card";
-import Checkbox from "primevue/checkbox";
-import Dropdown from "primevue/dropdown";
-import Tooltip from "primevue/tooltip";
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Checkbox from 'primevue/checkbox'
+import Dropdown from 'primevue/dropdown'
+import Tooltip from 'primevue/tooltip'
 
-import CodeEditor from "@/components/CodeEditor.vue";
+import CodeEditor from '@/components/CodeEditor.vue'
 
-const vTooltip = Tooltip;
+const vTooltip = Tooltip
 
 type FormatOption = {
-  text: string;
-  value: string;
-};
+  text: string
+  value: string
+}
 
-const formatOptions = readonly([
-  { text: "2 Spaces", value: " ".repeat(2) },
-  { text: "4 Spaces", value: " ".repeat(4) },
-  { text: "1 Tab", value: "\t" },
-  { text: "Compact", value: "" },
-] as FormatOption[]);
+const formatOptions = [
+  { text: '2 Spaces', value: ' '.repeat(2) },
+  { text: '4 Spaces', value: ' '.repeat(4) },
+  { text: '1 Tab', value: '\t' },
+  { text: 'Compact', value: '' },
+] as FormatOption[]
 const state = reactive({
-  content: "<xml></xml>",
+  content: '<xml></xml>',
   formatOptionValue: formatOptions[0].value,
   collapseContent: false,
   whiteSpaceAtEndOfSelfclosingTag: false,
   excludeComments: false,
-});
+})
 const onClickFormat = () => {
   state.content = format(state.content, {
     indentation: state.formatOptionValue,
     collapseContent: state.collapseContent,
     whiteSpaceAtEndOfSelfclosingTag: state.whiteSpaceAtEndOfSelfclosingTag,
-    filter: (node) => !state.excludeComments || node.type !== "Comment",
-  });
-};
+    filter: (node) => !state.excludeComments || node.type !== 'Comment',
+  })
+}
 </script>
 
 <style lang="scss" scoped>

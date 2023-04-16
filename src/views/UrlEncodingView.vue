@@ -19,18 +19,18 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive } from 'vue'
 
-import Button from "primevue/button";
-import Card from "primevue/card";
+import Button from 'primevue/button'
+import Card from 'primevue/card'
 
-import CodeEditor from "@/components/CodeEditor.vue";
+import CodeEditor from '@/components/CodeEditor.vue'
 
 const state = reactive({
-  content: "",
-});
-const onClickEncode = () => (state.content = encodeURI(state.content));
-const onClickDecode = () => (state.content = decodeURI(state.content));
+  content: '',
+})
+const onClickEncode = () => (state.content = encodeURI(state.content))
+const onClickDecode = () => (state.content = decodeURI(state.content))
 </script>
 
 <style lang="scss" scoped>

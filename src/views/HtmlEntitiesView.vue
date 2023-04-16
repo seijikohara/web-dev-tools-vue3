@@ -4,6 +4,7 @@
     <template #subtitle> List of HTML entities </template>
     <template #content>
       <DataView
+        dataKey="name"
         :value="state.entities"
         :layout="state.layout"
         paginatorPosition="both"
@@ -78,48 +79,49 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive } from 'vue'
 
-import Button from "primevue/button";
-import Card from "primevue/card";
-import DataView from "primevue/dataview";
-import DataViewLayoutOptions from "primevue/dataviewlayoutoptions";
-import InputText from "primevue/inputtext";
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import DataView from 'primevue/dataview'
+import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions'
+import InputText from 'primevue/inputtext'
 
-import ApiService, { Content } from "@/services/ApiService";
+import type { HtmlEntity } from '@/types/types'
+import ApiService from '@/services/ApiService'
 
 type PageEvent = {
-  page: number;
-  first?: number;
-  rows: number;
-  pageCount?: number;
-};
+  page: number
+  first?: number
+  rows: number
+  pageCount?: number
+}
 const state = reactive({
-  layout: "list",
-  searchWord: "",
+  layout: 'list' as 'list' | 'grid' | undefined,
+  searchWord: '',
   page: 0,
   size: 50,
   totalRecords: 0,
-  entities: [] as Content[],
-});
+  entities: [] as HtmlEntity[],
+})
 
 const onPage = async (event: PageEvent) => {
-  state.page = event.page;
-  state.size = event.rows;
+  state.page = event.page
+  state.size = event.rows
   const pagedEntities = await ApiService.getHtmlEntities(
     state.searchWord,
     state.page,
-    state.size
-  );
-  state.entities = pagedEntities.content;
-  state.totalRecords = pagedEntities.totalElements;
-};
+    state.size,
+  )
+  state.entities = pagedEntities.content
+  state.totalRecords = pagedEntities.totalElements
+}
 
 const onClickSearch = async () => {
-  await onPage({ page: 0, rows: state.size });
-};
+  await onPage({ page: 0, rows: state.size })
+}
 
-await onClickSearch();
+await onClickSearch()
 </script>
 
 <style lang="scss" scoped>

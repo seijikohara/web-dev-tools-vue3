@@ -24,34 +24,34 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from "vue";
-import JsonToTS from "json-to-ts";
+import { reactive, watch } from 'vue'
+import JsonToTS from 'json-to-ts'
 
-import Card from "primevue/card";
-import Panel from "primevue/panel";
+import Card from 'primevue/card'
+import Panel from 'primevue/panel'
 
-import CodeEditor from "@/components/CodeEditor.vue";
+import CodeEditor from '@/components/CodeEditor.vue'
 
 const state = reactive({
-  json: "{}",
-  typeScript: "",
-});
+  json: '{}',
+  typeScript: '',
+})
 
 watch(
   () => state.json,
   (json: string) => {
     const jsonToObject = (json: string): unknown => {
       try {
-        return JSON.parse(json);
+        return JSON.parse(json)
       } catch (e) {
-        return {};
+        return {}
       }
-    };
+    }
 
-    const object = jsonToObject(json);
-    state.typeScript = JsonToTS(object).join("\r\n\r\n");
-  }
-);
+    const object = jsonToObject(json)
+    state.typeScript = JsonToTS(object).join('\r\n\r\n')
+  },
+)
 </script>
 
 <style lang="scss" scoped>

@@ -3,10 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import dayjs from "dayjs";
+import { computed } from 'vue'
+import dayjs from 'dayjs'
 
-const year = computed(() => dayjs().format("YYYY"));
+const year = computed(() => dayjs().format('YYYY'))
 </script>
 
 <style lang="scss">

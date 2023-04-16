@@ -24,26 +24,26 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from "vue";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
+import { reactive, watch } from 'vue'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
-import Card from "primevue/card";
-import Panel from "primevue/panel";
+import Card from 'primevue/card'
+import Panel from 'primevue/panel'
 
-import CodeEditor from "@/components/CodeEditor.vue";
+import CodeEditor from '@/components/CodeEditor.vue'
 
 const state = reactive({
-  markdown: "",
-  html: "",
-});
+  markdown: '',
+  html: '',
+})
 
 watch(
   () => state.markdown,
   (markdown: string) => {
-    state.html = DOMPurify.sanitize(marked(markdown));
-  }
-);
+    state.html = DOMPurify.sanitize(marked(markdown))
+  },
+)
 </script>
 
 <style lang="scss" scoped>
