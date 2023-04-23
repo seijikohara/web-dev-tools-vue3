@@ -239,11 +239,11 @@ import 'ace-builds/src-noconflict/theme-xcode'
 
 const props = withDefaults(
   defineProps<{
-    mode: string
-    theme: string
-    width: string
-    height: string
-    value: string
+    mode?: string
+    theme?: string
+    width?: string
+    height?: string
+    value?: string
     options?: object
   }>(),
   {
