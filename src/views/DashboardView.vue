@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import UAParser from 'ua-parser-js'
+import { UAParser } from 'ua-parser-js'
 import { JsonTreeView } from 'json-tree-view-vue3'
 
 import Card from 'primevue/card'
@@ -107,7 +107,7 @@ import ApiService from '@/services/ApiService'
 
 const userAgent = window.navigator.userAgent
 const uaParser = new UAParser()
-const bowserResult = uaParser.getResult()
+const uaParserResult = uaParser.getResult()
 
 const [ipInfo, httpHeaders] = await Promise.all([
   ApiService.getIpAddress(),
@@ -122,10 +122,10 @@ const [geo, rdap] = await Promise.all([
 ])
 
 const browserInformation = {
-  browser: [bowserResult.browser],
-  engine: [bowserResult.engine],
-  os: [bowserResult.os],
-  device: [bowserResult.device],
+  browser: [uaParserResult.browser],
+  engine: [uaParserResult.engine],
+  os: [uaParserResult.os],
+  device: [uaParserResult.device],
 }
 </script>
 
