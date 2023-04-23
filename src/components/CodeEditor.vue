@@ -14,7 +14,6 @@
 <script setup lang="ts">
 import {
   computed,
-  defineEmits,
   defineProps,
   reactive,
   watch,
