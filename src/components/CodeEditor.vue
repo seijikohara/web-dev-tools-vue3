@@ -12,13 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineProps,
-  reactive,
-  watch,
-  withDefaults,
-} from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 import { VAceEditor } from 'vue3-ace-editor'
 

@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
-import * as bcrypt from 'bcryptjs'
+import { hashSync } from 'bcryptjs'
 
 import Card from 'primevue/card'
 import Fieldset from 'primevue/fieldset'
@@ -46,7 +46,5 @@ const state = reactive({
   password: '',
   rounds: 8,
 })
-const hashedValue = computed(() =>
-  bcrypt.hashSync(state.password, state.rounds),
-)
+const hashedValue = computed(() => hashSync(state.password, state.rounds))
 </script>
