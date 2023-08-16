@@ -54,7 +54,8 @@ const onClick = () => drawerStore.close()
   overflow: auto;
   width: $sidebarWidth;
   border-right: 1px solid var(--surface-d);
-  transition: transform 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99),
+  transition:
+    transform 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99),
     -webkit-transform 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
   ul {
     margin: 0;
