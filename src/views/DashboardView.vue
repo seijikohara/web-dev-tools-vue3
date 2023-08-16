@@ -118,7 +118,7 @@ const ipAddress = ipInfo.ipAddress
 
 const [geo, rdap] = await Promise.all([
   ApiService.getGeo(ipAddress),
-  ApiService.getRdap(ipAddress),
+  ApiService.getRdap(ipAddress).catch(() => ({result: 'No RDAP information found'})),
 ])
 
 const browserInformation = {
