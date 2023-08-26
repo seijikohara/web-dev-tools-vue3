@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-import VueGtag from 'vue-gtag-next'
+import VueGtag from 'vue-gtag'
 import PrimeVue from 'primevue/config'
 
 import 'primeflex/primeflex.css'
@@ -21,11 +21,16 @@ app.use(PrimeVue, { ripple: true, inputStyle: 'outlined' })
 
 const gaMeasurementId = import.meta.env.VUE_APP_GA_MEASUREMENT_ID
 if (gaMeasurementId) {
-  app.use(VueGtag, {
-    property: {
-      id: gaMeasurementId,
+  app.use(
+    VueGtag,
+    {
+      pageTrackerScreenviewEnabled: true,
+      config: {
+        id: gaMeasurementId,
+      },
     },
-  })
+    router,
+  )
 }
 
 app.mount('#app')
