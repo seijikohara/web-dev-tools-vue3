@@ -1,26 +1,3 @@
-<template>
-  <div
-    class="layout-sidebar"
-    :class="{ active: isDrawerOpened }"
-    @click="onClick"
-  >
-    <ul class="layout-menu">
-      <li v-for="(route, key) in routes" :key="key">
-        <router-link
-          :to="route.path"
-          :class="{
-            'menu-active': route.name === currentRouteName,
-            'menu-inactive': route.name !== currentRouteName,
-          }"
-        >
-          <i class="menu-icon pi pi-th-large" />
-          <span>{{ route.name }}</span>
-        </router-link>
-      </li>
-    </ul>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -43,6 +20,29 @@ const routes = computed(() =>
 const currentRouteName = computed(() => useRoute().name)
 const onClick = () => drawerStore.close()
 </script>
+
+<template>
+  <div
+    class="layout-sidebar"
+    :class="{ active: isDrawerOpened }"
+    @click="onClick"
+  >
+    <ul class="layout-menu">
+      <li v-for="(route, key) in routes" :key="key">
+        <router-link
+          :to="route.path"
+          :class="{
+            'menu-active': route.name === currentRouteName,
+            'menu-inactive': route.name !== currentRouteName,
+          }"
+        >
+          <i class="menu-icon pi pi-th-large" />
+          <span>{{ route.name }}</span>
+        </router-link>
+      </li>
+    </ul>
+  </div>
+</template>
 
 <style lang="scss">
 .layout-sidebar {

@@ -1,3 +1,20 @@
+<script setup lang="ts">
+import { reactive, computed } from 'vue'
+import { hashSync } from 'bcryptjs'
+
+import Card from 'primevue/card'
+import Fieldset from 'primevue/fieldset'
+import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
+import Slider from 'primevue/slider'
+
+const state = reactive({
+  password: '',
+  rounds: 8,
+})
+const hashedValue = computed(() => hashSync(state.password, state.rounds))
+</script>
+
 <template>
   <Card>
     <template #title> BCyprt </template>
@@ -31,20 +48,3 @@
     </template>
   </Card>
 </template>
-
-<script setup lang="ts">
-import { reactive, computed } from 'vue'
-import { hashSync } from 'bcryptjs'
-
-import Card from 'primevue/card'
-import Fieldset from 'primevue/fieldset'
-import InputNumber from 'primevue/inputnumber'
-import InputText from 'primevue/inputtext'
-import Slider from 'primevue/slider'
-
-const state = reactive({
-  password: '',
-  rounds: 8,
-})
-const hashedValue = computed(() => hashSync(state.password, state.rounds))
-</script>

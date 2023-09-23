@@ -1,16 +1,3 @@
-<template>
-  <VAceEditor
-    v-model:value="state.content"
-    :lang="mode"
-    :theme="theme"
-    :style="styles"
-    :options="{
-      ...{ showPrintMargin: false, showInvisibles: true },
-      ...options,
-    }"
-  />
-</template>
-
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
 
@@ -270,3 +257,16 @@ watch(
   (value) => emits('update:value', value),
 )
 </script>
+
+<template>
+  <VAceEditor
+    v-model:value="state.content"
+    :lang="mode"
+    :theme="theme"
+    :style="styles"
+    :options="{
+      ...{ showPrintMargin: false, showInvisibles: true },
+      ...options,
+    }"
+  />
+</template>

@@ -1,12 +1,12 @@
+<script setup lang="ts">
+import ProgressSpinner from 'primevue/progressspinner'
+</script>
+
 <template>
   <div class="loading-container">
     <ProgressSpinner />
   </div>
 </template>
-
-<script setup lang="ts">
-import ProgressSpinner from 'primevue/progressspinner'
-</script>
 
 <style lang="scss" scoped>
 .loading-container {

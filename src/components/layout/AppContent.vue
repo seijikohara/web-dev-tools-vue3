@@ -1,23 +1,3 @@
-<template>
-  <div class="layout-content">
-    <div class="content-section">
-      <router-view v-slot="{ Component }">
-        <Message v-if="error.message" severity="error" :closable="false">
-          {{ error.message }}
-        </Message>
-        <Suspense v-else timeout="0">
-          <template #default>
-            <component :is="Component" />
-          </template>
-          <template #fallback>
-            <LoadingSpinner />
-          </template>
-        </Suspense>
-      </router-view>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { onErrorCaptured, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -37,6 +17,26 @@ watch(
   () => (error.message = null),
 )
 </script>
+
+<template>
+  <div class="layout-content">
+    <div class="content-section">
+      <router-view v-slot="{ Component }">
+        <Message v-if="error.message" severity="error" :closable="false">
+          {{ error.message }}
+        </Message>
+        <Suspense v-else timeout="0">
+          <template #default>
+            <component :is="Component" />
+          </template>
+          <template #fallback>
+            <LoadingSpinner />
+          </template>
+        </Suspense>
+      </router-view>
+    </div>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 .layout-content {

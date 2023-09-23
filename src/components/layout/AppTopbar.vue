@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { useDrawerStore } from '@/stores/drawer'
+
+const drawerStore = useDrawerStore()
+const onClickMenu = () => drawerStore.open()
+</script>
+
 <template>
   <div class="layout-topbar">
     <a class="menu-button" @click="onClickMenu"><i class="pi pi-bars" /></a>
@@ -6,13 +13,6 @@
     </router-link>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useDrawerStore } from '@/stores/drawer'
-
-const drawerStore = useDrawerStore()
-const onClickMenu = () => drawerStore.open()
-</script>
 
 <style lang="scss">
 .layout-topbar {
