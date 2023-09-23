@@ -1,3 +1,46 @@
+<script setup lang="ts">
+import { UAParser } from 'ua-parser-js'
+import { JsonTreeView } from 'json-tree-view-vue3'
+
+import Card from 'primevue/card'
+import Panel from 'primevue/panel'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+
+import ApiService from '@/services/ApiService'
+
+const userAgent = window.navigator.userAgent
+const uaParser = new UAParser()
+const uaParserResult = uaParser.getResult()
+
+const [ipInfo, httpHeaders] = await Promise.all([
+  ApiService.getIpAddress(),
+  ApiService.getHttpHeader(),
+])
+
+const ipAddress = ipInfo.ipAddress
+
+const [geo, rdap] = await Promise.all([
+  ApiService.getGeo(ipAddress),
+  ApiService.getRdap(ipAddress).catch(() => ({
+    result: 'No RDAP information found',
+  })),
+])
+
+const browserInformation = {
+  browser: [uaParserResult.browser],
+  engine: [uaParserResult.engine],
+  os: [uaParserResult.os],
+  device: [uaParserResult.device],
+}
+</script>
+
+<style lang="scss" scoped>
+.bottom-pad {
+  margin-bottom: 1rem;
+}
+</style>
+
 <template>
   <Card class="bottom-pad">
     <template v-slot:title> Browser </template>
@@ -93,46 +136,3 @@
     </template>
   </Card>
 </template>
-
-<script setup lang="ts">
-import { UAParser } from 'ua-parser-js'
-import { JsonTreeView } from 'json-tree-view-vue3'
-
-import Card from 'primevue/card'
-import Panel from 'primevue/panel'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-
-import ApiService from '@/services/ApiService'
-
-const userAgent = window.navigator.userAgent
-const uaParser = new UAParser()
-const uaParserResult = uaParser.getResult()
-
-const [ipInfo, httpHeaders] = await Promise.all([
-  ApiService.getIpAddress(),
-  ApiService.getHttpHeader(),
-])
-
-const ipAddress = ipInfo.ipAddress
-
-const [geo, rdap] = await Promise.all([
-  ApiService.getGeo(ipAddress),
-  ApiService.getRdap(ipAddress).catch(() => ({
-    result: 'No RDAP information found',
-  })),
-])
-
-const browserInformation = {
-  browser: [uaParserResult.browser],
-  engine: [uaParserResult.engine],
-  os: [uaParserResult.os],
-  device: [uaParserResult.device],
-}
-</script>
-
-<style lang="scss" scoped>
-.bottom-pad {
-  margin-bottom: 1rem;
-}
-</style>

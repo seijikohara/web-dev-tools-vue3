@@ -1,28 +1,3 @@
-<template>
-  <Card>
-    <template #title> JSON to TypeScript </template>
-    <template #subtitle> Convert JSON to TypeScript interface </template>
-    <template #content>
-      <div class="grid">
-        <div class="col-12 md:col-6 lg:col-6">
-          <Panel header="JSON">
-            <CodeEditor v-model:value="state.json" mode="json" height="500px" />
-          </Panel>
-        </div>
-        <div class="col-12 md:col-6 lg:col-6">
-          <Panel header="TypeScript interface">
-            <CodeEditor
-              v-model:value="state.typeScript"
-              mode="typescript"
-              height="500px"
-            />
-          </Panel>
-        </div>
-      </div>
-    </template>
-  </Card>
-</template>
-
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import JsonToTS from 'json-to-ts'
@@ -53,6 +28,31 @@ watch(
   },
 )
 </script>
+
+<template>
+  <Card>
+    <template #title> JSON to TypeScript </template>
+    <template #subtitle> Convert JSON to TypeScript interface </template>
+    <template #content>
+      <div class="grid">
+        <div class="col-12 md:col-6 lg:col-6">
+          <Panel header="JSON">
+            <CodeEditor v-model:value="state.json" mode="json" height="500px" />
+          </Panel>
+        </div>
+        <div class="col-12 md:col-6 lg:col-6">
+          <Panel header="TypeScript interface">
+            <CodeEditor
+              v-model:value="state.typeScript"
+              mode="typescript"
+              height="500px"
+            />
+          </Panel>
+        </div>
+      </div>
+    </template>
+  </Card>
+</template>
 
 <style lang="scss" scoped>
 .buttons {

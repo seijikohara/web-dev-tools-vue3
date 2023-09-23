@@ -1,33 +1,3 @@
-<template>
-  <Card>
-    <template #title> Hash </template>
-    <template #subtitle> Hash calculator </template>
-    <template #content>
-      <div class="fluid">
-        <div class="field">
-          <CodeEditor v-model:value="state.text" mode="text" height="200px" />
-        </div>
-        <div class="field">
-          <DataTable :value="hashedValues" class="datatable-sm">
-            <template #header> Hash values </template>
-            <Column
-              field="method"
-              header="Method"
-              :headerStyle="{ width: '150px' }"
-              :sortable="true"
-            />
-            <Column header="Value">
-              <template #body="slotProps">
-                <code>{{ slotProps.data.value }}</code>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
-      </div>
-    </template>
-  </Card>
-</template>
-
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
 import CryptoJS from 'crypto-js'
@@ -59,3 +29,33 @@ const hashedValues = computed(() => {
   width: 150px;
 }
 </style>
+
+<template>
+  <Card>
+    <template #title> Hash </template>
+    <template #subtitle> Hash calculator </template>
+    <template #content>
+      <div class="fluid">
+        <div class="field">
+          <CodeEditor v-model:value="state.text" mode="text" height="200px" />
+        </div>
+        <div class="field">
+          <DataTable :value="hashedValues" class="datatable-sm">
+            <template #header> Hash values </template>
+            <Column
+              field="method"
+              header="Method"
+              :headerStyle="{ width: '150px' }"
+              :sortable="true"
+            />
+            <Column header="Value">
+              <template #body="slotProps">
+                <code>{{ slotProps.data.value }}</code>
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+      </div>
+    </template>
+  </Card>
+</template>

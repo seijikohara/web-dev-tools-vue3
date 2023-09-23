@@ -1,24 +1,3 @@
-<template>
-  <Card>
-    <template #title> JSON Formatter </template>
-    <template #subtitle> Formatting JSON </template>
-    <template #content>
-      <CodeEditor v-model:value="state.content" mode="json" height="500px" />
-    </template>
-    <template #footer>
-      <div class="p-inputgroup">
-        <Button label="Format" @click="onClickFormat" />
-        <Dropdown
-          v-model="state.formatOptionValue"
-          :options="formatOptions"
-          optionLabel="text"
-          optionValue="value"
-        />
-      </div>
-    </template>
-  </Card>
-</template>
-
 <script setup lang="ts">
 import { reactive } from 'vue'
 
@@ -49,6 +28,27 @@ const onClickFormat = () => {
   state.content = JSON.stringify(parsed, undefined, padString)
 }
 </script>
+
+<template>
+  <Card>
+    <template #title> JSON Formatter </template>
+    <template #subtitle> Formatting JSON </template>
+    <template #content>
+      <CodeEditor v-model:value="state.content" mode="json" height="500px" />
+    </template>
+    <template #footer>
+      <div class="p-inputgroup">
+        <Button label="Format" @click="onClickFormat" />
+        <Dropdown
+          v-model="state.formatOptionValue"
+          :options="formatOptions"
+          optionLabel="text"
+          optionValue="value"
+        />
+      </div>
+    </template>
+  </Card>
+</template>
 
 <style lang="scss" scoped>
 .buttons {
