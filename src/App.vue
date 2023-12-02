@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import LayoutWrapper from '@/components/layout/LayoutWrapper.vue'
 import AppTopbar from '@/components/layout/AppTopbar.vue'
