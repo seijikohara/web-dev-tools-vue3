@@ -80,39 +80,43 @@ await onClickSearch()
           </div>
         </template>
         <template #list="slotProps">
-          <div class="col-12 md:col-1">
-            <div class="char" v-html="slotProps.data.entityReference" />
-          </div>
-          <div class="col-12 md:col-11">
-            <table class="list-table">
-              <tr>
-                <th>Code</th>
-                <td>{{ slotProps.data.entityReference }}</td>
-              </tr>
-              <tr>
-                <th>Name</th>
-                <td>{{ slotProps.data.name }}</td>
-              </tr>
-              <tr>
-                <th>Description</th>
-                <td>{{ slotProps.data.description }}</td>
-              </tr>
-              <tr>
-                <th>Standard</th>
-                <td>{{ slotProps.data.standard }}</td>
-              </tr>
-              <tr>
-                <th>DTD</th>
-                <td>{{ slotProps.data.dtd }}</td>
-              </tr>
-            </table>
+          <div class="grid grid-nogutter">
+            <template v-for="(item, index) in slotProps.items" :key="index">
+              <div class="col-12 md:col-1">
+                <div class="char" v-html="item.entityReference" />
+              </div>
+              <div class="col-12 md:col-11">
+                <table class="list-table">
+                  <tr>
+                    <th>Code</th>
+                    <td>{{ item.entityReference }}</td>
+                  </tr>
+                  <tr>
+                    <th>Name</th>
+                    <td>{{ item.name }}</td>
+                  </tr>
+                  <tr>
+                    <th>Description</th>
+                    <td>{{ item.description }}</td>
+                  </tr>
+                  <tr>
+                    <th>Standard</th>
+                    <td>{{ item.standard }}</td>
+                  </tr>
+                  <tr>
+                    <th>DTD</th>
+                    <td>{{ item.dtd }}</td>
+                  </tr>
+                </table>
+              </div>
+            </template>
           </div>
         </template>
         <template #grid="slotProps">
           <div class="grid-container">
-            <div class="char" v-html="slotProps.data.entityReference" />
+            <div class="char" v-html="slotProps.items.entityReference" />
             <div class="code">
-              {{ slotProps.data.entityReference }}
+              {{ slotProps.items.entityReference }}
             </div>
           </div>
         </template>
