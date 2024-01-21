@@ -16,7 +16,9 @@ const state = reactive({
 watch(
   () => state.markdown,
   (markdown: string) => {
-    state.html = DOMPurify.sanitize(marked(markdown))
+    state.html = DOMPurify.sanitize(
+      marked(markdown, { async: false }) as string,
+    )
   },
 )
 </script>

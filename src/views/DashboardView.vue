@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { UAParser } from 'ua-parser-js'
 import { JsonTreeView } from 'json-tree-view-vue3'
+import 'json-tree-view-vue3/dist/style.css'
 
 import Card from 'primevue/card'
 import Panel from 'primevue/panel'
@@ -21,7 +22,9 @@ const [ipInfo, httpHeaders] = await Promise.all([
 const ipAddress = ipInfo.ipAddress
 
 const [geo, rdap] = await Promise.all([
-  ApiService.getGeo(ipAddress),
+  ApiService.getGeo(ipAddress).catch(() => ({
+    result: 'No Geo location information found',
+  })),
   ApiService.getRdap(ipAddress).catch(() => ({
     result: 'No RDAP information found',
   })),
@@ -124,12 +127,12 @@ const browserInformation = {
         </div>
         <div class="col-12 md:col-12 lg:col-6">
           <Panel header="Geo location">
-            <JsonTreeView :data="JSON.stringify(geo)" :maxDepth="100" />
+            <JsonTreeView :json="JSON.stringify(geo)" :maxDepth="100" />
           </Panel>
         </div>
         <div class="col-12 md:col-12 lg:col-6">
           <Panel header="RDAP infromation">
-            <JsonTreeView :data="JSON.stringify(rdap)" :maxDepth="100" />
+            <JsonTreeView :json="JSON.stringify(rdap)" :maxDepth="100" />
           </Panel>
         </div>
       </div>

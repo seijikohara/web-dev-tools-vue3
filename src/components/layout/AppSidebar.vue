@@ -17,7 +17,7 @@ const routes = computed(() =>
       }
     }),
 )
-const currentRouteName = computed(() => useRoute().name)
+const currentRouteName = computed(() => useRoute()?.name)
 const onClick = () => drawerStore.close()
 </script>
 
