@@ -35,7 +35,7 @@
     "primevue": "^3.51.0",
     "switch-ts": "^1.1.1",
     "ua-parser-js": "^1.0.37",
-    "vue": "^3.4.23",
+    "vue": "^3.4.30",
     "vue-gtag": "^2.0.1",
     "vue-router": "^4.3.2",
     "vue3-ace-editor": "^2.2.4",
