@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-import VueGtag from 'vue-gtag'
+import { createGtag } from 'vue-gtag'
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 
@@ -33,15 +33,10 @@ app.use(PrimeVue, {
 // Google Analytics configuration
 const gaMeasurementId = import.meta.env.VUE_APP_GA_MEASUREMENT_ID
 if (gaMeasurementId) {
-  app.use(
-    VueGtag,
-    {
-      config: {
-        id: gaMeasurementId,
-      },
-    },
-    router,
-  )
+  const gtag = createGtag({
+    tagId: gaMeasurementId,
+  })
+  app.use(gtag)
 }
 
 app.mount('#app')

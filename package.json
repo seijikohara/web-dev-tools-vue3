@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "dev:host": "vite --host",
@@ -39,14 +43,14 @@
     "switch-ts": "^1.1.1",
     "ua-parser-js": "^2.0.4",
     "vue": "^3.5.17",
-    "vue-gtag": "^2.0.1",
+    "vue-gtag": "^3.5.2",
     "vue-router": "^4.5.1",
     "vue3-ace-editor": "^2.2.4",
     "xml-formatter": "^3.6.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
-    "@tsconfig/node20": "^20.1.6",
+    "@tsconfig/node22": "^22.0.2",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.0.14",
     "@types/ua-parser-js": "^0.7.39",
