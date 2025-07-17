@@ -6,8 +6,8 @@ const api = axios.create({
   baseURL: `${import.meta.env.VUE_APP_API_BASE_URL}api`,
 })
 api.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error),
+  response => response,
+  error => Promise.reject(error),
 )
 
 export default {
@@ -27,11 +27,7 @@ export default {
     const response = await api.get(`rdap/${ipAddress}`)
     return response.data
   },
-  async getHtmlEntities(
-    name: string,
-    page: number,
-    size: number,
-  ): Promise<HtmlEntities> {
+  async getHtmlEntities(name: string, page: number, size: number): Promise<HtmlEntities> {
     const response = await api.get(`html-entities`, {
       params: {
         name,

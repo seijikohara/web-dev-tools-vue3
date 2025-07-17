@@ -25,7 +25,7 @@ const formatOptions = [
 ] as FormatOption[]
 const state = reactive({
   content: '<xml></xml>',
-  formatOptionValue: formatOptions[0].value,
+  formatOptionValue: formatOptions[0]?.value ?? '  ',
   collapseContent: false,
   whiteSpaceAtEndOfSelfclosingTag: false,
   excludeComments: false,
@@ -35,7 +35,7 @@ const onClickFormat = () => {
     indentation: state.formatOptionValue,
     collapseContent: state.collapseContent,
     whiteSpaceAtEndOfSelfclosingTag: state.whiteSpaceAtEndOfSelfclosingTag,
-    filter: (node) => !state.excludeComments || node.type !== 'Comment',
+    filter: node => !state.excludeComments || node.type !== 'Comment',
   })
 }
 </script>
@@ -64,14 +64,10 @@ const onClickFormat = () => {
         <Checkbox
           id="whiteSpaceAtEndOfSelfclosingTag"
           v-model="state.whiteSpaceAtEndOfSelfclosingTag"
-          v-tooltip.right="
-            'To either end ad self closing tag with <tag/> or <tag />'
-          "
+          v-tooltip.right="'To either end ad self closing tag with <tag/> or <tag />'"
           :binary="true"
         />
-        <label for="whiteSpaceAtEndOfSelfclosingTag"
-          >Self closing tag space</label
-        >
+        <label for="whiteSpaceAtEndOfSelfclosingTag">Self closing tag space</label>
       </div>
       <div class="field-checkbox">
         <Checkbox

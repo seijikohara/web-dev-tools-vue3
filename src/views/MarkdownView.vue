@@ -16,9 +16,7 @@ const state = reactive({
 watch(
   () => state.markdown,
   (markdown: string) => {
-    state.html = DOMPurify.sanitize(
-      marked(markdown, { async: false }) as string,
-    )
+    state.html = DOMPurify.sanitize(marked(markdown, { async: false }))
   },
 )
 </script>
@@ -31,11 +29,7 @@ watch(
       <div class="grid">
         <div class="col-12 md:col-6 lg:col-6">
           <Panel header="Markdown">
-            <CodeEditor
-              v-model:value="state.markdown"
-              mode="markdown"
-              height="500px"
-            />
+            <CodeEditor v-model:value="state.markdown" mode="markdown" height="500px" />
           </Panel>
         </div>
         <div class="col-12 md:col-6 lg:col-6">

@@ -1,18 +1,15 @@
 import { when } from 'switch-ts'
-import {
-  createRouter,
-  createWebHashHistory,
-  createWebHistory,
-} from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { useTitle } from '@vueuse/core'
 
 const router = createRouter({
   history: when(import.meta.env.VUE_APP_HISTORY_MODE)
     .is(
-      (v) => v === 'history',
+      v => v === 'history',
       () => createWebHistory(import.meta.env.BASE_URL),
     )
     .is(
-      (v) => v === 'hash',
+      v => v === 'hash',
       () => createWebHashHistory(),
     )
     .default(() => createWebHistory(import.meta.env.BASE_URL)),
@@ -111,10 +108,10 @@ const router = createRouter({
   ],
 })
 
-router.afterEach((to) => {
-  const pageTitle = to.meta.title as String | undefined
-  const title = 'Web Dev Tools'
-  document.title = pageTitle ? `${pageTitle} - ${title}` : title
+router.afterEach(to => {
+  const pageTitle = to.meta.title as string | undefined
+  const baseTitle = 'Web Dev Tools'
+  useTitle(pageTitle ? `${pageTitle} - ${baseTitle}` : baseTitle)
 })
 
 export default router

@@ -9,8 +9,8 @@ const router = useRouter()
 const routes = computed(() =>
   router
     .getRoutes()
-    .filter((route) => route.meta['menu'])
-    .map((route) => {
+    .filter(route => route.meta['menu'])
+    .map(route => {
       return {
         name: route.name,
         path: route.path,
@@ -22,11 +22,7 @@ const onClick = () => drawerStore.close()
 </script>
 
 <template>
-  <div
-    class="layout-sidebar"
-    :class="{ active: isDrawerOpened }"
-    @click="onClick"
-  >
+  <div class="layout-sidebar" :class="{ active: isDrawerOpened }" @click="onClick">
     <ul class="layout-menu">
       <li v-for="(route, key) in routes" :key="key">
         <router-link

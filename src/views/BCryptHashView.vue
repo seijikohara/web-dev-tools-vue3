@@ -22,12 +22,7 @@ const hashedValue = computed(() => hashSync(state.password, state.rounds))
     <template #content>
       <div class="field">
         <label for="password">Password</label>
-        <InputText
-          id="password"
-          type="text"
-          class="inputfield w-full"
-          v-model="state.password"
-        />
+        <InputText id="password" type="text" class="inputfield w-full" v-model="state.password" />
       </div>
       <div class="field">
         <label for="rounds">Rounds</label>
