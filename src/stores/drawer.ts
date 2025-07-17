@@ -1,21 +1,22 @@
+import { readonly } from 'vue'
+import { useToggle } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
-interface State {
-  isDrawerOpened: boolean
-}
+export const useDrawerStore = defineStore('drawer', () => {
+  const [isDrawerOpened, toggle] = useToggle(false)
 
-export const useDrawerStore = defineStore('drawer', {
-  state: (): State => {
-    return {
-      isDrawerOpened: false,
-    }
-  },
-  actions: {
-    open() {
-      this.isDrawerOpened = true
-    },
-    close() {
-      this.isDrawerOpened = false
-    },
-  },
+  const open = (): void => {
+    toggle(true)
+  }
+
+  const close = (): void => {
+    toggle(false)
+  }
+
+  return {
+    isDrawerOpened: readonly(isDrawerOpened),
+    open,
+    close,
+    toggle,
+  }
 })

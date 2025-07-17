@@ -4,7 +4,7 @@ import { reactive } from 'vue'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import DataView from 'primevue/dataview'
-import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions'
+// DataViewLayoutOptions has been removed in PrimeVue 4.x
 import InputText from 'primevue/inputtext'
 
 import type { HtmlEntity } from '@/types/types'
@@ -28,11 +28,7 @@ const state = reactive({
 const onPage = async (event: PageEvent) => {
   state.page = event.page
   state.size = event.rows
-  const pagedEntities = await ApiService.getHtmlEntities(
-    state.searchWord,
-    state.page,
-    state.size,
-  )
+  const pagedEntities = await ApiService.getHtmlEntities(state.searchWord, state.page, state.size)
   state.entities = pagedEntities.content
   state.totalRecords = pagedEntities.totalElements
 }

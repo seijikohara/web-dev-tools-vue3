@@ -7,7 +7,7 @@ import Message from 'primevue/message'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const error = reactive({ message: null as string | null })
-onErrorCaptured((e) => {
+onErrorCaptured(e => {
   error.message = e.message
   return true
 })

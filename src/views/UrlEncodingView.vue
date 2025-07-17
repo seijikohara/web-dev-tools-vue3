@@ -23,11 +23,7 @@ const onClickDecode = () => (state.content = decodeURI(state.content))
     <template #footer>
       <div class="p-inputgroup">
         <Button label="Encode" @click="onClickEncode" />
-        <Button
-          label="Decode"
-          class="p-button-secondary"
-          @click="onClickDecode"
-        />
+        <Button label="Decode" class="p-button-secondary" @click="onClickDecode" />
       </div>
     </template>
   </Card>

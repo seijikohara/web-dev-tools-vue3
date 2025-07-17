@@ -18,7 +18,7 @@ watch(
     const jsonToObject = (json: string): unknown => {
       try {
         return JSON.parse(json)
-      } catch (e) {
+      } catch {
         return {}
       }
     }
@@ -42,11 +42,7 @@ watch(
         </div>
         <div class="col-12 md:col-6 lg:col-6">
           <Panel header="TypeScript interface">
-            <CodeEditor
-              v-model:value="state.typeScript"
-              mode="typescript"
-              height="500px"
-            />
+            <CodeEditor v-model:value="state.typeScript" mode="typescript" height="500px" />
           </Panel>
         </div>
       </div>

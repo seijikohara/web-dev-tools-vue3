@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import { useClipboard } from '@vueuse/core'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -20,12 +21,19 @@ const formatOptions = [
 ] as FormatOption[]
 const state = reactive({
   content: '{}',
-  formatOptionValue: formatOptions[0].value,
+  formatOptionValue: formatOptions[0]?.value ?? '  ',
 })
+
+const { copy, copied } = useClipboard()
+
 const onClickFormat = () => {
   const parsed = JSON.parse(state.content)
   const padString = state.formatOptionValue
   state.content = JSON.stringify(parsed, undefined, padString)
+}
+
+const onClickCopy = () => {
+  copy(state.content)
 }
 </script>
 
@@ -39,6 +47,11 @@ const onClickFormat = () => {
     <template #footer>
       <div class="p-inputgroup">
         <Button label="Format" @click="onClickFormat" />
+        <Button
+          :label="copied ? 'Copied!' : 'Copy'"
+          :severity="copied ? 'success' : 'secondary'"
+          @click="onClickCopy"
+        />
         <Dropdown
           v-model="state.formatOptionValue"
           :options="formatOptions"
