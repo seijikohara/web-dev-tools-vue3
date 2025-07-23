@@ -28,7 +28,7 @@
   "dependencies": {
     "@primeuix/themes": "^1.2.1",
     "@vueuse/core": "^13.5.0",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
