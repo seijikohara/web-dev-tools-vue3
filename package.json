@@ -35,7 +35,7 @@
     "dompurify": "^3.2.6",
     "json-to-ts": "^2.1.0",
     "json-tree-view-vue3": "^1.0.2",
-    "marked": "^16.0.0",
+    "marked": "^16.1.2",
     "pinia": "^3.0.3",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
