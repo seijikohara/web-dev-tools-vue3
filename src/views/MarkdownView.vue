@@ -4,9 +4,9 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
 import Card from 'primevue/card'
-import Panel from 'primevue/panel'
 
 import CodeEditor from '@/components/CodeEditor.vue'
+import DualPanelLayout from '@/components/DualPanelLayout.vue'
 
 const state = reactive({
   markdown: '',
@@ -26,18 +26,14 @@ watch(
     <template #title> Markdown Editor </template>
     <template #subtitle> Editor and preview </template>
     <template #content>
-      <div class="grid">
-        <div class="col-12 md:col-6 lg:col-6">
-          <Panel header="Markdown">
-            <CodeEditor v-model:value="state.markdown" mode="markdown" height="500px" />
-          </Panel>
-        </div>
-        <div class="col-12 md:col-6 lg:col-6">
-          <Panel header="Preview">
-            <div v-html="state.html" />
-          </Panel>
-        </div>
-      </div>
+      <DualPanelLayout left-header="Markdown" right-header="Preview">
+        <template #left>
+          <CodeEditor v-model="state.markdown" mode="markdown" height="500px" />
+        </template>
+        <template #right>
+          <div v-html="state.html" />
+        </template>
+      </DualPanelLayout>
     </template>
   </Card>
 </template>

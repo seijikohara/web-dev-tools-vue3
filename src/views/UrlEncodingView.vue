@@ -1,16 +1,28 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { ref } from 'vue'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 
 import CodeEditor from '@/components/CodeEditor.vue'
 
-const state = reactive({
-  content: '',
-})
-const onClickEncode = () => (state.content = encodeURI(state.content))
-const onClickDecode = () => (state.content = decodeURI(state.content))
+const content = ref('')
+
+const onClickEncode = () => {
+  try {
+    content.value = encodeURIComponent(content.value)
+  } catch (error) {
+    console.error('Encode error:', error)
+  }
+}
+
+const onClickDecode = () => {
+  try {
+    content.value = decodeURIComponent(content.value)
+  } catch (error) {
+    console.error('Decode error:', error)
+  }
+}
 </script>
 
 <template>
@@ -18,7 +30,7 @@ const onClickDecode = () => (state.content = decodeURI(state.content))
     <template #title> URL Encoding </template>
     <template #subtitle> URL Encoding & Decoding </template>
     <template #content>
-      <CodeEditor v-model:value="state.content" mode="text" height="500px" />
+      <CodeEditor v-model="content" mode="plain_text" height="500px" />
     </template>
     <template #footer>
       <div class="p-inputgroup">

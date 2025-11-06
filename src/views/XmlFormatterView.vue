@@ -9,23 +9,13 @@ import Dropdown from 'primevue/dropdown'
 import Tooltip from 'primevue/tooltip'
 
 import CodeEditor from '@/components/CodeEditor.vue'
+import { FORMAT_OPTIONS, DEFAULT_FORMAT_OPTION } from '@/constants/formatOptions'
 
 const vTooltip = Tooltip
 
-type FormatOption = {
-  text: string
-  value: string
-}
-
-const formatOptions = [
-  { text: '2 Spaces', value: ' '.repeat(2) },
-  { text: '4 Spaces', value: ' '.repeat(4) },
-  { text: '1 Tab', value: '\t' },
-  { text: 'Compact', value: '' },
-] as FormatOption[]
 const state = reactive({
   content: '<xml></xml>',
-  formatOptionValue: formatOptions[0]?.value ?? '  ',
+  formatOptionValue: DEFAULT_FORMAT_OPTION,
   collapseContent: false,
   whiteSpaceAtEndOfSelfclosingTag: false,
   excludeComments: false,
@@ -45,7 +35,7 @@ const onClickFormat = () => {
     <template #title> XML Formatter </template>
     <template #subtitle> Formatting XML </template>
     <template #content>
-      <CodeEditor v-model:value="state.content" mode="xml" height="500px" />
+      <CodeEditor v-model="state.content" mode="xml" height="500px" />
     </template>
     <template #footer>
       <h3>Options</h3>
@@ -82,7 +72,7 @@ const onClickFormat = () => {
         <Button label="Format" @click="onClickFormat" />
         <Dropdown
           v-model="state.formatOptionValue"
-          :options="formatOptions"
+          :options="FORMAT_OPTIONS"
           optionLabel="text"
           optionValue="value"
         />

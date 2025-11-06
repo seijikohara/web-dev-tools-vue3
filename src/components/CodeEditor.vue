@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { VAceEditor } from 'vue3-ace-editor'
 
 // Import ace base and essential modes/themes
@@ -42,80 +42,43 @@ import workerJavascriptUrl from 'ace-builds/src-noconflict/worker-javascript?url
 import workerHtmlUrl from 'ace-builds/src-noconflict/worker-html?url'
 import workerCssUrl from 'ace-builds/src-noconflict/worker-css?url'
 
+import { DEFAULT_EDITOR_OPTIONS, type EditorMode, type EditorTheme } from '@/constants/editor'
+
 ace.config.setModuleUrl('ace/mode/json_worker', workerJsonUrl)
 ace.config.setModuleUrl('ace/mode/javascript_worker', workerJavascriptUrl)
 ace.config.setModuleUrl('ace/mode/html_worker', workerHtmlUrl)
 ace.config.setModuleUrl('ace/mode/css_worker', workerCssUrl)
 
-const props = withDefaults(
-  defineProps<{
-    mode?: string
-    theme?: string
-    width?: string
-    height?: string
-    value?: string
-    options?: object
-  }>(),
-  {
-    mode: 'json',
-    theme: 'monokai',
-    width: '100%',
-    height: '400px',
-    value: '',
-    options: () => ({}),
-  },
-)
+interface Props {
+  mode?: EditorMode
+  theme?: EditorTheme
+  width?: string
+  height?: string
+  options?: Record<string, unknown>
+}
 
-const emit = defineEmits<{
-  (e: 'update:value', value: string): void
-}>()
-
-const state = reactive({
-  code: props.value || '',
-  editorReady: false,
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'json',
+  theme: 'monokai',
+  width: '100%',
+  height: '400px',
+  options: () => ({}),
 })
 
+// Vue 3.5 defineModel for v-model
+const modelValue = defineModel<string>({ default: '' })
+
+const editorReady = ref(false)
+
 const editorOptions = computed(() => ({
-  fontSize: 14,
-  showPrintMargin: false,
-  showGutter: true,
-  highlightActiveLine: true,
-  enableBasicAutocompletion: true,
-  enableSnippets: true,
-  enableLiveAutocompletion: true,
-  tabSize: 2,
-  wrap: false,
+  ...DEFAULT_EDITOR_OPTIONS,
   ...props.options,
 }))
-
-watch(
-  () => props.value,
-  newValue => {
-    if (newValue !== state.code) {
-      state.code = newValue || ''
-    }
-  },
-)
-
-watch(
-  () => state.code,
-  newCode => {
-    emit('update:value', newCode)
-  },
-)
-
-const handleInput = (value: string) => {
-  state.code = value
-}
-
-const handleEditorReady = () => {
-  state.editorReady = true
-}
 
 onMounted(() => {
   // Ensure ace is properly initialized
   setTimeout(() => {
-    state.editorReady = true
+    editorReady.value = true
   }, 100)
 })
 </script>
@@ -123,14 +86,12 @@ onMounted(() => {
 <template>
   <div class="code-editor-wrapper">
     <VAceEditor
-      v-if="state.editorReady"
-      v-model:value="state.code"
+      v-if="editorReady"
+      v-model:value="modelValue"
       :lang="props.mode"
       :theme="props.theme"
       :style="{ width: props.width, height: props.height }"
       :options="editorOptions"
-      @update:value="handleInput"
-      @init="handleEditorReady"
     />
     <div v-else class="loading-editor" :style="{ width: props.width, height: props.height }">
       Loading editor...
