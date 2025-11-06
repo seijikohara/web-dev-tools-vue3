@@ -17,6 +17,12 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
+# Playwright
+/playwright-report/
+/test-results/
+playwright/.cache/
+test-output.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -28,3 +34,22 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# =========================================
+# Claude Code
+# =========================================
+# Version control: .claude/agents/, .claude/commands/, .claude/settings.json
+# Exclude: personal settings, sessions, history, and logs
+
+# Personal and local settings
+.claude/settings.local.json
+
+# Session data and history
+.claude/history/
+.claude/sessions/
+
+# Logs
+.claude/*.log
+
+# Development artifacts
+.claude/.dev/

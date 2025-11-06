@@ -37,7 +37,7 @@ const hashedValues = computed(() => {
     <template #content>
       <div class="fluid">
         <div class="field">
-          <CodeEditor v-model:value="state.text" mode="text" height="200px" />
+          <CodeEditor v-model="state.text" mode="plain_text" height="200px" />
         </div>
         <div class="field">
           <DataTable :value="hashedValues" class="datatable-sm">

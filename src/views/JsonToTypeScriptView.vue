@@ -1,31 +1,32 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { ref, watch } from 'vue'
 import JsonToTS from 'json-to-ts'
 
 import Card from 'primevue/card'
-import Panel from 'primevue/panel'
 
 import CodeEditor from '@/components/CodeEditor.vue'
+import DualPanelLayout from '@/components/DualPanelLayout.vue'
 
-const state = reactive({
-  json: '{}',
-  typeScript: '',
-})
+const json = ref('')
+const typeScript = ref('')
+
+const convertJsonToTypeScript = (jsonString: string): string => {
+  try {
+    const parsed = JSON.parse(jsonString)
+    const interfaces = JsonToTS(parsed)
+    return interfaces.join('\n\n')
+  } catch (error) {
+    console.error('JSON parse error:', error)
+    return ''
+  }
+}
 
 watch(
-  () => state.json,
-  (json: string) => {
-    const jsonToObject = (json: string): unknown => {
-      try {
-        return JSON.parse(json)
-      } catch {
-        return {}
-      }
-    }
-
-    const object = jsonToObject(json)
-    state.typeScript = JsonToTS(object).join('\r\n\r\n')
+  json,
+  (newJson) => {
+    typeScript.value = convertJsonToTypeScript(newJson)
   },
+  { immediate: true },
 )
 </script>
 
@@ -34,18 +35,14 @@ watch(
     <template #title> JSON to TypeScript </template>
     <template #subtitle> Convert JSON to TypeScript interface </template>
     <template #content>
-      <div class="grid">
-        <div class="col-12 md:col-6 lg:col-6">
-          <Panel header="JSON">
-            <CodeEditor v-model:value="state.json" mode="json" height="500px" />
-          </Panel>
-        </div>
-        <div class="col-12 md:col-6 lg:col-6">
-          <Panel header="TypeScript interface">
-            <CodeEditor v-model:value="state.typeScript" mode="typescript" height="500px" />
-          </Panel>
-        </div>
-      </div>
+      <DualPanelLayout left-header="JSON" right-header="TypeScript interface">
+        <template #left>
+          <CodeEditor v-model="json" mode="json" height="500px" />
+        </template>
+        <template #right>
+          <CodeEditor v-model="typeScript" mode="typescript" height="500px" />
+        </template>
+      </DualPanelLayout>
     </template>
   </Card>
 </template>

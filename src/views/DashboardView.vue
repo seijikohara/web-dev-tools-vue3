@@ -51,7 +51,7 @@ const browserInformation = {
     <template v-slot:content>
       <div class="grid">
         <div class="col-12">
-          <Panel header="User agent">
+          <Panel header="User Agent">
             {{ userAgent }}
           </Panel>
         </div>
