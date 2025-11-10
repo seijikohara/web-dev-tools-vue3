@@ -38,7 +38,7 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload test artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results-${{ matrix.shard }}
           path: test-results/
@@ -86,7 +86,7 @@ jobs:
 
       - name: Upload browser test results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: regression-report-${{ matrix.browser }}
           path: playwright-report/
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload browser test artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: regression-results-${{ matrix.browser }}
           path: test-results/
