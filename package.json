@@ -41,7 +41,7 @@
     "dompurify": "^3.3.0",
     "json-to-ts": "^2.1.0",
     "json-tree-view-vue3": "^1.0.2",
-    "marked": "^16.4.1",
+    "marked": "^17.0.0",
     "pinia": "^3.0.4",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
