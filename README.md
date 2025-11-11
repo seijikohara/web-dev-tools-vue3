@@ -1,6 +1,6 @@
 # Web Development Tools
 
-[![GitHub Actions](https://github.com/seijikohara/web-dev-tools-vue3-vue3/actions/workflows/ci.yml/badge.svg)](https://github.com/seijikohara/web-dev-tools-vue3/actions)
+[![GitHub Actions](https://github.com/seijikohara/web-dev-tools-vue3/actions/workflows/ci.yml/badge.svg)](https://github.com/seijikohara/web-dev-tools-vue3/actions)
 ![Last Commit](https://img.shields.io/github/last-commit/seijikohara/web-dev-tools-vue3)
 ![GitHub top language](https://img.shields.io/github/languages/top/seijikohara/web-dev-tools-vue3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
