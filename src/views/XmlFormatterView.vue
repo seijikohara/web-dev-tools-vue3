@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import format from 'xml-formatter'
+import { useToast } from 'primevue/usetoast'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -12,6 +13,7 @@ import CodeEditor from '@/components/CodeEditor.vue'
 import { FORMAT_OPTIONS, DEFAULT_FORMAT_OPTION } from '@/constants/formatOptions'
 
 const vTooltip = Tooltip
+const toast = useToast()
 
 const state = reactive({
   content: '<xml></xml>',
@@ -20,13 +22,31 @@ const state = reactive({
   whiteSpaceAtEndOfSelfclosingTag: false,
   excludeComments: false,
 })
+
 const onClickFormat = () => {
-  state.content = format(state.content, {
-    indentation: state.formatOptionValue,
-    collapseContent: state.collapseContent,
-    whiteSpaceAtEndOfSelfclosingTag: state.whiteSpaceAtEndOfSelfclosingTag,
-    filter: node => !state.excludeComments || node.type !== 'Comment',
-  })
+  try {
+    state.content = format(state.content, {
+      indentation: state.formatOptionValue,
+      collapseContent: state.collapseContent,
+      whiteSpaceAtEndOfSelfclosingTag: state.whiteSpaceAtEndOfSelfclosingTag,
+      filter: node => !state.excludeComments || node.type !== 'Comment',
+    })
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'XML formatted successfully',
+      life: 2000,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid XML format'
+    toast.add({
+      severity: 'error',
+      summary: 'XML Format Error',
+      detail: message,
+      life: 3000,
+    })
+    console.error('XML format error:', error)
+  }
 }
 </script>
 

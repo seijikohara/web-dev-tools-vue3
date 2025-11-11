@@ -5,7 +5,7 @@ import { ApiError } from '@/api/client'
  */
 export function formatErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    return `API Error (${error.status || 'unknown'}): ${error.message}`
+    return `API Error (${error.status ?? 'unknown'}): ${error.message}`
   }
 
   if (error instanceof Error) {

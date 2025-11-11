@@ -6,6 +6,7 @@ import router from './router'
 
 import { createGtag } from 'vue-gtag'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
 import Aura from '@primeuix/themes/aura'
 
 import 'primeflex/primeflex.css'
@@ -29,6 +30,8 @@ app.use(PrimeVue, {
   },
   ripple: true,
 })
+
+app.use(ToastService)
 
 // Google Analytics configuration
 const gaMeasurementId = import.meta.env.VUE_APP_GA_MEASUREMENT_ID

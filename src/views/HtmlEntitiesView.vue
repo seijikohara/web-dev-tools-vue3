@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import DOMPurify from 'dompurify'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -9,6 +10,16 @@ import InputText from 'primevue/inputtext'
 
 import type { HtmlEntity } from '@/types/types'
 import ApiService from '@/services/ApiService'
+
+/**
+ * Sanitize HTML entity reference to prevent XSS
+ */
+const sanitizeEntity = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [], // Only allow text content, no tags
+    KEEP_CONTENT: true,
+  })
+}
 
 type PageEvent = {
   page: number
@@ -79,30 +90,32 @@ await onClickSearch()
           <div class="grid grid-nogutter">
             <template v-for="(item, index) in slotProps.items" :key="index">
               <div class="col-12 md:col-1">
-                <div class="char" v-html="item.entityReference" />
+                <div class="char" v-html="sanitizeEntity(item.entityReference)" />
               </div>
               <div class="col-12 md:col-11">
                 <table class="list-table">
-                  <tr>
-                    <th>Code</th>
-                    <td>{{ item.entityReference }}</td>
-                  </tr>
-                  <tr>
-                    <th>Name</th>
-                    <td>{{ item.name }}</td>
-                  </tr>
-                  <tr>
-                    <th>Description</th>
-                    <td>{{ item.description }}</td>
-                  </tr>
-                  <tr>
-                    <th>Standard</th>
-                    <td>{{ item.standard }}</td>
-                  </tr>
-                  <tr>
-                    <th>DTD</th>
-                    <td>{{ item.dtd }}</td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <th>Code</th>
+                      <td>{{ item.entityReference }}</td>
+                    </tr>
+                    <tr>
+                      <th>Name</th>
+                      <td>{{ item.name }}</td>
+                    </tr>
+                    <tr>
+                      <th>Description</th>
+                      <td>{{ item.description }}</td>
+                    </tr>
+                    <tr>
+                      <th>Standard</th>
+                      <td>{{ item.standard }}</td>
+                    </tr>
+                    <tr>
+                      <th>DTD</th>
+                      <td>{{ item.dtd }}</td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </template>
@@ -110,7 +123,7 @@ await onClickSearch()
         </template>
         <template #grid="slotProps">
           <div class="grid-container">
-            <div class="char" v-html="slotProps.items.entityReference" />
+            <div class="char" v-html="sanitizeEntity(slotProps.items.entityReference)" />
             <div class="code">
               {{ slotProps.items.entityReference }}
             </div>
