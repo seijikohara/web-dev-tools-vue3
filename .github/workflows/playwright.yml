@@ -43,6 +43,10 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ matrix.binary }}-${{ hashFiles('package-lock.json') }}
 
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ matrix.binary }}
+
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps ${{ matrix.binary }}
