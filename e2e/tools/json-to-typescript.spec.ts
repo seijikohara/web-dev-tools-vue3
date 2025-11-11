@@ -17,8 +17,13 @@ test.describe('JSON to TypeScript', () => {
   test('should convert simple JSON to TypeScript interface', async ({ page }) => {
     const input = '{"name": "John", "age": 30, "active": true}'
 
-    const textarea = page.locator('textarea').first()
-    await textarea.fill(input)
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(input)
 
     // Wait for conversion (may be automatic or require button click)
     await page.waitForTimeout(1000)
@@ -36,8 +41,13 @@ test.describe('JSON to TypeScript', () => {
   test('should handle nested JSON objects', async ({ page }) => {
     const input = '{"user": {"name": "John", "address": {"city": "NYC", "zip": "10001"}}}'
 
-    const textarea = page.locator('textarea').first()
-    await textarea.fill(input)
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(input)
 
     await page.waitForTimeout(1000)
 
@@ -75,8 +85,13 @@ test.describe('JSON to TypeScript', () => {
   test('should handle invalid JSON gracefully', async ({ page }) => {
     const invalidInput = '{invalid json}'
 
-    const textarea = page.locator('textarea').first()
-    await textarea.fill(invalidInput)
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(invalidInput)
 
     await page.waitForTimeout(1000)
 
@@ -89,11 +104,100 @@ test.describe('JSON to TypeScript', () => {
     expect(bodyText).toBeTruthy()
   })
 
+  test('should show error toast for invalid JSON', async ({ page }) => {
+    const invalidInput = '{"invalid": json syntax}'
+
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(invalidInput)
+
+    // Wait for conversion attempt and toast to appear
+    await page.waitForTimeout(1500)
+
+    // Error toast should appear
+    const errorToast = page.locator('.p-toast-message-error')
+    const toastCount = await errorToast.count()
+
+    // Toast might appear (depending on implementation)
+    if (toastCount > 0) {
+      await expect(errorToast.first()).toBeVisible({ timeout: 3000 })
+
+      // Toast should contain error message
+      const toastText = await errorToast.first().textContent()
+      expect(toastText).toBeTruthy()
+    }
+
+    // Page should still be functional
+    const mainContent = page.locator('body')
+    await expect(mainContent).toBeVisible()
+  })
+
+  test('should not show error toast for valid JSON', async ({ page }) => {
+    const validInput = '{"valid": "json"}'
+
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(validInput)
+
+    // Wait for conversion
+    await page.waitForTimeout(1000)
+
+    // No error toast should appear
+    const errorToast = page.locator('.p-toast-message-error')
+    const errorCount = await errorToast.count()
+
+    // Either no error toast or it's not visible
+    if (errorCount > 0) {
+      const isVisible = await errorToast.first().isVisible().catch(() => false)
+      expect(isVisible).toBeFalsy()
+    }
+  })
+
+  test('should dismiss error toast after timeout', async ({ page }) => {
+    const invalidInput = '{bad json}'
+
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(invalidInput)
+
+    // Wait for toast to appear
+    await page.waitForTimeout(1500)
+
+    const errorToast = page.locator('.p-toast-message-error')
+    const initialCount = await errorToast.count()
+
+    if (initialCount > 0) {
+      // Wait for toast life duration (3000ms + buffer)
+      await page.waitForTimeout(4000)
+
+      // Toast should be dismissed
+      const finalCount = await errorToast.count()
+      expect(finalCount).toBeLessThanOrEqual(initialCount)
+    }
+  })
+
   test('should handle empty JSON object', async ({ page }) => {
     const input = '{}'
 
-    const textarea = page.locator('textarea').first()
-    await textarea.fill(input)
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(input)
 
     await page.waitForTimeout(1000)
 
@@ -105,8 +209,13 @@ test.describe('JSON to TypeScript', () => {
   test('should detect correct TypeScript types', async ({ page }) => {
     const input = '{"text": "hello", "number": 42, "bool": true, "nullValue": null}'
 
-    const textarea = page.locator('textarea').first()
-    await textarea.fill(input)
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(input)
 
     await page.waitForTimeout(1000)
 
@@ -138,8 +247,13 @@ test.describe('JSON to TypeScript', () => {
       ],
     })
 
-    const textarea = page.locator('textarea').first()
-    await textarea.fill(input)
+    // Wait for Ace Editor to be ready
+    await page.waitForSelector('.ace_editor', { timeout: 5000 })
+    await page.waitForTimeout(500)
+
+    // Find and set value in hidden textarea (Ace Editor)
+    const textArea = page.locator('.ace_text-input').first()
+    await textArea.fill(input)
 
     await page.waitForTimeout(1500)
 

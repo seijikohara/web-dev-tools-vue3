@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Toast from 'primevue/toast'
+
 import LayoutWrapper from '@/components/layout/LayoutWrapper.vue'
 import AppTopbar from '@/components/layout/AppTopbar.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -8,6 +10,7 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 
 <template>
   <LayoutWrapper>
+    <Toast />
     <AppTopbar />
     <AppSidebar />
     <AppContent />

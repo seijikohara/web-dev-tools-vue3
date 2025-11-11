@@ -16,9 +16,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // Timeout configuration
-  timeout: 30 * 1000, // 30 seconds
+  timeout: 60 * 1000, // 60 seconds - increased for CI environment with slower API responses
   expect: {
-    timeout: 5000,
+    timeout: 15000, // 15 seconds - reasonable balance for API-dependent tests in CI
   },
 
   // Reporter configuration

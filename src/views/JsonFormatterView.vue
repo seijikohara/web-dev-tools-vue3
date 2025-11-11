@@ -11,10 +11,7 @@ import { useFormatters } from '@/composables/useFormatters'
 import { FORMAT_OPTIONS, DEFAULT_FORMAT_OPTION } from '@/constants/formatOptions'
 
 // Persist format option in localStorage
-const persistedFormatOption = useLocalStorage(
-  'json-formatter-option',
-  DEFAULT_FORMAT_OPTION,
-)
+const persistedFormatOption = useLocalStorage('json-formatter-option', DEFAULT_FORMAT_OPTION)
 
 const state = reactive({
   content: '{}',

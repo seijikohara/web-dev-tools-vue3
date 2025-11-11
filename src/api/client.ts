@@ -20,7 +20,7 @@ export class ApiError extends Error {
  */
 function handleApiError(error: AxiosError): never {
   const status = error.response?.status
-  const message = (error.response?.data as { message?: string })?.message || error.message
+  const message = (error.response?.data as { message?: string })?.message ?? error.message
 
   throw new ApiError(message, status, error.code)
 }
