@@ -2,7 +2,7 @@
 
 This directory contains End-to-End (E2E) tests for the Web Development Tools application. The tests are built using [Playwright](https://playwright.dev/), a modern testing framework that supports multiple browsers and provides excellent developer experience.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Test Structure](#test-structure)
@@ -12,10 +12,13 @@ This directory contains End-to-End (E2E) tests for the Web Development Tools app
 - [Best Practices](#best-practices)
 - [CI/CD Integration](#cicd-integration)
 - [Troubleshooting](#troubleshooting)
+- [Test Reports](#test-reports)
+- [Resources](#resources)
+- [Contributing](#contributing)
 
-## 🎯 Overview
+## Overview
 
-The E2E test suite covers:
+The E2E test suite covers the following areas:
 
 - **Critical Paths**: Navigation, routing, and core functionality
 - **Tool Features**: All development tools (JSON formatter, hash generator, etc.)
@@ -25,20 +28,20 @@ The E2E test suite covers:
 
 ### Test Coverage
 
-```
-e2e/
-├── critical/               # Critical path tests (must pass)
-│   ├── navigation.spec.ts  # Route navigation and redirects
-│   └── dashboard.spec.ts   # Dashboard functionality
-└── tools/                  # Individual tool tests
-    ├── json-formatter.spec.ts
-    ├── json-to-typescript.spec.ts
-    ├── hash.spec.ts
-    ├── markdown.spec.ts
-    └── url-encoding.spec.ts
+```mermaid
+graph TD
+    A[e2e/] --> B[critical/]
+    A --> C[tools/]
+    B --> D[navigation.spec.ts]
+    B --> E[dashboard.spec.ts]
+    C --> F[json-formatter.spec.ts]
+    C --> G[json-to-typescript.spec.ts]
+    C --> H[hash.spec.ts]
+    C --> I[markdown.spec.ts]
+    C --> J[url-encoding.spec.ts]
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -55,9 +58,9 @@ npm install
 npm run test:e2e:install
 ```
 
-This will download Chromium, Firefox, and WebKit browsers required for testing.
+This command will download Chromium, Firefox, and WebKit browsers required for testing.
 
-## 🧪 Running Tests
+## Running Tests
 
 ### Basic Commands
 
@@ -102,7 +105,7 @@ npx playwright test --last-failed
 npx playwright test --update-snapshots
 ```
 
-## ✍️ Writing Tests
+## Writing Tests
 
 ### Test Structure
 
@@ -132,13 +135,13 @@ test.describe('Feature Name', () => {
 ### Locator Best Practices
 
 ```typescript
-// ✅ Good - Use semantic selectors
+// Good practice - Use semantic selectors
 page.locator('button', { hasText: 'Submit' })
 page.getByRole('button', { name: /submit/i })
 page.getByLabel('Email address')
 page.getByTestId('submit-button')
 
-// ❌ Avoid - Brittle selectors
+// Poor practice - Brittle selectors
 page.locator('.btn.btn-primary.submit-btn')
 page.locator('div > div > button:nth-child(3)')
 ```
@@ -146,11 +149,11 @@ page.locator('div > div > button:nth-child(3)')
 ### Waiting for Elements
 
 ```typescript
-// ✅ Playwright auto-waits - no explicit waits needed
+// Recommended - Playwright auto-waits, no explicit waits needed
 await page.click('button')
 await expect(page.locator('.result')).toBeVisible()
 
-// ⚠️ Only use explicit waits when necessary
+// Use with caution - Only when necessary
 await page.waitForTimeout(1000) // Last resort
 await page.waitForLoadState('networkidle') // For API calls
 ```
@@ -167,20 +170,20 @@ npm run test:e2e:codegen
 # Copy generated code into your test files
 ```
 
-## 📖 Best Practices
+## Best Practices
 
 ### 1. Test Independence
 
 Each test should be independent and not rely on other tests:
 
 ```typescript
-// ✅ Good - Self-contained
+// Good practice - Self-contained
 test('should format JSON', async ({ page }) => {
   await page.goto('/json-formatter')
   // Complete test in isolation
 })
 
-// ❌ Bad - Depends on previous test
+// Poor practice - Depends on previous test
 test('should show result', async ({ page }) => {
   // Assumes we're already on the page
 })
@@ -220,9 +223,9 @@ test('should format JSON', async ({ page }) => {
 ### 3. Handle Flaky Tests
 
 ```typescript
-// Use retries for flaky tests (already configured in playwright.config.ts)
-// CI: 2 retries
-// Local: 0 retries
+// Use retries for flaky tests (configured in playwright.config.ts)
+// CI environment: 2 retries
+// Local environment: 0 retries
 
 // For specific test:
 test('flaky test', async ({ page }) => {
@@ -235,7 +238,7 @@ test('flaky test', async ({ page }) => {
 ### 4. Test Data Management
 
 ```typescript
-// ✅ Good - Use fixtures for test data
+// Good practice - Use fixtures for test data
 import { test } from '@playwright/test'
 
 const TEST_DATA = {
@@ -265,21 +268,38 @@ test('should not have accessibility violations', async ({ page }) => {
 })
 ```
 
-## 🔄 CI/CD Integration
+## CI/CD Integration
 
-### GitHub Actions
+### GitHub Actions Workflows
 
-The project includes two CI workflows:
+The project includes two CI workflows for E2E testing:
 
-#### 1. Regular E2E Tests (`.github/workflows/playwright.yml`)
+```mermaid
+graph LR
+    A[Push/PR] --> B{Commit Message}
+    B -->|Regular| C[Chromium Only]
+    B -->|Contains deps:/upgrade| D[All Browsers]
+    C --> E[4 Parallel Shards]
+    D --> F[Full Suite]
+```
 
-- Runs on every push and PR
+#### 1. Regular E2E Tests
+
+Configured in [`.github/workflows/playwright.yml`](../.github/workflows/playwright.yml):
+
+- Runs on every push and pull request
 - Uses 4 parallel shards for faster execution
 - Tests on Chromium by default
+- Generates HTML report as artifact
 
 #### 2. Dependency Regression Tests
 
-- Triggered when commit message contains `deps:`, `dependencies`, or `upgrade`
+Automatically triggered when commit message contains:
+- `deps:`
+- `dependencies`
+- `upgrade`
+
+Behavior:
 - Tests **all browsers** (Chromium, Firefox, WebKit)
 - Full test suite execution
 - Ensures no regressions after dependency updates
@@ -287,20 +307,20 @@ The project includes two CI workflows:
 ### Triggering Dependency Tests
 
 ```bash
-# Commit with special keywords
+# Commit with special keywords to trigger full browser testing
 git commit -m "deps: upgrade Vue to 3.5.23"
 git commit -m "dependencies: update all packages"
 git commit -m "upgrade: bump Playwright to latest"
 ```
 
-### Viewing Test Results
+### Viewing Test Results in CI
 
-1. Go to GitHub Actions tab
+1. Navigate to GitHub Actions tab in the repository
 2. Click on the workflow run
 3. Download artifacts: `playwright-report-*` and `test-results-*`
-4. Extract and open `index.html` for visual report
+4. Extract the archive and open `index.html` for visual report
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -340,8 +360,10 @@ await page.waitForLoadState('networkidle')
 # Kill process using port 5173
 lsof -ti:5173 | xargs kill -9
 
-# Or use different port in playwright.config.ts
+# Or configure different port in playwright.config.ts
 ```
+
+See [`../playwright.config.ts`](../playwright.config.ts) for complete configuration.
 
 ### Debug Mode
 
@@ -353,33 +375,39 @@ npm run test:e2e:debug
 npx playwright test --debug
 
 # Screenshot on failure (already configured)
-# Check test-results/ directory
+# Check test-results/ directory for screenshots
 ```
 
 ### Trace Viewer
 
-When tests fail in CI, download trace files and view:
+When tests fail in CI, download trace files and analyze:
 
 ```bash
 npx playwright show-trace trace.zip
 ```
 
-## 📊 Test Reports
+The trace viewer provides timeline of test execution with:
+- Network requests
+- Console logs
+- DOM snapshots
+- Screenshots at each action
+
+## Test Reports
 
 ### HTML Report
 
-After running tests:
+After running tests, generate and view the interactive HTML report:
 
 ```bash
 npm run test:e2e:report
 ```
 
-This opens an interactive HTML report with:
-
+The report includes:
 - Test results by browser
 - Failed test screenshots
 - Test traces
 - Timing information
+- Test statistics
 
 ### JUnit Report
 
@@ -391,29 +419,33 @@ test-results/junit.xml
 
 ### JSON Report
 
-Machine-readable results at:
+Machine-readable results are available at:
 
 ```
 test-results/results.json
 ```
 
-## 🎓 Resources
+## Resources
 
 - [Playwright Documentation](https://playwright.dev/)
-- [Best Practices](https://playwright.dev/docs/best-practices)
+- [Best Practices Guide](https://playwright.dev/docs/best-practices)
 - [API Reference](https://playwright.dev/docs/api/class-playwright)
 - [Community Discord](https://discord.com/invite/playwright-807756831384403968)
+- [GitHub Discussions](https://github.com/microsoft/playwright/discussions)
 
-## 🤝 Contributing
+## Contributing
 
-When adding new tests:
+When adding new E2E tests to this project:
 
-1. Follow the existing test structure
-2. Use descriptive test names
+1. Follow the existing test structure and patterns
+2. Use descriptive test names that clearly indicate the test purpose
 3. Keep tests focused and independent
-4. Add appropriate error handling
-5. Update this README if adding new test categories
+4. Add appropriate error handling and assertions
+5. Update this README if adding new test categories or significant changes
+6. Ensure tests pass locally before creating pull requests
 
-## 📝 License
+For more information on the overall project structure, see the [main README](../README.md).
 
-Same as the main project.
+## License
+
+Same as the main project. See [LICENSE](../LICENSE).
