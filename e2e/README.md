@@ -5,7 +5,6 @@ This directory contains End-to-End (E2E) tests for the Web Development Tools app
 ## Table of Contents
 
 - [Overview](#overview)
-- [Test Structure](#test-structure)
 - [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
 - [Writing Tests](#writing-tests)
@@ -14,7 +13,6 @@ This directory contains End-to-End (E2E) tests for the Web Development Tools app
 - [Troubleshooting](#troubleshooting)
 - [Test Reports](#test-reports)
 - [Resources](#resources)
-- [Contributing](#contributing)
 
 ## Overview
 
@@ -32,20 +30,24 @@ The E2E test suite covers the following areas:
 graph TD
     A[e2e/] --> B[critical/]
     A --> C[tools/]
-    B --> D[navigation.spec.ts]
-    B --> E[dashboard.spec.ts]
-    C --> F[json-formatter.spec.ts]
-    C --> G[json-to-typescript.spec.ts]
-    C --> H[hash.spec.ts]
-    C --> I[markdown.spec.ts]
-    C --> J[url-encoding.spec.ts]
+    A --> D[fixtures/]
+    B --> E[navigation.spec.ts]
+    B --> F[dashboard.spec.ts]
+    C --> G[json-formatter.spec.ts]
+    C --> H[json-to-typescript.spec.ts]
+    C --> I[hash.spec.ts]
+    C --> J[bcrypt-hash.spec.ts]
+    C --> K[markdown.spec.ts]
+    C --> L[url-encoding.spec.ts]
+    C --> M[html-entities.spec.ts]
+    C --> N[xml-formatter.spec.ts]
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js >= 24.0.0
+- Node.js >= 22.0.0
 - npm >= 11.0.0
 
 ### Installation
@@ -270,48 +272,19 @@ test('should not have accessibility violations', async ({ page }) => {
 
 ## CI/CD Integration
 
-### GitHub Actions Workflows
-
-The project includes two CI workflows for E2E testing:
-
-```mermaid
-graph LR
-    A[Push/PR] --> B{Commit Message}
-    B -->|Regular| C[Chromium Only]
-    B -->|Contains deps:/upgrade| D[All Browsers]
-    C --> E[4 Parallel Shards]
-    D --> F[Full Suite]
-```
-
-#### 1. Regular E2E Tests
+### GitHub Actions Workflow
 
 Configured in [`.github/workflows/playwright.yml`](../.github/workflows/playwright.yml):
 
-- Runs on every push and pull request
-- Uses 4 parallel shards for faster execution
-- Tests on Chromium by default
-- Generates HTML report as artifact
+The E2E tests run automatically on every push:
 
-#### 2. Dependency Regression Tests
-
-Automatically triggered when commit message contains:
-- `deps:`
-- `dependencies`
-- `upgrade`
-
-Behavior:
-- Tests **all browsers** (Chromium, Firefox, WebKit)
-- Full test suite execution
-- Ensures no regressions after dependency updates
-
-### Triggering Dependency Tests
-
-```bash
-# Commit with special keywords to trigger full browser testing
-git commit -m "deps: upgrade Vue to 3.5.23"
-git commit -m "dependencies: update all packages"
-git commit -m "upgrade: bump Playwright to latest"
-```
+- **Multi-browser testing**: All tests run across 5 browser configurations
+  - Desktop browsers: Chromium, Firefox, WebKit (Safari)
+  - Mobile browsers: Mobile Chrome (Pixel 5), Mobile Safari (iPhone 13)
+- **Parallel execution**: Uses 2 workers in CI for faster execution
+- **Retry strategy**: Tests automatically retry up to 2 times on failure (CI only)
+- **Browser caching**: Playwright browsers are cached to speed up subsequent runs
+- **Test artifacts**: HTML reports and test results are uploaded for 30 days
 
 ### Viewing Test Results in CI
 
@@ -432,20 +405,3 @@ test-results/results.json
 - [API Reference](https://playwright.dev/docs/api/class-playwright)
 - [Community Discord](https://discord.com/invite/playwright-807756831384403968)
 - [GitHub Discussions](https://github.com/microsoft/playwright/discussions)
-
-## Contributing
-
-When adding new E2E tests to this project:
-
-1. Follow the existing test structure and patterns
-2. Use descriptive test names that clearly indicate the test purpose
-3. Keep tests focused and independent
-4. Add appropriate error handling and assertions
-5. Update this README if adding new test categories or significant changes
-6. Ensure tests pass locally before creating pull requests
-
-For more information on the overall project structure, see the [main README](../README.md).
-
-## License
-
-Same as the main project. See [LICENSE](../LICENSE).
