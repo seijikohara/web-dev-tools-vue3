@@ -162,6 +162,8 @@ npm run test:e2e:codegen
 npm run test:e2e:install
 ```
 
+For comprehensive information about the E2E testing setup, see the [E2E Testing Guide](e2e/README.md).
+
 ### Code Quality
 
 ```sh
@@ -196,23 +198,37 @@ npm run deps:update
 
 ## Project Structure
 
-```
-src/
-├── api/              # API client and endpoints
-├── components/       # Reusable Vue components
-├── composables/      # Vue Composition API logic
-├── constants/        # Application constants
-├── router/           # Vue Router configuration
-├── stores/           # Pinia stores (state management)
-├── types/            # TypeScript type definitions
-├── utils/            # Utility functions
-├── views/            # Tool feature views
-└── assets/           # Static assets and styles
+```mermaid
+graph TD
+    src["src/"]
+
+    src --> api["api/<br/><i>API client and endpoints</i>"]
+    src --> components["components/<br/><i>Reusable Vue components</i>"]
+    src --> composables["composables/<br/><i>Composition API logic</i>"]
+    src --> constants["constants/<br/><i>Application constants</i>"]
+    src --> router["router/<br/><i>Vue Router configuration</i>"]
+    src --> stores["stores/<br/><i>Pinia state management</i>"]
+    src --> types["types/<br/><i>TypeScript definitions</i>"]
+    src --> utils["utils/<br/><i>Utility functions</i>"]
+    src --> views["views/<br/><i>Tool feature views</i>"]
+    src --> assets["assets/<br/><i>Static assets and styles</i>"]
+
+    style src fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style api fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style components fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style composables fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style constants fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style router fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style stores fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style types fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style utils fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style views fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style assets fill:#fff3e0,stroke:#e65100,stroke-width:1px
 ```
 
 ## Environment Configuration
 
-The application requires environment-specific configuration. Create a `.env` file in the project root directory using `.env.example` as a template:
+The application requires environment-specific configuration. Create a `.env` file in the project root directory using [`.env.example`](.env.example) as a template:
 
 ```env
 VUE_APP_API_BASE_URL=       # Base URL for API endpoints
@@ -231,12 +247,21 @@ The project implements end-to-end testing using Playwright with the following ca
 
 ### Test Organization
 
+```mermaid
+graph TD
+    e2e["e2e/"]
+
+    e2e --> critical["critical/<br/><i>Essential application tests</i>"]
+    e2e --> tools["tools/<br/><i>Tool-specific test suites</i>"]
+    e2e --> fixtures["fixtures/<br/><i>Shared utilities and API mocks</i>"]
+
+    style e2e fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style critical fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    style tools fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    style fixtures fill:#fff9c4,stroke:#f57f17,stroke-width:1px
 ```
-e2e/
-├── critical/    # Essential application functionality tests
-├── tools/       # Individual tool-specific test suites
-└── fixtures/    # Shared test utilities and API mock configurations
-```
+
+For detailed information about writing and running E2E tests, see the [E2E Testing Guide](e2e/README.md).
 
 ## Continuous Integration
 
@@ -250,7 +275,7 @@ GitHub Actions workflows are configured for automated quality assurance:
 
 The project uses Vite as its build tool. For advanced configuration options, refer to the [Vite Configuration Reference](https://vitejs.dev/config/).
 
-Build configuration can be customized in `vite.config.ts`.
+Build configuration can be customized in [`vite.config.ts`](vite.config.ts).
 
 ## License
 
