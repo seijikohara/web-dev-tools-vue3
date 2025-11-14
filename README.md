@@ -46,7 +46,6 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 
 ### Quality Assurance
 - **Testing Framework**: Playwright 1.x (end-to-end)
-- **API Mocking**: Mock Service Worker (MSW) 2.x
 - **Linting**: ESLint 9.x with TypeScript support
 - **Code Formatting**: Prettier 3.x
 
@@ -238,12 +237,21 @@ VUE_APP_GA_MEASUREMENT_ID=  # Google Analytics measurement ID (optional)
 
 ## Testing Strategy
 
-The project implements end-to-end testing using Playwright with the following capabilities:
+The project implements end-to-end testing using Playwright to detect regressions through basic functionality verification.
 
-- **Cross-browser compatibility**: Chromium, Firefox, WebKit, and mobile viewport emulation (Pixel 5, iPhone 13)
-- **API isolation**: Mock Service Worker (MSW) implementation for deterministic API responses
+### Testing Approach
+
+- **Essential user flows**: Focus on critical paths rather than comprehensive coverage
+- **Speed and maintainability**: Prioritize fast execution and easy maintenance
+- **Clear diagnostics**: Provide actionable failure information
+- **Best practices**: Follow Playwright community guidelines
+
+### Testing Capabilities
+
+- **Cross-browser testing**: Chromium, Firefox, WebKit, and mobile viewports (Pixel 5, iPhone 13)
+- **API mocking**: Playwright route mocking for deterministic responses
 - **Continuous integration**: Automated test execution via GitHub Actions
-- **Coverage scope**: Critical user flows and per-tool functional validation
+- **Test coverage**: Critical user flows and page-specific functionality validation
 
 ### Test Organization
 
@@ -251,14 +259,19 @@ The project implements end-to-end testing using Playwright with the following ca
 graph TD
     e2e["e2e/"]
 
-    e2e --> critical["critical/<br/><i>Essential application tests</i>"]
-    e2e --> tools["tools/<br/><i>Tool-specific test suites</i>"]
+    e2e --> tests["tests/<br/><i>Test files organized by category</i>"]
     e2e --> fixtures["fixtures/<br/><i>Shared utilities and API mocks</i>"]
+    e2e --> config["config/<br/><i>Test configuration</i>"]
+
+    tests --> critical["critical/<br/><i>Smoke and layout tests</i>"]
+    tests --> pages["pages/<br/><i>Page-specific test suites</i>"]
 
     style e2e fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    style critical fill:#fff9c4,stroke:#f57f17,stroke-width:1px
-    style tools fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    style tests fill:#fff9c4,stroke:#f57f17,stroke-width:1px
     style fixtures fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    style config fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    style critical fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style pages fill:#ffe0b2,stroke:#e65100,stroke-width:1px
 ```
 
 For detailed information about writing and running E2E tests, see the [E2E Testing Guide](e2e/README.md).
