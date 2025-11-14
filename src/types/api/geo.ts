@@ -1,9 +1,21 @@
 /**
- * Geo location information (structure depends on API)
+ * Geographic location information
  */
-export type GeoInfo = Record<string, unknown>
+export interface GeoInfo {
+  ipAddress: string
+  countryCode: string | null
+  city: string | null
+  latitude: number | null
+  longitude: number | null
+}
 
 /**
- * RDAP information (structure depends on API)
+ * RDAP information
  */
-export type RdapInfo = Record<string, unknown>
+export interface RdapInfo {
+  ipAddress: string
+  handle: string | null
+  name: string | null
+  country: string | null
+  registeredAt: string | null
+}

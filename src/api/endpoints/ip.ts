@@ -4,7 +4,7 @@ import type { IpInfo, HttpHeaders } from '@/types/api/ip'
 /**
  * Fetch client IP address information
  */
-export async function getIpAddress(): Promise<IpInfo> {
+export const getIpAddress = async (): Promise<IpInfo> => {
   const { data } = await apiClient.get<IpInfo>('ip')
   return data
 }
@@ -12,7 +12,7 @@ export async function getIpAddress(): Promise<IpInfo> {
 /**
  * Fetch client HTTP headers
  */
-export async function getHttpHeaders(): Promise<HttpHeaders> {
+export const getHttpHeaders = async (): Promise<HttpHeaders> => {
   const { data } = await apiClient.get<HttpHeaders>('http-headers')
   return data
 }

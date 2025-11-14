@@ -4,11 +4,11 @@ import type { HtmlEntities } from '@/types/api/html-entities'
 /**
  * Search HTML entities with pagination
  */
-export async function searchHtmlEntities(
+export const searchHtmlEntities = async (
   name: string,
   page: number,
   size: number,
-): Promise<HtmlEntities> {
+): Promise<HtmlEntities> => {
   const { data } = await apiClient.get<HtmlEntities>('html-entities', {
     params: { name, page, size },
   })

@@ -3,7 +3,7 @@ import { ApiError } from '@/api/client'
 /**
  * Format error message for display
  */
-export function formatErrorMessage(error: unknown): string {
+export const formatErrorMessage = (error: unknown): string => {
   if (error instanceof ApiError) {
     return `API Error (${error.status ?? 'unknown'}): ${error.message}`
   }
@@ -18,7 +18,7 @@ export function formatErrorMessage(error: unknown): string {
 /**
  * Log error to console with context
  */
-export function logError(error: unknown, context?: string): void {
+export const logError = (error: unknown, context?: string): void => {
   const message = context ? `[${context}] ${formatErrorMessage(error)}` : formatErrorMessage(error)
   console.error(message, error)
 }
@@ -26,13 +26,13 @@ export function logError(error: unknown, context?: string): void {
 /**
  * Check if error is a network error
  */
-export function isNetworkError(error: unknown): boolean {
+export const isNetworkError = (error: unknown): boolean => {
   return error instanceof ApiError && (error.code === 'ERR_NETWORK' || !error.status)
 }
 
 /**
  * Check if error is an authorization error
  */
-export function isAuthError(error: unknown): boolean {
+export const isAuthError = (error: unknown): boolean => {
   return error instanceof ApiError && (error.status === 401 || error.status === 403)
 }

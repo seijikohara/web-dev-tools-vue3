@@ -11,11 +11,11 @@ interface UseApiOptions {
  * Composable for API calls with loading, error states
  * Wraps VueUse's useAsyncState with API-specific error handling
  */
-export function useApi<T>(
+export const useApi = <T>(
   apiFunction: () => Promise<T>,
   initialState: T,
   options: UseApiOptions = {},
-): UseAsyncStateReturn<T, [], true> {
+): UseAsyncStateReturn<T, [], true> => {
   const { immediate = true, resetOnExecute = false, onError } = options
 
   const asyncState = useAsyncState(apiFunction, initialState, {

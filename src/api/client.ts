@@ -18,7 +18,7 @@ export class ApiError extends Error {
 /**
  * Handle API errors consistently
  */
-function handleApiError(error: AxiosError): never {
+const handleApiError = (error: AxiosError): never => {
   const status = error.response?.status
   const message = (error.response?.data as { message?: string })?.message ?? error.message
 
@@ -28,7 +28,7 @@ function handleApiError(error: AxiosError): never {
 /**
  * Create configured axios instance
  */
-export function createApiClient(): AxiosInstance {
+export const createApiClient = (): AxiosInstance => {
   const client = axios.create({
     baseURL: `${import.meta.env.VUE_APP_API_BASE_URL}api`,
     timeout: 30000,

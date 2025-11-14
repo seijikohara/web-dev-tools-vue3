@@ -8,24 +8,24 @@ import Panel from 'primevue/panel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
-import ApiService from '@/services/ApiService'
+import { getIpAddress, getHttpHeaders, getGeoInfo, getRdapInfo } from '@/api'
 
 const userAgent = window.navigator.userAgent
 const uaParser = new UAParser()
 const uaParserResult = uaParser.getResult()
 
 const [ipInfo, httpHeaders] = await Promise.all([
-  ApiService.getIpAddress(),
-  ApiService.getHttpHeader(),
+  getIpAddress(),
+  getHttpHeaders(),
 ])
 
 const ipAddress = ipInfo.ipAddress
 
 const [geo, rdap] = await Promise.all([
-  ApiService.getGeo(ipAddress).catch(() => ({
+  getGeoInfo(ipAddress).catch(() => ({
     result: 'No Geo location information found',
   })),
-  ApiService.getRdap(ipAddress).catch(() => ({
+  getRdapInfo(ipAddress).catch(() => ({
     result: 'No RDAP information found',
   })),
 ])

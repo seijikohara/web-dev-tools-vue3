@@ -4,18 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDrawerStore } from '@/stores/drawer'
 
 const drawerStore = useDrawerStore()
-const isDrawerOpened = computed(() => drawerStore.$state.isDrawerOpened)
+const isDrawerOpened = computed(() => drawerStore.isDrawerOpened)
 const router = useRouter()
 const routes = computed(() =>
   router
     .getRoutes()
-    .filter(route => route.meta['menu'])
-    .map(route => {
-      return {
-        name: route.name,
-        path: route.path,
-      }
-    }),
+    .filter(route => route.meta.menu)
+    .map(({ name, path }) => ({ name, path })),
 )
 const currentRouteName = computed(() => useRoute()?.name)
 const onClick = () => drawerStore.close()

@@ -15,7 +15,7 @@ interface UseHtmlEntitiesReturn {
 /**
  * Composable for HTML entities search with debounce
  */
-export function useHtmlEntities(): UseHtmlEntitiesReturn {
+export const useHtmlEntities = (): UseHtmlEntitiesReturn => {
   const entities = ref<HtmlEntity[]>([])
   const totalRecords = ref(0)
   const loading = ref(false)

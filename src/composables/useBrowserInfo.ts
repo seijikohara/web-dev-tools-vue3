@@ -13,7 +13,7 @@ interface BrowserInfo {
 /**
  * Composable to get browser and device information
  */
-export function useBrowserInfo(): ComputedRef<BrowserInfo> {
+export const useBrowserInfo = (): ComputedRef<BrowserInfo> => {
   return computed(() => {
     const userAgent = window.navigator.userAgent
     const parser = new UAParser(userAgent)

@@ -6,7 +6,7 @@ import { APP_ROUTES } from '@/constants/routes'
 /**
  * Create router history based on environment variable
  */
-function createHistory(): RouterHistory {
+const createHistory = (): RouterHistory => {
   const mode = import.meta.env.VUE_APP_HISTORY_MODE
 
   switch (mode) {
@@ -35,9 +35,7 @@ const router = createRouter({
  * Update page title on route change
  */
 router.afterEach(to => {
-  const pageTitle = to.meta.title as string | undefined
-  const baseTitle = 'Web Dev Tools'
-  useTitle(pageTitle ? `${pageTitle} - ${baseTitle}` : baseTitle)
+  useTitle(to.meta.title ? `${to.meta.title} - Web Dev Tools` : 'Web Dev Tools')
 })
 
 export default router

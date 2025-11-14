@@ -11,7 +11,7 @@ interface UseFormattersReturn {
 /**
  * Composable for various text formatting operations
  */
-export function useFormatters(): UseFormattersReturn {
+export const useFormatters = (): UseFormattersReturn => {
   const error = ref<string | null>(null)
 
   const formatJson = (input: string, indent: number | string = 2): string => {
