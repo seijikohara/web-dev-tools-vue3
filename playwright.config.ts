@@ -6,7 +6,10 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   // Test directory
-  testDir: './e2e',
+  testDir: './e2e/tests',
+
+  // Global setup
+  globalSetup: './e2e/config/global-setup.ts',
 
   // Parallel execution
   fullyParallel: true,

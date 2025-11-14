@@ -8,8 +8,8 @@ import DataView from 'primevue/dataview'
 // DataViewLayoutOptions has been removed in PrimeVue 4.x
 import InputText from 'primevue/inputtext'
 
-import type { HtmlEntity } from '@/types/types'
-import ApiService from '@/services/ApiService'
+import type { HtmlEntity } from '@/types'
+import { searchHtmlEntities } from '@/api'
 
 /**
  * Sanitize HTML entity reference to prevent XSS
@@ -39,7 +39,7 @@ const state = reactive({
 const onPage = async (event: PageEvent) => {
   state.page = event.page
   state.size = event.rows
-  const pagedEntities = await ApiService.getHtmlEntities(state.searchWord, state.page, state.size)
+  const pagedEntities = await searchHtmlEntities(state.searchWord, state.page, state.size)
   state.entities = pagedEntities.content
   state.totalRecords = pagedEntities.totalElements
 }

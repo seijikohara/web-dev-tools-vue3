@@ -1,7 +1,7 @@
 /**
  * Validate JSON string
  */
-export function isValidJson(input: string): boolean {
+export const isValidJson = (input: string): boolean => {
   try {
     JSON.parse(input)
     return true
@@ -13,7 +13,7 @@ export function isValidJson(input: string): boolean {
 /**
  * Validate XML string
  */
-export function isValidXml(input: string): boolean {
+export const isValidXml = (input: string): boolean => {
   try {
     const parser = new DOMParser()
     const doc = parser.parseFromString(input, 'text/xml')
@@ -26,7 +26,7 @@ export function isValidXml(input: string): boolean {
 /**
  * Validate URL string
  */
-export function isValidUrl(input: string): boolean {
+export const isValidUrl = (input: string): boolean => {
   try {
     new URL(input)
     return true
@@ -38,7 +38,7 @@ export function isValidUrl(input: string): boolean {
 /**
  * Validate email string
  */
-export function isValidEmail(input: string): boolean {
+export const isValidEmail = (input: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(input)
 }
