@@ -20,8 +20,8 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
   if (bytes === 0) return '0 Bytes'
 
   const dm = Math.max(0, decimals)
-  const i = Math.floor(Math.log(bytes) / Math.log(BYTE_BASE))
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(BYTE_BASE)), BYTE_SIZES.length - 1)
   const value = bytes / Math.pow(BYTE_BASE, i)
 
-  return `${parseFloat(value.toFixed(dm))} ${BYTE_SIZES[i] ?? 'Unknown'}`
+  return `${parseFloat(value.toFixed(dm))} ${BYTE_SIZES[i]!}`
 }
