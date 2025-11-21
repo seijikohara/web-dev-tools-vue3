@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { UAParser } from 'ua-parser-js'
 import { JsonTreeView } from 'json-tree-view-vue3'
-import 'json-tree-view-vue3/dist/style.css'
+import 'json-tree-view-vue3/style.css'
 
 import Card from 'primevue/card'
 import Panel from 'primevue/panel'
