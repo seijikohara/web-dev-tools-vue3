@@ -42,14 +42,14 @@ watch(() => [state.password, state.rounds], computeHash, { deep: true })
     <template #content>
       <div class="field">
         <label for="password">Password</label>
-        <InputText id="password" type="text" class="inputfield w-full" v-model="state.password" />
+        <InputText id="password" v-model="state.password" type="text" class="inputfield w-full" />
       </div>
       <div class="field">
         <label for="rounds">Rounds</label>
         <InputNumber
           id="rounds"
-          class="inputfield w-full"
           v-model="state.rounds"
+          class="inputfield w-full"
           :min="4"
           :max="20"
         />

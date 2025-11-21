@@ -47,15 +47,58 @@ export default [
       // TypeScript recommended rules
       ...tseslint.configs.recommended.rules,
 
-      // Vue 3 specific rules
+      // Vue 3 Priority A (Essential) rules
       'vue/multi-word-component-names': 'off',
-      'vue/no-unused-vars': 'error',
+      'vue/require-v-for-key': 'error',
+      'vue/no-use-v-if-with-v-for': 'error',
+      'vue/require-prop-types': 'error',
+
+      // Vue 3 Priority B (Strongly Recommended) rules
+      'vue/component-definition-name-casing': ['error', 'PascalCase'],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+      'vue/html-self-closing': [
+        'error',
+        {
+          html: { void: 'always', normal: 'never', component: 'always' },
+          svg: 'always',
+          math: 'always',
+        },
+      ],
+      'vue/max-attributes-per-line': [
+        'error',
+        {
+          singleline: { max: 4 },
+          multiline: { max: 1 },
+        },
+      ],
+      'vue/html-closing-bracket-newline': [
+        'error',
+        {
+          singleline: 'never',
+          multiline: 'always',
+        },
+      ],
+      'vue/order-in-components': 'error',
+      'vue/attributes-order': 'error',
+      'vue/prop-name-casing': ['error', 'camelCase'],
+
+      // Vue 3.5 Composition API specific
+      'vue/no-unused-vars': 'error',
       'vue/no-v-html': 'off',
       'vue/require-default-prop': 'off',
       'vue/prefer-import-from-vue': 'error',
       'vue/no-ref-as-operand': 'error',
       'vue/no-deprecated-v-on-native-modifier': 'error',
+      'vue/no-setup-props-destructure': 'off',
+      'vue/define-macros-order': [
+        'warn',
+        {
+          order: ['defineOptions', 'defineModel', 'defineProps', 'defineEmits', 'defineSlots'],
+          defineExposeLast: false,
+        },
+      ],
+      'vue/prefer-define-options': 'error',
+      'vue/block-order': ['warn', { order: [['script', 'template'], 'style'] }],
 
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': 'error',

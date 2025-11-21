@@ -27,7 +27,7 @@ const onClick = () => drawerStore.close()
             'menu-inactive': route.name !== currentRouteName,
           }"
         >
-          <i class="menu-icon pi pi-th-large" />
+          <i class="menu-icon pi pi-th-large"></i>
           <span>{{ route.name }}</span>
         </router-link>
       </li>

@@ -44,11 +44,6 @@ import workerCssUrl from 'ace-builds/src-noconflict/worker-css?url'
 
 import { DEFAULT_EDITOR_OPTIONS, type EditorMode, type EditorTheme } from '@/constants/editor'
 
-ace.config.setModuleUrl('ace/mode/json_worker', workerJsonUrl)
-ace.config.setModuleUrl('ace/mode/javascript_worker', workerJavascriptUrl)
-ace.config.setModuleUrl('ace/mode/html_worker', workerHtmlUrl)
-ace.config.setModuleUrl('ace/mode/css_worker', workerCssUrl)
-
 interface Props {
   mode?: EditorMode
   theme?: EditorTheme
@@ -57,22 +52,26 @@ interface Props {
   options?: Record<string, unknown>
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'json',
-  theme: 'monokai',
-  width: '100%',
-  height: '400px',
-  options: () => ({}),
-})
-
-// Vue 3.5 defineModel for v-model
 const modelValue = defineModel<string>({ default: '' })
+
+const {
+  mode = 'json',
+  theme = 'monokai',
+  width = '100%',
+  height = '400px',
+  options = {},
+} = defineProps<Props>()
+
+ace.config.setModuleUrl('ace/mode/json_worker', workerJsonUrl)
+ace.config.setModuleUrl('ace/mode/javascript_worker', workerJavascriptUrl)
+ace.config.setModuleUrl('ace/mode/html_worker', workerHtmlUrl)
+ace.config.setModuleUrl('ace/mode/css_worker', workerCssUrl)
 
 const editorReady = ref(false)
 
 const editorOptions = computed(() => ({
   ...DEFAULT_EDITOR_OPTIONS,
-  ...props.options,
+  ...options,
 }))
 
 onMounted(() => {
@@ -88,14 +87,12 @@ onMounted(() => {
     <VAceEditor
       v-if="editorReady"
       v-model:value="modelValue"
-      :lang="props.mode"
-      :theme="props.theme"
-      :style="{ width: props.width, height: props.height }"
+      :lang="mode"
+      :theme="theme"
+      :style="{ width, height }"
       :options="editorOptions"
     />
-    <div v-else class="loading-editor" :style="{ width: props.width, height: props.height }">
-      Loading editor...
-    </div>
+    <div v-else class="loading-editor" :style="{ width, height }">Loading editor...</div>
   </div>
 </template>
 

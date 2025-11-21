@@ -3,20 +3,18 @@ import type { RouterHistory } from 'vue-router'
 import { useTitle } from '@vueuse/core'
 import { APP_ROUTES } from '@/constants/routes'
 
-/**
- * Create router history based on environment variable
- */
+const historyCreators = {
+  hash: () => createWebHashHistory(),
+  history: () => createWebHistory(import.meta.env.BASE_URL),
+} as const satisfies Record<string, () => RouterHistory>
+
+type HistoryMode = keyof typeof historyCreators
+
+const isHistoryMode = (mode: string): mode is HistoryMode => mode === 'hash' || mode === 'history'
+
 const createHistory = (): RouterHistory => {
   const mode = import.meta.env.VUE_APP_HISTORY_MODE
-
-  switch (mode) {
-    case 'hash':
-      return createWebHashHistory()
-    case 'history':
-      return createWebHistory(import.meta.env.BASE_URL)
-    default:
-      return createWebHistory(import.meta.env.BASE_URL)
-  }
+  return isHistoryMode(mode) ? historyCreators[mode]() : historyCreators.history()
 }
 
 const router = createRouter({
@@ -31,9 +29,6 @@ const router = createRouter({
   ],
 })
 
-/**
- * Update page title on route change
- */
 router.afterEach(to => {
   useTitle(to.meta.title ? `${to.meta.title} - Web Dev Tools` : 'Web Dev Tools')
 })
