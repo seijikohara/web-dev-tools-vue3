@@ -2,8 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { VAceEditor } from 'vue3-ace-editor'
 
-// Import ace base and essential modes/themes
-import ace from 'ace-builds'
+import '@/config/ace'
 import 'ace-builds/src-noconflict/mode-json'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/src-noconflict/mode-typescript'
@@ -23,8 +22,6 @@ import 'ace-builds/src-noconflict/mode-rust'
 import 'ace-builds/src-noconflict/mode-c_cpp'
 import 'ace-builds/src-noconflict/mode-csharp'
 import 'ace-builds/src-noconflict/mode-plain_text'
-
-// Import popular themes
 import 'ace-builds/src-noconflict/theme-monokai'
 import 'ace-builds/src-noconflict/theme-github'
 import 'ace-builds/src-noconflict/theme-tomorrow'
@@ -32,22 +29,9 @@ import 'ace-builds/src-noconflict/theme-twilight'
 import 'ace-builds/src-noconflict/theme-xcode'
 import 'ace-builds/src-noconflict/theme-solarized_dark'
 import 'ace-builds/src-noconflict/theme-solarized_light'
-
-// Import extensions
 import 'ace-builds/src-noconflict/ext-language_tools'
 
-// Configure ace worker path for Vite
-import workerJsonUrl from 'ace-builds/src-noconflict/worker-json?url'
-import workerJavascriptUrl from 'ace-builds/src-noconflict/worker-javascript?url'
-import workerHtmlUrl from 'ace-builds/src-noconflict/worker-html?url'
-import workerCssUrl from 'ace-builds/src-noconflict/worker-css?url'
-
 import { DEFAULT_EDITOR_OPTIONS, type EditorMode, type EditorTheme } from '@/constants/editor'
-
-ace.config.setModuleUrl('ace/mode/json_worker', workerJsonUrl)
-ace.config.setModuleUrl('ace/mode/javascript_worker', workerJavascriptUrl)
-ace.config.setModuleUrl('ace/mode/html_worker', workerHtmlUrl)
-ace.config.setModuleUrl('ace/mode/css_worker', workerCssUrl)
 
 interface Props {
   mode?: EditorMode
@@ -57,22 +41,20 @@ interface Props {
   options?: Record<string, unknown>
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'json',
-  theme: 'monokai',
-  width: '100%',
-  height: '400px',
-  options: () => ({}),
-})
-
-// Vue 3.5 defineModel for v-model
 const modelValue = defineModel<string>({ default: '' })
+const {
+  mode = 'json',
+  theme = 'monokai',
+  width = '100%',
+  height = '400px',
+  options = {},
+} = defineProps<Props>()
 
 const editorReady = ref(false)
 
 const editorOptions = computed(() => ({
   ...DEFAULT_EDITOR_OPTIONS,
-  ...props.options,
+  ...options,
 }))
 
 onMounted(() => {
@@ -88,14 +70,12 @@ onMounted(() => {
     <VAceEditor
       v-if="editorReady"
       v-model:value="modelValue"
-      :lang="props.mode"
-      :theme="props.theme"
-      :style="{ width: props.width, height: props.height }"
+      :lang="mode"
+      :theme="theme"
+      :style="{ width, height }"
       :options="editorOptions"
     />
-    <div v-else class="loading-editor" :style="{ width: props.width, height: props.height }">
-      Loading editor...
-    </div>
+    <div v-else class="loading-editor" :style="{ width, height }">Loading editor...</div>
   </div>
 </template>
 

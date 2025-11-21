@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { UAParser } from 'ua-parser-js'
 import { JsonTreeView } from 'json-tree-view-vue3'
-import 'json-tree-view-vue3/dist/style.css'
+import 'json-tree-view-vue3/style.css'
 
 import Card from 'primevue/card'
 import Panel from 'primevue/panel'
@@ -14,10 +14,7 @@ const userAgent = window.navigator.userAgent
 const uaParser = new UAParser()
 const uaParserResult = uaParser.getResult()
 
-const [ipInfo, httpHeaders] = await Promise.all([
-  getIpAddress(),
-  getHttpHeaders(),
-])
+const [ipInfo, httpHeaders] = await Promise.all([getIpAddress(), getHttpHeaders()])
 
 const ipAddress = ipInfo.ipAddress
 
@@ -37,12 +34,6 @@ const browserInformation = {
   device: [uaParserResult.device],
 }
 </script>
-
-<style lang="scss" scoped>
-.bottom-pad {
-  margin-bottom: 1rem;
-}
-</style>
 
 <template>
   <Card class="bottom-pad">
@@ -139,3 +130,9 @@ const browserInformation = {
     </template>
   </Card>
 </template>
+
+<style lang="scss" scoped>
+.bottom-pad {
+  margin-bottom: 1rem;
+}
+</style>

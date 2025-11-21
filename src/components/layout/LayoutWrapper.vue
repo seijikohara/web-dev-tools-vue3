@@ -1,6 +1,6 @@
 <template>
   <div class="layout-wrapper">
-    <slot />
+    <slot></slot>
   </div>
 </template>
 

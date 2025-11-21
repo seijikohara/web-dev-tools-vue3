@@ -31,7 +31,7 @@ watch(
           <CodeEditor v-model="state.markdown" mode="markdown" height="500px" />
         </template>
         <template #right>
-          <div v-html="state.html" />
+          <div v-html="state.html"></div>
         </template>
       </DualPanelLayout>
     </template>

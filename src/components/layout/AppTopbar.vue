@@ -7,7 +7,7 @@ const onClickMenu = () => drawerStore.open()
 
 <template>
   <div class="layout-topbar">
-    <a class="menu-button" @click="onClickMenu"><i class="pi pi-bars" /></a>
+    <a class="menu-button" @click="onClickMenu"><i class="pi pi-bars"></i></a>
     <router-link to="/">
       <img src="/img/logo-top.png" height="60" />
     </router-link>

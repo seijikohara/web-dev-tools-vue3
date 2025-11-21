@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
-import CryptoJS from 'crypto-js'
+import { computed, ref } from 'vue'
+import type CryptoJS from 'crypto-js'
+import * as CryptoJSLib from 'crypto-js'
 
 import Card from 'primevue/card'
 import DataTable from 'primevue/datatable'
@@ -8,27 +9,32 @@ import Column from 'primevue/column'
 
 import CodeEditor from '@/components/CodeEditor.vue'
 
-const state = reactive({
-  text: '',
-})
-const hashedValues = computed(() => {
-  const value = state.text
-  return [
-    { method: 'md5', value: CryptoJS.MD5(value).toString() },
-    { method: 'sha1', value: CryptoJS.SHA1(value).toString() },
-    { method: 'sha224', value: CryptoJS.SHA224(value).toString() },
-    { method: 'sha256', value: CryptoJS.SHA256(value).toString() },
-    { method: 'sha384', value: CryptoJS.SHA384(value).toString() },
-    { method: 'sha512', value: CryptoJS.SHA512(value).toString() },
-  ]
-})
-</script>
+const HASH_FUNCTIONS = {
+  md5: CryptoJSLib.MD5,
+  sha1: CryptoJSLib.SHA1,
+  sha224: CryptoJSLib.SHA224,
+  sha256: CryptoJSLib.SHA256,
+  sha384: CryptoJSLib.SHA384,
+  sha512: CryptoJSLib.SHA512,
+} as const satisfies Record<
+  string,
+  (message: string | CryptoJS.lib.WordArray) => CryptoJS.lib.WordArray
+>
 
-<style lang="scss" scoped>
-.method-column {
-  width: 150px;
-}
-</style>
+type HashMethod = keyof typeof HASH_FUNCTIONS
+
+const computeHash = (method: HashMethod, value: string): string =>
+  HASH_FUNCTIONS[method](value).toString()
+
+const text = ref('')
+
+const hashedValues = computed(() =>
+  (Object.keys(HASH_FUNCTIONS) as HashMethod[]).map(method => ({
+    method,
+    value: computeHash(method, text.value),
+  })),
+)
+</script>
 
 <template>
   <Card>
@@ -37,7 +43,7 @@ const hashedValues = computed(() => {
     <template #content>
       <div class="fluid">
         <div class="field">
-          <CodeEditor v-model="state.text" mode="plain_text" height="200px" />
+          <CodeEditor v-model="text" mode="plain_text" height="200px" />
         </div>
         <div class="field">
           <DataTable :value="hashedValues" class="datatable-sm">
@@ -59,3 +65,9 @@ const hashedValues = computed(() => {
     </template>
   </Card>
 </template>
+
+<style lang="scss" scoped>
+.method-column {
+  width: 150px;
+}
+</style>

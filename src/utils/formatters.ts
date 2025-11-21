@@ -1,57 +1,27 @@
-/**
- * Format JSON string with proper indentation
- */
-export const formatJson = (input: string, indent: number | string = 2): string => {
-  const parsed = JSON.parse(input)
-  return JSON.stringify(parsed, null, indent)
-}
+export const formatJson = (input: string, indent: number | string = 2): string =>
+  JSON.stringify(JSON.parse(input), null, indent)
 
-/**
- * Minify JSON string
- */
-export const minifyJson = (input: string): string => {
-  const parsed = JSON.parse(input)
-  return JSON.stringify(parsed)
-}
+export const minifyJson = (input: string): string => JSON.stringify(JSON.parse(input))
 
-/**
- * Format XML string with proper indentation
- */
 export const formatXml = (input: string): string => {
-  const parser = new DOMParser()
-  const xmlDoc = parser.parseFromString(input, 'text/xml')
-  const serializer = new XMLSerializer()
-
-  return serializer
-    .serializeToString(xmlDoc)
-    .replace(/></g, '>\n<')
+  const xmlDoc = new DOMParser().parseFromString(input, 'text/xml')
+  const serialized = new XMLSerializer().serializeToString(xmlDoc)
+  return serialized.replace(/></g, '>\n<')
 }
 
-/**
- * Encode URL string
- */
-export const encodeUrl = (input: string): string => {
-  return encodeURIComponent(input)
-}
+export const encodeUrl = (input: string): string => encodeURIComponent(input)
 
-/**
- * Decode URL string
- */
-export const decodeUrl = (input: string): string => {
-  return decodeURIComponent(input)
-}
+export const decodeUrl = (input: string): string => decodeURIComponent(input)
 
-/**
- * Format bytes to human-readable string
- */
+const BYTE_SIZES = ['Bytes', 'KB', 'MB', 'GB', 'TB'] as const
+const BYTE_BASE = 1024 as const
+
 export const formatBytes = (bytes: number, decimals = 2): string => {
   if (bytes === 0) return '0 Bytes'
 
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  const dm = Math.max(0, decimals)
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(BYTE_BASE)), BYTE_SIZES.length - 1)
+  const value = bytes / Math.pow(BYTE_BASE, i)
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+  return `${parseFloat(value.toFixed(dm))} ${BYTE_SIZES[i]!}`
 }

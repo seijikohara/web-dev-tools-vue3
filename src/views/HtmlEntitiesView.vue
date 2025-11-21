@@ -74,8 +74,8 @@ await onClickSearch()
             <div class="col-6" style="text-align: left">
               <div class="p-inputgroup">
                 <InputText
-                  placeholder="Search..."
                   v-model="state.searchWord"
+                  placeholder="Search..."
                   @keyup.enter="onClickSearch"
                 />
                 <Button icon="pi pi-search" @click="onClickSearch" />
@@ -90,7 +90,7 @@ await onClickSearch()
           <div class="grid grid-nogutter">
             <template v-for="(item, index) in slotProps.items" :key="index">
               <div class="col-12 md:col-1">
-                <div class="char" v-html="sanitizeEntity(item.entityReference)" />
+                <div class="char" v-html="sanitizeEntity(item.entityReference)"></div>
               </div>
               <div class="col-12 md:col-11">
                 <table class="list-table">
@@ -123,7 +123,7 @@ await onClickSearch()
         </template>
         <template #grid="slotProps">
           <div class="grid-container">
-            <div class="char" v-html="sanitizeEntity(slotProps.items.entityReference)" />
+            <div class="char" v-html="sanitizeEntity(slotProps.items.entityReference)"></div>
             <div class="code">
               {{ slotProps.items.entityReference }}
             </div>

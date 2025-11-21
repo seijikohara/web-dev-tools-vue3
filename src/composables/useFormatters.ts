@@ -8,53 +8,38 @@ interface UseFormattersReturn {
   error: Ref<string | null>
 }
 
-/**
- * Composable for various text formatting operations
- */
+const withErrorHandling =
+  <T extends unknown[], R>(
+    fn: (...args: T) => R,
+    errorRef: Ref<string | null>,
+    defaultErrorMessage: string,
+  ) =>
+  (...args: T): R => {
+    try {
+      errorRef.value = null
+      return fn(...args)
+    } catch (e) {
+      errorRef.value = e instanceof Error ? e.message : defaultErrorMessage
+      throw e
+    }
+  }
+
 export const useFormatters = (): UseFormattersReturn => {
   const error = ref<string | null>(null)
 
-  const formatJson = (input: string, indent: number | string = 2): string => {
-    try {
-      error.value = null
-      const parsed = JSON.parse(input)
-      return JSON.stringify(parsed, null, indent)
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Invalid JSON'
-      throw e
-    }
-  }
+  const formatJsonPure = (input: string, indent: number | string = 2): string =>
+    JSON.stringify(JSON.parse(input), null, indent)
 
-  const minifyJson = (input: string): string => {
-    try {
-      error.value = null
-      const parsed = JSON.parse(input)
-      return JSON.stringify(parsed)
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Invalid JSON'
-      throw e
-    }
-  }
+  const minifyJsonPure = (input: string): string => JSON.stringify(JSON.parse(input))
 
-  const encodeUrl = (input: string): string => {
-    try {
-      error.value = null
-      return encodeURIComponent(input)
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Encoding failed'
-      throw e
-    }
-  }
+  const encodeUrlPure = (input: string): string => encodeURIComponent(input)
 
-  const decodeUrl = (input: string): string => {
-    try {
-      error.value = null
-      return decodeURIComponent(input)
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Decoding failed'
-      throw e
-    }
-  }
+  const decodeUrlPure = (input: string): string => decodeURIComponent(input)
+
+  const formatJson = withErrorHandling(formatJsonPure, error, 'Invalid JSON')
+  const minifyJson = withErrorHandling(minifyJsonPure, error, 'Invalid JSON')
+  const encodeUrl = withErrorHandling(encodeUrlPure, error, 'Encoding failed')
+  const decodeUrl = withErrorHandling(decodeUrlPure, error, 'Decoding failed')
 
   return {
     formatJson,
