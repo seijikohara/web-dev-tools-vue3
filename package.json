@@ -33,7 +33,7 @@
     "test:e2e:install": "playwright install --with-deps"
   },
   "dependencies": {
-    "@primeuix/themes": "^1.2.5",
+    "@primeuix/themes": "^2.0.1",
     "@vueuse/core": "^14.1.0",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
