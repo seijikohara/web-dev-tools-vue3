@@ -12,12 +12,14 @@ const year = computed(() => dayjs().format('YYYY'))
 <style lang="scss">
 .layout-footer {
   display: flex;
-  font-size: 1rem;
+  font-size: 0.875rem;
   margin-left: $sidebarWidth;
-  padding: 1.5rem;
-  background-color: var(--surface-a);
+  padding: 1rem 1.5rem;
+  background-color: var(--surface-b);
+  color: var(--text-color-secondary);
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  border-top: 1px solid var(--surface-d);
 }
 @media screen and (max-width: $breakpoint) {
   .layout-footer {

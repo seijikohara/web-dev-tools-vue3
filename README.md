@@ -15,16 +15,35 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 ### Data Formatting and Transformation
 - **JSON Formatter**: JSON validation, formatting, and beautification with syntax highlighting
 - **XML Formatter**: XML document formatting and structure visualization
-- **JSON to TypeScript**: Automatic TypeScript interface generation from JSON schemas
-
-### Encoding and Hashing
-- **URL Encoding**: Bidirectional URL encoding and decoding utilities
-- **Hash Generator**: Cryptographic hash generation (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
-- **BCrypt Hash**: Secure password hashing and verification using BCrypt algorithm
-
-### Text Processing
-- **HTML Entities**: HTML entity reference lookup and conversion utilities
+- **YAML Formatter**: YAML validation and formatting utilities
+- **SQL Formatter**: SQL query formatting with multi-dialect support (MySQL, PostgreSQL, SQLite, etc.)
 - **Markdown Editor**: Real-time Markdown rendering with live preview
+- **Diff Viewer**: Side-by-side text comparison with highlighting
+
+### Encoding and Decoding
+- **Base64 Encoder**: Base64 encoding and decoding utilities
+- **URL Encoding**: Bidirectional URL encoding and decoding utilities
+- **HTML Entities**: HTML entity reference lookup and conversion utilities
+- **JWT Decoder**: JSON Web Token parsing and validation
+
+### Hash & Cryptography
+- **Hash Generator**: Cryptographic hash generation (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
+- **BCrypt Generator**: Secure password hashing and verification using BCrypt algorithm
+
+### Generators
+- **UUID Generator**: UUID v1/v4 generation with bulk support
+- **QR Code Generator**: Generate QR codes from text, URLs, vCard, WiFi config with PNG/SVG export
+- **Cron Builder**: Visual cron expression builder with human-readable descriptions
+- **cURL Builder**: Build and parse cURL commands with a visual interface
+
+### Converters
+- **JSON to TypeScript**: Automatic TypeScript interface generation from JSON schemas
+- **Color Converter**: Convert between HEX, RGB, HSL color formats
+- **Timestamp Converter**: Unix timestamp and date format conversions
+- **String Case Converter**: Convert text between camelCase, PascalCase, snake_case, kebab-case, and more
+
+### Testing & Validation
+- **Regex Tester**: Regular expression testing with match highlighting
 
 ## Technology Stack
 
@@ -56,6 +75,8 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **Code Editor**: vue3-ace-editor (ACE integration)
 - **Markdown**: marked (parsing and rendering)
 - **XML**: xml-formatter
+- **SQL**: sql-formatter (multi-dialect SQL formatting)
+- **QR Code**: qrcode (QR code generation)
 
 ## Recommended IDE Setup
 

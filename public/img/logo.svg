@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 500 500" id="root-svg"
+    style="background-color: transparent;">
+    <title>Animated Polyhedron Logo</title>
+    <desc>A 3D rotating icosahedron animation using JavaScript inside SVG.</desc>
+
+    <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+    </defs>
+
+    <g id="main-group" filter="url(#glow)">
+        <g id="rings-group"></g>
+        <g id="faces-group"></g>
+        <g id="lines-group"></g>
+        <g id="dots-group"></g>
+    </g>
+
+    <script type="text/javascript">
+    <![CDATA[
+    (function() {
+        const COLOR = "#70ACB1";
+        const BASE_SCALE = 80;
+        const VERTEX_RADIUS = 3;
+        const CANVAS_CENTER_X = 200;
+        const CANVAS_CENTER_Y = 200;
+
+        const t = (1 + Math.sqrt(5)) / 2;
+
+        const baseVertices = [
+            {x: -1, y:  t, z:  0}, {x:  1, y:  t, z:  0}, {x: -1, y: -t, z:  0}, {x:  1, y: -t, z:  0},
+            {x:  0, y: -1, z:  t}, {x:  0, y:  1, z:  t}, {x:  0, y: -1, z: -t}, {x:  0, y:  1, z: -t},
+            {x:  t, y:  0, z: -1}, {x:  t, y:  0, z:  1}, {x: -t, y:  0, z: -1}, {x: -t, y:  0, z:  1}
+        ];
+
+        const edges = [];
+        for (let i = 0; i < baseVertices.length; i++) {
+            for (let j = i + 1; j < baseVertices.length; j++) {
+                const v1 = baseVertices[i];
+                const v2 = baseVertices[j];
+                const dist = Math.sqrt((v1.x-v2.x)**2 + (v1.y-v2.y)**2 + (v1.z-v2.z)**2);
+                if (Math.abs(dist - 2.0) < 0.1) {
+                    edges.push([i, j]);
+                }
+            }
+        }
+
+        const faces = [
+            [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+            [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+            [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+            [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+        ];
+
+        const RING_SEGMENTS = 60;
+        const ring1Vertices = [];
+        const ring2Vertices = [];
+
+        for (let i = 0; i < RING_SEGMENTS; i++) {
+            const theta = (i / RING_SEGMENTS) * Math.PI * 2;
+            ring1Vertices.push({
+                x: 2.5 * Math.cos(theta),
+                y: 0.5 * Math.sin(theta),
+                z: 2.5 * Math.sin(theta)
+            });
+            ring2Vertices.push({
+                x: 2.8 * Math.sin(theta),
+                y: 2.8 * Math.cos(theta),
+                z: 0
+            });
+        }
+
+        let angleX = 0;
+        let angleY = 0;
+        let time = 0;
+
+        const ringsGroup = document.getElementById('rings-group');
+        const facesGroup = document.getElementById('faces-group');
+        const linesGroup = document.getElementById('lines-group');
+        const dotsGroup = document.getElementById('dots-group');
+
+        const faceElements = [];
+        const lineElements = [];
+        const dotElements = [];
+        let ring1Element, ring2Element;
+
+        function init() {
+            const svgNS = "http://www.w3.org/2000/svg";
+
+            ring1Element = document.createElementNS(svgNS, 'polygon');
+            ring1Element.setAttribute('fill', 'none');
+            ring1Element.setAttribute('stroke', COLOR);
+            ring1Element.setAttribute('stroke-width', '1');
+            ringsGroup.appendChild(ring1Element);
+
+            ring2Element = document.createElementNS(svgNS, 'polygon');
+            ring2Element.setAttribute('fill', 'none');
+            ring2Element.setAttribute('stroke', COLOR);
+            ring2Element.setAttribute('stroke-width', '1');
+            ringsGroup.appendChild(ring2Element);
+
+            faces.forEach(() => {
+                const polygon = document.createElementNS(svgNS, 'polygon');
+                polygon.setAttribute('fill', COLOR);
+                facesGroup.appendChild(polygon);
+                faceElements.push(polygon);
+            });
+
+            edges.forEach(() => {
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('stroke', COLOR);
+                line.setAttribute('stroke-width', '1.5');
+                line.setAttribute('stroke-linecap', 'round');
+                linesGroup.appendChild(line);
+                lineElements.push(line);
+            });
+
+            baseVertices.forEach(() => {
+                const circle = document.createElementNS(svgNS, 'circle');
+                circle.setAttribute('r', VERTEX_RADIUS);
+                circle.setAttribute('fill', COLOR);
+                dotsGroup.appendChild(circle);
+                dotElements.push(circle);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        function rotate3D(v, ax, ay) {
+            const x = v.x; const y = v.y; const z = v.z;
+            const cosX = Math.cos(ax); const sinX = Math.sin(ax);
+            const y1 = y * cosX - z * sinX;
+            const z1 = z * cosX + y * sinX;
+            const x1 = x;
+            const cosY = Math.cos(ay); const sinY = Math.sin(ay);
+            const x2 = x1 * cosY - z1 * sinY;
+            const z2 = z1 * cosY + x1 * sinY;
+            const y2 = y1;
+            return { x: x2, y: y2, z: z2 };
+        }
+
+        function animate() {
+            angleX += 0.0016;
+            angleY += 0.0026;
+
+            time += 0.02;
+            const breathingScale = BASE_SCALE + Math.sin(time) * 5;
+
+            const projectedVertices = baseVertices.map(v => {
+                const r = rotate3D(v, angleX, angleY);
+                return {
+                    screenX: CANVAS_CENTER_X + r.x * breathingScale,
+                    screenY: CANVAS_CENTER_Y + r.y * breathingScale,
+                    z: r.z
+                };
+            });
+
+            const faceData = faces.map((faceVerticesIndexes, i) => {
+                const v1 = projectedVertices[faceVerticesIndexes[0]];
+                const v2 = projectedVertices[faceVerticesIndexes[1]];
+                const v3 = projectedVertices[faceVerticesIndexes[2]];
+                const avgZ = (v1.z + v2.z + v3.z) / 3;
+                return { index: i, z: avgZ, v1, v2, v3 };
+            });
+            faceData.sort((a, b) => a.z - b.z);
+
+            faceData.forEach(data => {
+                const polygon = faceElements[data.index];
+                facesGroup.appendChild(polygon);
+
+                const { v1, v2, v3, z } = data;
+                const pointsStr = `${v1.screenX},${v1.screenY} ${v2.screenX},${v2.screenY} ${v3.screenX},${v3.screenY}`;
+                polygon.setAttribute('points', pointsStr);
+
+                let normZ = (z + 2.0) / 4.5;
+                let opacity = normZ * 0.45;
+                opacity = Math.max(0.01, Math.min(0.45, opacity));
+                polygon.setAttribute('fill-opacity', opacity);
+            });
+
+            edges.forEach((edge, i) => {
+                const v1 = projectedVertices[edge[0]];
+                const v2 = projectedVertices[edge[1]];
+                const line = lineElements[i];
+                line.setAttribute('x1', v1.screenX);
+                line.setAttribute('y1', v1.screenY);
+                line.setAttribute('x2', v2.screenX);
+                line.setAttribute('y2', v2.screenY);
+                const avgZ = (v1.z + v2.z) / 2;
+                let opacity = (avgZ + 2.0) / 4.5;
+                opacity = Math.max(0.05, Math.min(1.0, opacity));
+                line.setAttribute('stroke-opacity', opacity);
+            });
+
+            projectedVertices.forEach((v, i) => {
+                const circle = dotElements[i];
+                circle.setAttribute('cx', v.screenX);
+                circle.setAttribute('cy', v.screenY);
+                let zFactor = (v.z + 2.0) / 4.5;
+                zFactor = Math.max(0.05, Math.min(1.0, zFactor));
+                circle.setAttribute('fill-opacity', zFactor);
+                circle.setAttribute('r', VERTEX_RADIUS * (0.5 + zFactor));
+            });
+
+            const ringAngle1 = time * 0.5;
+            const ringAngle2 = time * 0.3;
+
+            let points1 = "";
+            let ring1AvgZ = 0;
+            ring1Vertices.forEach(v => {
+                const r = rotate3D(v, ringAngle1, ringAngle1 * 0.5);
+                const sx = CANVAS_CENTER_X + r.x * breathingScale;
+                const sy = CANVAS_CENTER_Y + r.y * breathingScale;
+                points1 += `${sx},${sy} `;
+                ring1AvgZ += r.z;
+            });
+            ring1Element.setAttribute('points', points1);
+            ring1AvgZ /= RING_SEGMENTS;
+            let r1Op = (ring1AvgZ + 3.0) / 6.0;
+            ring1Element.setAttribute('stroke-opacity', Math.max(0.1, Math.min(0.6, r1Op)));
+
+            let points2 = "";
+            let ring2AvgZ = 0;
+            ring2Vertices.forEach(v => {
+                const r = rotate3D(v, -ringAngle2, ringAngle2);
+                const sx = CANVAS_CENTER_X + r.x * breathingScale;
+                const sy = CANVAS_CENTER_Y + r.y * breathingScale;
+                points2 += `${sx},${sy} `;
+                ring2AvgZ += r.z;
+            });
+            ring2Element.setAttribute('points', points2);
+            ring2AvgZ /= RING_SEGMENTS;
+            let r2Op = (ring2AvgZ + 3.0) / 6.0;
+            ring2Element.setAttribute('stroke-opacity', Math.max(0.1, Math.min(0.6, r2Op)));
+
+            requestAnimationFrame(animate);
+        }
+
+        init();
+    })();
+    ]]>
+    </script>
+</svg>

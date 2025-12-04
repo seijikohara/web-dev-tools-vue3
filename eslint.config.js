@@ -67,7 +67,7 @@ export default [
       'vue/max-attributes-per-line': [
         'error',
         {
-          singleline: { max: 4 },
+          singleline: { max: 10 },
           multiline: { max: 1 },
         },
       ],

@@ -42,10 +42,14 @@ watch(
 .layout-content {
   margin-left: $sidebarWidth;
   padding-top: $topbarHeight;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   .content-section {
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     background-color: var(--surface-b);
     color: var(--text-color);
+    flex: 1;
   }
 }
 @media screen and (max-width: $breakpoint) {
