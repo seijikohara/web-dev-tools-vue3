@@ -13,8 +13,9 @@ html {
 
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   font-size: $fontSize;
   color: $textColor;
   background-color: $bodyBgColor;
@@ -26,5 +27,204 @@ body {
 }
 
 code {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
+    'DejaVu Sans Mono', monospace;
+}
+
+// Card styles
+.p-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+  border-radius: 8px;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+}
+
+// ===================================
+// Common Utility Styles
+// ===================================
+
+// Margin utilities
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+
+.mr-1 { margin-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }
+.mr-3 { margin-right: 1rem; }
+
+.ml-1 { margin-left: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }
+.ml-3 { margin-left: 1rem; }
+
+// Width utilities
+.w-full { width: 100%; }
+
+// Flex utilities
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-grow-1 { flex-grow: 1; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }
+
+// ===================================
+// Common Component Patterns
+// ===================================
+
+// Form field
+.field {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+}
+
+// Checkbox field
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+// Button group
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+// Actions bar (buttons + options layout)
+.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+// Options section
+.options-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--surface-ground);
+  border-radius: 6px;
+
+  h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+  }
+}
+
+// Options row (horizontal checkbox group)
+.options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+// Convert section
+.convert-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// Convert actions (centered buttons)
+.convert-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+// Output header (label + copy button)
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  label {
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+}
+
+// Validation section
+.validation-section {
+  margin-top: 1rem;
+}
+
+// Input row (input + button)
+.input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// Grid layouts
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -0.5rem;
+
+  > * {
+    padding: 0.5rem;
+  }
+}
+
+.col-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .md\:col-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+// Compare panel layout
+.compare-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-panel {
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    label {
+      font-weight: 600;
+    }
+  }
 }

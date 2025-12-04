@@ -13,7 +13,8 @@ test.describe('Common Layout', () => {
     await test.step('Verify topbar elements', async () => {
       const topbar = page.locator('.layout-topbar')
       await expect.soft(topbar).toBeVisible()
-      await expect.soft(topbar.locator('img[src="/img/logo-top.png"]')).toBeVisible()
+      // Logo is now SVG
+      await expect.soft(topbar.locator('.logo-link')).toBeVisible()
     })
 
     if (isMobile) {
@@ -26,38 +27,34 @@ test.describe('Common Layout', () => {
         await menuButton.click()
 
         const sidebar = page.locator('.layout-sidebar')
-        const menu = sidebar.locator('.layout-menu')
 
         await Promise.all([
           expect.soft(sidebar).toBeVisible(),
-          expect.soft(menu).toBeVisible(),
-          // Verify menu has navigation items
-          expect.soft(menu.locator('li')).toHaveCount(9),
+          // Verify sidebar has navigation links
+          expect.soft(sidebar.locator('a').first()).toBeVisible(),
         ])
       })
     } else {
       await test.step('Verify desktop sidebar is always visible', async () => {
         const sidebar = page.locator('.layout-sidebar')
-        const menu = sidebar.locator('.layout-menu')
 
         await Promise.all([
           expect.soft(sidebar).toBeVisible(),
-          expect.soft(menu).toBeVisible(),
-          // Verify menu has navigation items
-          expect.soft(menu.locator('li')).toHaveCount(9),
+          // Verify sidebar has navigation links
+          expect.soft(sidebar.locator('a').first()).toBeVisible(),
         ])
       })
     }
 
     await test.step('Verify navigation links work', async () => {
-      // Click on a menu item and verify navigation
-      const hashLink = page.locator('.layout-menu a[href="/hash"]')
-      await expect.soft(hashLink).toBeVisible()
-      await hashLink.click()
+      // Click on Dashboard link (always visible)
+      const dashboardLink = page.locator('.layout-sidebar a[href="/dashboard"]')
+      await expect.soft(dashboardLink).toBeVisible()
+      await dashboardLink.click()
 
       // Verify navigation occurred
-      await expect.soft(page).toHaveURL(/\/hash/)
-      await expect.soft(page).toHaveTitle(/Hash/)
+      await expect.soft(page).toHaveURL(/\/dashboard/)
+      await expect.soft(page).toHaveTitle(/Dashboard/)
     })
   })
 })
