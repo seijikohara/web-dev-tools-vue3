@@ -94,7 +94,7 @@ export const expandIpv6 = (ip: string): string => {
     const left = parts[0] ? parts[0].split(':') : []
     const right = parts[1] ? parts[1].split(':') : []
     const missing = 8 - left.length - right.length
-    const middle = Array.from<string>({ length: missing }).fill('0000')
+    const middle = Array(missing).fill('0000')
     const full = [...left, ...middle, ...right]
     return full.map(p => p.padStart(4, '0')).join(':')
   }
