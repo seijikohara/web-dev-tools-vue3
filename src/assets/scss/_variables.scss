@@ -1,16 +1,41 @@
 @charset "utf-8";
 
+/**
+ * Layout dimensions using CSS custom properties
+ * These CSS variables are defined in :root and can be accessed from both SCSS and TypeScript.
+ * SCSS variables are derived from CSS custom properties for convenience in SCSS files.
+ * TypeScript can read these values at runtime using getCSSLayoutVariable() in src/constants/layout.ts
+ */
+
+// SCSS variables for media queries (must be fixed values, not CSS variables)
+// These are the source of truth for breakpoints
 $breakpoint: 980px;
 $sidebarWidth: 250px;
+$sidebarCollapsedWidth: 60px;
 $topbarHeight: 70px;
 
+:root {
+  // CSS custom properties for runtime access (kept in sync with SCSS variables)
+  --layout-breakpoint: #{$breakpoint};
+  --layout-sidebar-width: #{$sidebarWidth};
+  --layout-sidebar-collapsed-width: #{$sidebarCollapsedWidth};
+  --layout-topbar-height: #{$topbarHeight};
+}
+
+// Typography
 $fontFamily:
   -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
   'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 $fontSize: 1rem;
+
+// Theme colors (base values, use CSS variables for theming)
 $bodyBgColor: #edf0f5;
 $textColor: #333333;
 $textSecondaryColor: #707070;
 $transitionDuration: 0.3s;
 $maskBgColor: #424242;
 $focusShadowColor: #8dcdff;
+
+// Topbar colors (CSS variables for theming)
+$topbarBgColor: var(--topbar-bg-color, #59606d);
+$topbarLogoColor: var(--topbar-logo-color, #70acb1);

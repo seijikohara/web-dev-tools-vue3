@@ -1,22 +1,13 @@
-import { ref, type Ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { searchHtmlEntities } from '@/api'
-import type { HtmlEntity } from '@/types/api/html-entities'
-
-interface UseHtmlEntitiesReturn {
-  entities: Ref<HtmlEntity[]>
-  totalRecords: Ref<number>
-  loading: Ref<boolean>
-  error: Ref<string | null>
-  search: (searchWord: string, page: number, size: number) => Promise<void>
-  debouncedSearch: (searchWord: string, page: number, size: number) => void
-}
+import type { HtmlEntity } from '@/api/endpoints/html-entities'
 
 /**
  * Composable for HTML entities search with debounce
  */
-export const useHtmlEntities = (): UseHtmlEntitiesReturn => {
-  const entities = ref<HtmlEntity[]>([])
+export const useHtmlEntities = () => {
+  const entities = shallowRef<HtmlEntity[]>([])
   const totalRecords = ref(0)
   const loading = ref(false)
   const error = ref<string | null>(null)

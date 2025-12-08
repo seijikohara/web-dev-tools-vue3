@@ -1,5 +1,27 @@
 import { apiClient } from '../client'
-import type { IpInfo, HttpHeaders } from '@/types/api/ip'
+
+/**
+ * IP address information from API
+ */
+export interface IpInfo {
+  ipAddress: string
+  hostName: string
+}
+
+/**
+ * HTTP header key-value pair
+ */
+export interface HttpHeader {
+  name: string
+  value: string
+}
+
+/**
+ * HTTP headers response
+ */
+export interface HttpHeaders {
+  headers: HttpHeader[]
+}
 
 /**
  * Fetch client IP address information

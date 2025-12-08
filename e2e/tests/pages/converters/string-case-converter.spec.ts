@@ -7,9 +7,10 @@ test.describe('String Case Converter', () => {
     })
 
     await test.step('Enter input text', async () => {
-      // CodeEditor uses ace-editor
-      const editor = page.locator('.ace_text-input').first()
-      await editor.fill('hello world')
+      // CodeMirror editor
+      const editor = page.locator('.cm-editor').first()
+      await editor.click()
+      await page.keyboard.type('hello world')
     })
 
     await test.step('Verify conversions are displayed', async () => {

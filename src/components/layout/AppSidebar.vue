@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useDrawerStore } from '@/stores/drawer'
-import { MENU_CATEGORIES, type MenuCategory } from '@/types/router'
+import { useUIStore } from '@/stores/ui'
+import { MENU_CATEGORIES, type MenuCategory } from '@/router'
 
 interface MenuItem {
   name: string
@@ -19,8 +19,9 @@ interface CategoryGroup {
   order: number
 }
 
-const drawerStore = useDrawerStore()
-const isDrawerOpened = computed(() => drawerStore.isDrawerOpened)
+const uiStore = useUIStore()
+const isDrawerOpened = computed(() => uiStore.isDrawerOpened)
+const isCollapsed = computed(() => uiStore.isSidebarCollapsed)
 const router = useRouter()
 const route = useRoute()
 
@@ -29,12 +30,12 @@ const collapsedCategories = ref<Set<MenuCategory>>(new Set())
 const menuItems = computed<MenuItem[]>(() =>
   router
     .getRoutes()
-    .filter(r => r.meta?.menu)
+    .filter(r => r.meta.menu)
     .map(r => ({
       name: String(r.name ?? ''),
       path: r.path,
-      icon: (r.meta?.icon as string) ?? 'pi pi-circle',
-      category: (r.meta?.category as MenuCategory) ?? 'dashboard',
+      icon: r.meta.icon ?? 'pi pi-circle',
+      category: (r.meta.category as MenuCategory | undefined) ?? 'dashboard',
     })),
 )
 
@@ -70,14 +71,17 @@ const toggleCategory = (category: MenuCategory) => {
 
 const isCategoryCollapsed = (category: MenuCategory) => collapsedCategories.value.has(category)
 
-const onMenuClick = () => drawerStore.close()
+const onMenuClick = () => uiStore.closeDrawer()
 </script>
 
 <template>
   <div v-if="isDrawerOpened" class="sidebar-overlay" @click="onMenuClick"></div>
   <nav
     class="layout-sidebar"
-    :class="{ active: isDrawerOpened }"
+    :class="{
+      active: isDrawerOpened,
+      collapsed: isCollapsed,
+    }"
     role="navigation"
     aria-label="Main navigation"
   >
@@ -85,6 +89,7 @@ const onMenuClick = () => drawerStore.close()
       <template v-for="group in groupedMenuItems" :key="group.category">
         <div
           v-if="group.category !== 'dashboard'"
+          v-tooltip.right="{ value: group.label, disabled: !isCollapsed }"
           class="category-header"
           role="button"
           tabindex="0"
@@ -111,6 +116,7 @@ const onMenuClick = () => drawerStore.close()
         >
           <li v-for="item in group.items" :key="item.path" role="none">
             <router-link
+              v-tooltip.right="{ value: item.name, disabled: !isCollapsed }"
               :to="item.path"
               class="menu-item"
               :class="{ 'menu-active': item.name === currentRouteName }"
@@ -139,8 +145,16 @@ const onMenuClick = () => drawerStore.close()
   border-right: 1px solid var(--surface-border);
   overflow-y: auto;
   overflow-x: hidden;
-  transition: transform 0.3s ease;
+  transition:
+    width 0.3s ease,
+    transform 0.3s ease;
   z-index: 100;
+  display: flex;
+  flex-direction: column;
+
+  &.collapsed {
+    width: $sidebarCollapsedWidth;
+  }
 
   // Modern custom scrollbar
   scrollbar-width: thin;
@@ -167,6 +181,9 @@ const onMenuClick = () => drawerStore.close()
 
 .sidebar-content {
   padding: 0.5rem 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .category-header {
@@ -200,15 +217,32 @@ const onMenuClick = () => drawerStore.close()
   margin-right: 0.5rem;
   width: 1rem;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .category-label {
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+
+  .layout-sidebar.collapsed & {
+    opacity: 0;
+  }
 }
 
 .toggle-icon {
   font-size: 0.75rem;
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  flex-shrink: 0;
+  opacity: 1;
+
+  .layout-sidebar.collapsed & {
+    opacity: 0;
+  }
 }
 
 .menu-list {
@@ -240,6 +274,7 @@ const onMenuClick = () => drawerStore.close()
   text-decoration: none;
   border-radius: 6px;
   transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     background-color: var(--surface-hover);
@@ -252,12 +287,29 @@ const onMenuClick = () => drawerStore.close()
   }
 
   &.menu-active {
-    background-color: var(--primary-color);
-    color: var(--primary-color-text);
-    font-weight: 500;
+    background-color: color-mix(in srgb, var(--primary-color) 15%, transparent);
+    color: var(--primary-color);
+    font-weight: 600;
+
+    // Left accent bar
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 60%;
+      background-color: var(--primary-color);
+      border-radius: 0 4px 4px 0;
+    }
 
     .menu-icon {
-      color: var(--primary-color-text);
+      color: var(--primary-color);
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
     }
   }
 }
@@ -269,6 +321,7 @@ const onMenuClick = () => drawerStore.close()
   text-align: center;
   color: var(--text-color-secondary);
   transition: color 0.2s ease;
+  flex-shrink: 0;
 
   .menu-active & {
     color: inherit;
@@ -284,6 +337,12 @@ const onMenuClick = () => drawerStore.close()
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+
+  .layout-sidebar.collapsed & {
+    opacity: 0;
+  }
 }
 
 .sidebar-overlay {
@@ -309,9 +368,21 @@ const onMenuClick = () => drawerStore.close()
     transform: translateX(-100%);
     z-index: 999;
     background: var(--surface-overlay, #ffffff);
+    width: $sidebarWidth !important;
 
     &.active {
       transform: translateX(0);
+    }
+
+    &.collapsed {
+      width: $sidebarWidth !important;
+    }
+
+    // モバイルでは常にテキストを表示
+    .category-label,
+    .toggle-icon,
+    .menu-label {
+      opacity: 1 !important;
     }
   }
 }

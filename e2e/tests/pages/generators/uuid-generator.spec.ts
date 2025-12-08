@@ -1,7 +1,7 @@
 import { test, expect } from '../../../fixtures'
 
 test.describe('UUID Generator', () => {
-  test('should generate UUID v4', async ({ page }) => {
+  test('should generate UUID', async ({ page }) => {
     await test.step('Navigate to UUID Generator page', async () => {
       await page.goto('/uuid-generator')
     })
@@ -15,9 +15,8 @@ test.describe('UUID Generator', () => {
       await expect(uuidCell).toBeVisible()
 
       const uuidText = await uuidCell.textContent()
-      expect(uuidText).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      )
+      // Match UUID format (v4 or v7) - 8-4-4-4-12 hex characters
+      expect(uuidText).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
     })
   })
 

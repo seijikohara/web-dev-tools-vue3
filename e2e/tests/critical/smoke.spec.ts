@@ -12,7 +12,6 @@ const ROUTES = [
   { path: '/url-encoding', title: /URL Encoder/, name: 'URL Encoder' },
   { path: '/hash', title: /Hash Generator/, name: 'Hash Generator' },
   { path: '/bcrypt', title: /BCrypt Generator/, name: 'BCrypt Generator' },
-  { path: '/json-to-typescript', title: /JSON to TypeScript/, name: 'JSON to TypeScript' },
   { path: '/markdown', title: /Markdown/, name: 'Markdown Editor' },
 ] as const
 

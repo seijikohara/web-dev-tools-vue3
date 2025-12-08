@@ -21,18 +21,94 @@ export const mockApiResponses = {
   },
 
   geo: {
-    country: 'United States',
+    ip: '8.8.8.8',
+    hostname: 'dns.google',
+    countryCode: 'US',
+    countryName: 'United States',
     region: 'California',
-    city: 'San Francisco',
-    latitude: 37.7749,
-    longitude: -122.4194,
+    city: 'Mountain View',
+    postal: '94043',
+    latitude: 37.4056,
+    longitude: -122.0775,
+    timezone: 'America/Los_Angeles',
+    asn: 'AS15169',
+    org: 'Google LLC',
+    network: '8.8.8.0/24',
   },
 
   rdap: {
     objectClassName: 'ip network',
-    handle: 'TEST-NET-1',
-    name: 'TEST-NET',
-    type: 'ALLOCATED',
+    handle: 'NET-8-8-8-0-1',
+    name: 'LVLT-GOGL-8-8-8',
+    type: 'ALLOCATION',
+    startAddress: '8.8.8.0',
+    endAddress: '8.8.8.255',
+    ipVersion: 'v4',
+    country: 'US',
+    parentHandle: 'NET-8-0-0-0-1',
+    status: ['active'],
+    events: [
+      { eventAction: 'registration', eventDate: '2014-03-14T16:52:05Z' },
+      { eventAction: 'last changed', eventDate: '2014-03-14T16:52:05Z' },
+    ],
+    entities: [
+      {
+        handle: 'GOGL',
+        roles: ['registrant'],
+        vcardArray: [
+          'vcard',
+          [
+            ['fn', {}, 'text', 'Google LLC'],
+            ['adr', {}, 'text', ['', '', '1600 Amphitheatre Parkway', 'Mountain View', 'CA', '94043', 'US']],
+          ],
+        ],
+      },
+    ],
+  },
+
+  dns: {
+    status: 0,
+    truncated: false,
+    recursionDesired: true,
+    recursionAvailable: true,
+    authenticData: false,
+    checkingDisabled: false,
+    question: [{ name: '8.8.8.8', type: 1 }],
+    answer: [
+      { name: '8.8.8.8.in-addr.arpa', type: 12, ttl: 86400, data: 'dns.google' },
+    ],
+    authority: null,
+    additional: null,
+  },
+
+  dnsA: {
+    status: 0,
+    truncated: false,
+    recursionDesired: true,
+    recursionAvailable: true,
+    authenticData: false,
+    checkingDisabled: false,
+    question: [{ name: 'google.com', type: 1 }],
+    answer: [
+      { name: 'google.com', type: 1, ttl: 300, data: '142.250.80.46' },
+    ],
+    authority: null,
+    additional: null,
+  },
+
+  dnsAAAA: {
+    status: 0,
+    truncated: false,
+    recursionDesired: true,
+    recursionAvailable: true,
+    authenticData: false,
+    checkingDisabled: false,
+    question: [{ name: 'google.com', type: 28 }],
+    answer: [
+      { name: 'google.com', type: 28, ttl: 300, data: '2607:f8b0:4004:800::200e' },
+    ],
+    authority: null,
+    additional: null,
   },
 
   htmlEntities: {
@@ -122,6 +198,25 @@ export async function setupApiMocks(page: Page) {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(mockApiResponses.htmlEntities),
+    })
+  })
+
+  // Mock /api/dns/resolve/*
+  await page.route('**/api/dns/resolve/**', async route => {
+    const url = route.request().url()
+    const typeParam = new URL(url).searchParams.get('type')
+
+    let response = mockApiResponses.dns
+    if (typeParam === 'A') {
+      response = mockApiResponses.dnsA
+    } else if (typeParam === 'AAAA') {
+      response = mockApiResponses.dnsAAAA
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(response),
     })
   })
 }

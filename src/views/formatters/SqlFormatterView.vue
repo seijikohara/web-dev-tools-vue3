@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import { format as formatSQL } from 'sql-formatter'
-import { useClipboard } from '@vueuse/core'
-import { useToast } from 'primevue/usetoast'
+import { ref, reactive, computed } from 'vue'
+import { format as formatSQL, type FormatOptionsWithLanguage } from 'sql-formatter'
+import { useLocalStorage, watchDebounced } from '@vueuse/core'
+import { useClipboardToast } from '@/composables/useClipboardToast'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -15,10 +15,80 @@ import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
 import ToggleSwitch from 'primevue/toggleswitch'
 
-import CodeEditor from '@/components/CodeEditor.vue'
+import CodeEditor from '@/components/editors/CodeEditor.vue'
 
-const toast = useToast()
-const { copy } = useClipboard()
+const { copy, showSuccess, showInfo } = useClipboardToast()
+
+// SQL Formatter supported languages (sql-formatter v15)
+type SqlLanguage =
+  | 'sql'
+  | 'bigquery'
+  | 'db2'
+  | 'db2i'
+  | 'duckdb'
+  | 'hive'
+  | 'mariadb'
+  | 'mysql'
+  | 'n1ql'
+  | 'plsql'
+  | 'postgresql'
+  | 'redshift'
+  | 'singlestoredb'
+  | 'snowflake'
+  | 'spark'
+  | 'sqlite'
+  | 'tidb'
+  | 'transactsql'
+  | 'trino'
+
+type KeywordCase = 'upper' | 'lower' | 'preserve'
+type IdentifierCase = 'upper' | 'lower' | 'preserve'
+type DataTypeCase = 'upper' | 'lower' | 'preserve'
+type FunctionCase = 'upper' | 'lower' | 'preserve'
+type IndentStyle = 'standard' | 'tabularLeft' | 'tabularRight'
+type LogicalOperatorNewline = 'before' | 'after'
+
+interface SqlFormatterOptions {
+  // Language
+  language: SqlLanguage
+  // Indentation
+  tabWidth: number
+  useTabs: boolean
+  indentStyle: IndentStyle
+  // Case options
+  keywordCase: KeywordCase
+  identifierCase: IdentifierCase
+  dataTypeCase: DataTypeCase
+  functionCase: FunctionCase
+  // Layout options
+  logicalOperatorNewline: LogicalOperatorNewline
+  expressionWidth: number
+  linesBetweenQueries: number
+  // Formatting style
+  denseOperators: boolean
+  newlineBeforeSemicolon: boolean
+}
+
+const defaultOptions: SqlFormatterOptions = {
+  language: 'sql',
+  tabWidth: 2,
+  useTabs: false,
+  indentStyle: 'standard',
+  keywordCase: 'upper',
+  identifierCase: 'preserve',
+  dataTypeCase: 'upper',
+  functionCase: 'preserve',
+  logicalOperatorNewline: 'before',
+  expressionWidth: 50,
+  linesBetweenQueries: 1,
+  denseOperators: false,
+  newlineBeforeSemicolon: false,
+}
+
+const persistedOptions = useLocalStorage<SqlFormatterOptions>(
+  'sql-formatter-options-v2',
+  defaultOptions,
+)
 
 // State
 const state = reactive({
@@ -26,34 +96,52 @@ const state = reactive({
   output: '',
 })
 
-const options = reactive({
-  language: 'sql' as
-    | 'sql'
-    | 'mysql'
-    | 'postgresql'
-    | 'plsql'
-    | 'transactsql'
-    | 'sqlite'
-    | 'bigquery'
-    | 'redshift',
-  tabWidth: 2,
-  useTabs: false,
-  keywordCase: 'upper' as 'upper' | 'lower' | 'preserve',
-  indentStyle: 'standard' as 'standard' | 'tabularLeft' | 'tabularRight',
+const options = reactive<SqlFormatterOptions>({
+  ...persistedOptions.value,
 })
 
+// Language options - all supported dialects
 const languageOptions = [
   { label: 'Standard SQL', value: 'sql' },
-  { label: 'MySQL', value: 'mysql' },
-  { label: 'PostgreSQL', value: 'postgresql' },
-  { label: 'PL/SQL (Oracle)', value: 'plsql' },
-  { label: 'T-SQL (SQL Server)', value: 'transactsql' },
-  { label: 'SQLite', value: 'sqlite' },
   { label: 'BigQuery', value: 'bigquery' },
+  { label: 'DB2', value: 'db2' },
+  { label: 'DB2i (iSeries)', value: 'db2i' },
+  { label: 'DuckDB', value: 'duckdb' },
+  { label: 'Hive', value: 'hive' },
+  { label: 'MariaDB', value: 'mariadb' },
+  { label: 'MySQL', value: 'mysql' },
+  { label: 'N1QL (Couchbase)', value: 'n1ql' },
+  { label: 'PL/SQL (Oracle)', value: 'plsql' },
+  { label: 'PostgreSQL', value: 'postgresql' },
   { label: 'Redshift', value: 'redshift' },
+  { label: 'SingleStoreDB', value: 'singlestoredb' },
+  { label: 'Snowflake', value: 'snowflake' },
+  { label: 'Spark SQL', value: 'spark' },
+  { label: 'SQLite', value: 'sqlite' },
+  { label: 'TiDB', value: 'tidb' },
+  { label: 'T-SQL (SQL Server)', value: 'transactsql' },
+  { label: 'Trino (PrestoSQL)', value: 'trino' },
 ]
 
 const keywordCaseOptions = [
+  { label: 'UPPER', value: 'upper' },
+  { label: 'lower', value: 'lower' },
+  { label: 'Preserve', value: 'preserve' },
+]
+
+const identifierCaseOptions = [
+  { label: 'UPPER', value: 'upper' },
+  { label: 'lower', value: 'lower' },
+  { label: 'Preserve', value: 'preserve' },
+]
+
+const dataTypeCaseOptions = [
+  { label: 'UPPER', value: 'upper' },
+  { label: 'lower', value: 'lower' },
+  { label: 'Preserve', value: 'preserve' },
+]
+
+const functionCaseOptions = [
   { label: 'UPPER', value: 'upper' },
   { label: 'lower', value: 'lower' },
   { label: 'Preserve', value: 'preserve' },
@@ -63,6 +151,11 @@ const indentStyleOptions = [
   { label: 'Standard', value: 'standard' },
   { label: 'Tabular Left', value: 'tabularLeft' },
   { label: 'Tabular Right', value: 'tabularRight' },
+]
+
+const logicalOperatorNewlineOptions = [
+  { label: 'Before (AND\\n)', value: 'before' },
+  { label: 'After (\\nAND)', value: 'after' },
 ]
 
 const formatError = ref('')
@@ -82,33 +175,66 @@ const formatSql = () => {
   }
 
   try {
-    state.output = formatSQL(state.input, {
+    const formatOptions: FormatOptionsWithLanguage = {
       language: options.language,
       tabWidth: options.tabWidth,
       useTabs: options.useTabs,
-      keywordCase: options.keywordCase,
       indentStyle: options.indentStyle,
-    })
+      keywordCase: options.keywordCase,
+      identifierCase: options.identifierCase,
+      dataTypeCase: options.dataTypeCase,
+      functionCase: options.functionCase,
+      logicalOperatorNewline: options.logicalOperatorNewline,
+      expressionWidth: options.expressionWidth,
+      linesBetweenQueries: options.linesBetweenQueries,
+      denseOperators: options.denseOperators,
+      newlineBeforeSemicolon: options.newlineBeforeSemicolon,
+    }
+    state.output = formatSQL(state.input, formatOptions)
+    showSuccess('Formatted', 'SQL formatted successfully')
   } catch (e) {
     formatError.value = e instanceof Error ? e.message : 'Format failed'
     state.output = ''
   }
 }
 
-// Auto-format on option change
-watch(
+// Save options
+const saveOptions = () => {
+  persistedOptions.value = { ...options }
+}
+
+// Reset options to defaults
+const resetOptions = () => {
+  Object.assign(options, defaultOptions)
+  persistedOptions.value = defaultOptions
+  showInfo('Reset', 'Options reset to defaults')
+}
+
+// Auto-format on option change and persist to localStorage
+watchDebounced(
   () => [
     options.language,
     options.tabWidth,
     options.useTabs,
-    options.keywordCase,
     options.indentStyle,
+    options.keywordCase,
+    options.identifierCase,
+    options.dataTypeCase,
+    options.functionCase,
+    options.logicalOperatorNewline,
+    options.expressionWidth,
+    options.linesBetweenQueries,
+    options.denseOperators,
+    options.newlineBeforeSemicolon,
   ],
   () => {
+    // Persist options
+    saveOptions()
     if (state.input.trim()) {
       formatSql()
     }
   },
+  { debounce: 300 },
 )
 
 // Minify SQL
@@ -124,6 +250,7 @@ const minifySql = () => {
       .replace(/\s+/g, ' ') // Collapse whitespace
       .replace(/\s*([(),;])\s*/g, '$1') // Remove space around punctuation
       .trim()
+    showSuccess('Minified', 'SQL minified successfully')
   } catch (e) {
     formatError.value = e instanceof Error ? e.message : 'Minify failed'
   }
@@ -139,18 +266,18 @@ const swapValues = () => {
 // Copy output
 const copyOutput = () => {
   if (!state.output) return
-  copy(state.output)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'SQL copied to clipboard',
-    life: 2000,
-  })
+  void copy(state.output, { detail: 'SQL copied to clipboard' })
 }
 
 // Load sample
 const loadSample = () => {
-  state.input = `SELECT u.id, u.name, u.email, COUNT(o.id) as order_count, SUM(o.total) as total_spent FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.created_at >= '2024-01-01' AND u.status = 'active' GROUP BY u.id, u.name, u.email HAVING COUNT(o.id) > 0 ORDER BY total_spent DESC LIMIT 100;`
+  state.input = `SELECT u.id, u.name, u.email, COUNT(o.id) as order_count, SUM(o.total) as total_spent FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.created_at >= '2024-01-01' AND u.status = 'active' GROUP BY u.id, u.name, u.email HAVING COUNT(o.id) > 0 ORDER BY total_spent DESC LIMIT 100;
+
+INSERT INTO audit_log (user_id, action, timestamp) VALUES (1, 'login', NOW());
+
+UPDATE products SET price = price * 1.1, updated_at = CURRENT_TIMESTAMP WHERE category_id IN (SELECT id FROM categories WHERE name = 'Electronics') AND stock > 0;
+
+WITH ranked_sales AS (SELECT product_id, SUM(quantity) as total_qty, RANK() OVER (ORDER BY SUM(quantity) DESC) as rank FROM sales GROUP BY product_id) SELECT p.name, rs.total_qty, rs.rank FROM ranked_sales rs JOIN products p ON rs.product_id = p.id WHERE rs.rank <= 10;`
   formatSql()
 }
 
@@ -175,25 +302,42 @@ const sqlStats = computed(() => {
     'RIGHT',
     'INNER',
     'OUTER',
+    'FULL',
+    'CROSS',
     'GROUP BY',
     'ORDER BY',
     'HAVING',
     'LIMIT',
+    'OFFSET',
     'INSERT',
     'UPDATE',
     'DELETE',
     'CREATE',
     'ALTER',
     'DROP',
+    'TRUNCATE',
+    'WITH',
+    'UNION',
+    'INTERSECT',
+    'EXCEPT',
+    'CASE',
+    'WHEN',
+    'THEN',
+    'ELSE',
+    'END',
   ]
 
   const upperInput = input.toUpperCase()
   const foundKeywords = keywords.filter(kw => upperInput.includes(kw))
 
+  // Count statements (approximate by counting semicolons)
+  const statements = (input.match(/;/g) ?? []).length || 1
+
   return {
     chars: input.length,
     lines: input.split('\n').length,
     keywords: foundKeywords.length,
+    statements,
   }
 })
 </script>
@@ -206,7 +350,7 @@ const sqlStats = computed(() => {
         <span>SQL Formatter</span>
       </div>
     </template>
-    <template #subtitle> Format and beautify SQL queries </template>
+    <template #subtitle> Format and beautify SQL queries with advanced options </template>
     <template #content>
       <Panel toggleable class="options-panel">
         <template #header>
@@ -222,77 +366,184 @@ const sqlStats = computed(() => {
           </div>
         </template>
 
-        <div class="options-content">
-          <div class="option-item">
-            <label>
+        <div class="options-grid">
+          <!-- Language -->
+          <div class="options-section">
+            <div class="section-title">
               <i class="pi pi-code"></i>
-              Dialect
-            </label>
-            <Select
-              v-model="options.language"
-              :options="languageOptions"
-              optionLabel="label"
-              optionValue="value"
-              class="w-full"
-            />
+              Language
+            </div>
+            <div class="option-item">
+              <label for="language">SQL Dialect</label>
+              <Select
+                id="language"
+                v-model="options.language"
+                :options="languageOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
           </div>
 
-          <Divider layout="vertical" class="vertical-divider" />
-
-          <div class="option-item">
-            <label>
+          <!-- Indentation -->
+          <div class="options-section">
+            <div class="section-title">
               <i class="pi pi-align-left"></i>
-              Indent
-            </label>
-            <InputNumber v-model="options.tabWidth" :min="1" :max="8" showButtons class="w-full" />
+              Indentation
+            </div>
+            <div class="option-item">
+              <label for="tabWidth">Indent Size</label>
+              <InputNumber
+                id="tabWidth"
+                v-model="options.tabWidth"
+                :min="1"
+                :max="8"
+                show-buttons
+                button-layout="horizontal"
+              />
+            </div>
+            <div class="option-item">
+              <label for="indentStyle">Indent Style</label>
+              <Select
+                id="indentStyle"
+                v-model="options.indentStyle"
+                :options="indentStyleOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
+            <div class="toggle-option">
+              <ToggleSwitch v-model="options.useTabs" input-id="useTabs" />
+              <label for="useTabs">Use Tabs instead of Spaces</label>
+            </div>
           </div>
 
-          <Divider layout="vertical" class="vertical-divider" />
-
-          <div class="option-item">
-            <label>
+          <!-- Case Options -->
+          <div class="options-section">
+            <div class="section-title">
               <i class="pi pi-text-aa"></i>
-              Keywords
-            </label>
-            <Select
-              v-model="options.keywordCase"
-              :options="keywordCaseOptions"
-              optionLabel="label"
-              optionValue="value"
-              class="w-full"
-            />
+              Case Options
+            </div>
+            <div class="option-item">
+              <label for="keywordCase">Keywords</label>
+              <Select
+                id="keywordCase"
+                v-model="options.keywordCase"
+                :options="keywordCaseOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
+            <div class="option-item">
+              <label for="identifierCase">Identifiers</label>
+              <Select
+                id="identifierCase"
+                v-model="options.identifierCase"
+                :options="identifierCaseOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
+            <div class="option-item">
+              <label for="dataTypeCase">Data Types</label>
+              <Select
+                id="dataTypeCase"
+                v-model="options.dataTypeCase"
+                :options="dataTypeCaseOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
+            <div class="option-item">
+              <label for="functionCase">Functions</label>
+              <Select
+                id="functionCase"
+                v-model="options.functionCase"
+                :options="functionCaseOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
           </div>
 
-          <Divider layout="vertical" class="vertical-divider" />
-
-          <div class="option-item">
-            <label>
-              <i class="pi pi-bars"></i>
-              Style
-            </label>
-            <Select
-              v-model="options.indentStyle"
-              :options="indentStyleOptions"
-              optionLabel="label"
-              optionValue="value"
-              class="w-full"
-            />
+          <!-- Layout Options -->
+          <div class="options-section">
+            <div class="section-title">
+              <i class="pi pi-th-large"></i>
+              Layout
+            </div>
+            <div class="option-item">
+              <label for="expressionWidth">Expression Width</label>
+              <InputNumber
+                id="expressionWidth"
+                v-model="options.expressionWidth"
+                :min="10"
+                :max="200"
+                show-buttons
+                button-layout="horizontal"
+              />
+            </div>
+            <div class="option-item">
+              <label for="linesBetweenQueries">Lines Between Queries</label>
+              <InputNumber
+                id="linesBetweenQueries"
+                v-model="options.linesBetweenQueries"
+                :min="0"
+                :max="5"
+                show-buttons
+                button-layout="horizontal"
+              />
+            </div>
+            <div class="option-item">
+              <label for="logicalOperatorNewline">Logical Operator Position</label>
+              <Select
+                id="logicalOperatorNewline"
+                v-model="options.logicalOperatorNewline"
+                :options="logicalOperatorNewlineOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </div>
           </div>
 
-          <Divider layout="vertical" class="vertical-divider" />
-
-          <div class="toggle-option">
-            <ToggleSwitch v-model="options.useTabs" inputId="useTabs" />
-            <label for="useTabs">
-              <Tag :value="options.useTabs ? 'Tabs' : 'Spaces'" severity="secondary" />
-            </label>
+          <!-- Formatting Style -->
+          <div class="options-section">
+            <div class="section-title">
+              <i class="pi pi-sliders-h"></i>
+              Formatting Style
+            </div>
+            <div class="toggle-option">
+              <ToggleSwitch v-model="options.denseOperators" input-id="denseOperators" />
+              <label for="denseOperators">Dense operators (no spaces)</label>
+            </div>
+            <div class="toggle-option">
+              <ToggleSwitch
+                v-model="options.newlineBeforeSemicolon"
+                input-id="newlineBeforeSemicolon"
+              />
+              <label for="newlineBeforeSemicolon">Newline before semicolon</label>
+            </div>
           </div>
         </div>
+
+        <div class="options-actions">
+          <Button
+            label="Reset to Defaults"
+            icon="pi pi-refresh"
+            severity="secondary"
+            text
+            size="small"
+            @click="resetOptions"
+          />
+        </div>
+
+        <Divider />
 
         <div v-if="sqlStats" class="stats-display">
           <Tag :value="`${sqlStats.chars} chars`" severity="secondary" icon="pi pi-file" />
           <Tag :value="`${sqlStats.lines} lines`" severity="secondary" icon="pi pi-list" />
-          <Tag :value="`${sqlStats.keywords} keywords`" severity="info" icon="pi pi-code" />
+          <Tag :value="`${sqlStats.statements} statements`" severity="info" icon="pi pi-database" />
+          <Tag :value="`${sqlStats.keywords} keywords`" severity="secondary" icon="pi pi-code" />
         </div>
       </Panel>
 
@@ -413,51 +664,73 @@ const sqlStats = computed(() => {
   }
 }
 
-.options-content {
-  display: flex;
-  flex-wrap: wrap;
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
-  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.options-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--surface-ground);
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: 0.25rem;
+
+  i {
+    font-size: 0.85rem;
+  }
 }
 
 .option-item {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 140px;
 
   label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.9rem;
-
-    i {
-      color: var(--primary-color);
-    }
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
   }
 }
 
 .toggle-option {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+
+  label {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-color);
+  }
 }
 
-.vertical-divider {
-  @media (max-width: 768px) {
-    display: none;
-  }
+.options-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--surface-border);
 }
 
 .stats-display {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--surface-border);
 }
 
 .error-message {

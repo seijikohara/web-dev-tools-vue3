@@ -1,12 +1,15 @@
-import { createApp } from 'vue'
+import { createApp, type Component } from 'vue'
 import { createPinia } from 'pinia'
 
-import App from './App.vue'
+import AppComponent from './App.vue'
 import router from './router'
+
+const App = AppComponent as Component
 
 import { createGtag } from 'vue-gtag'
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
+import Tooltip from 'primevue/tooltip'
 import Aura from '@primeuix/themes/aura'
 
 import 'primeflex/primeflex.css'
@@ -32,6 +35,7 @@ app.use(PrimeVue, {
 })
 
 app.use(ToastService)
+app.directive('tooltip', Tooltip)
 
 // Google Analytics configuration
 const gaMeasurementId = import.meta.env.VUE_APP_GA_MEASUREMENT_ID

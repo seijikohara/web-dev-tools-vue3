@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import QRCode from 'qrcode'
-import { useClipboard } from '@vueuse/core'
-import { useToast } from 'primevue/usetoast'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -16,8 +14,9 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ColorPicker from 'primevue/colorpicker'
 
-const toast = useToast()
-const { copy } = useClipboard()
+import { useClipboardToast } from '@/composables/useClipboardToast'
+
+const { copy, showError, showSuccess } = useClipboardToast()
 
 // State
 const inputText = ref('')
@@ -74,12 +73,7 @@ const generateQRCode = async () => {
       type: 'svg',
     })
   } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: error instanceof Error ? error.message : 'Failed to generate QR code',
-      life: 3000,
-    })
+    showError('Error', error instanceof Error ? error.message : 'Failed to generate QR code', 3000)
   }
 }
 
@@ -94,7 +88,7 @@ watch(
     () => options.lightColor,
   ],
   () => {
-    generateQRCode()
+    void generateQRCode()
   },
   { immediate: true },
 )
@@ -108,12 +102,7 @@ const downloadPng = () => {
   link.download = 'qrcode.png'
   link.click()
 
-  toast.add({
-    severity: 'success',
-    summary: 'Downloaded',
-    detail: 'QR code PNG downloaded',
-    life: 2000,
-  })
+  showSuccess('Downloaded', 'QR code PNG downloaded')
 }
 
 // Download SVG
@@ -128,36 +117,19 @@ const downloadSvg = () => {
   link.click()
   URL.revokeObjectURL(url)
 
-  toast.add({
-    severity: 'success',
-    summary: 'Downloaded',
-    detail: 'QR code SVG downloaded',
-    life: 2000,
-  })
+  showSuccess('Downloaded', 'QR code SVG downloaded')
 }
 
 // Copy data URL
 const copyDataUrl = () => {
   if (!qrCodeDataUrl.value) return
-  copy(qrCodeDataUrl.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Data URL copied to clipboard',
-    life: 2000,
-  })
+  void copy(qrCodeDataUrl.value, { detail: 'Data URL copied to clipboard' })
 }
 
 // Copy SVG
 const copySvg = () => {
   if (!qrCodeSvg.value) return
-  copy(qrCodeSvg.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'SVG code copied to clipboard',
-    life: 2000,
-  })
+  void copy(qrCodeSvg.value, { detail: 'SVG code copied to clipboard' })
 }
 
 // Load samples
@@ -231,8 +203,8 @@ const inputStats = computed(() => {
                   <Select
                     v-model="options.width"
                     :options="sizeOptions"
-                    optionLabel="label"
-                    optionValue="value"
+                    option-label="label"
+                    option-value="value"
                   />
                 </div>
 
@@ -244,8 +216,8 @@ const inputStats = computed(() => {
                   <Select
                     v-model="options.errorCorrectionLevel"
                     :options="errorCorrectionOptions"
-                    optionLabel="label"
-                    optionValue="value"
+                    option-label="label"
+                    option-value="value"
                   />
                 </div>
 
@@ -254,7 +226,7 @@ const inputStats = computed(() => {
                     <i class="pi pi-stop"></i>
                     Margin
                   </label>
-                  <InputNumber v-model="options.margin" :min="0" :max="10" showButtons />
+                  <InputNumber v-model="options.margin" :min="0" :max="10" show-buttons />
                 </div>
               </div>
 
@@ -310,7 +282,6 @@ const inputStats = computed(() => {
                   label="URL"
                   severity="secondary"
                   text
-                  size="small"
                   @click="loadUrlSample"
                 />
                 <Button
@@ -319,7 +290,6 @@ const inputStats = computed(() => {
                   label="Text"
                   severity="secondary"
                   text
-                  size="small"
                   @click="loadTextSample"
                 />
                 <Button
@@ -328,7 +298,6 @@ const inputStats = computed(() => {
                   label="vCard"
                   severity="secondary"
                   text
-                  size="small"
                   @click="loadVCardSample"
                 />
                 <Button
@@ -337,7 +306,6 @@ const inputStats = computed(() => {
                   label="WiFi"
                   severity="secondary"
                   text
-                  size="small"
                   @click="loadWifiSample"
                 />
               </template>
@@ -347,6 +315,7 @@ const inputStats = computed(() => {
                   icon="pi pi-trash"
                   severity="danger"
                   text
+                  rounded
                   :disabled="!inputText"
                   @click="clearAll"
                 />
@@ -367,42 +336,46 @@ const inputStats = computed(() => {
           </div>
 
           <div class="qr-preview">
-            <div v-if="qrCodeDataUrl" class="qr-image-container">
-              <img :src="qrCodeDataUrl" alt="QR Code" class="qr-image" />
-            </div>
-            <div v-else class="qr-placeholder">
-              <i class="pi pi-qrcode"></i>
-              <span>Enter content to generate QR code</span>
-            </div>
+            <Transition name="scale-fade" mode="out-in">
+              <div v-if="qrCodeDataUrl" key="qr" class="qr-image-container">
+                <img :src="qrCodeDataUrl" alt="QR Code" class="qr-image" />
+              </div>
+              <div v-else key="placeholder" class="qr-placeholder">
+                <i class="pi pi-qrcode"></i>
+                <span>Enter content to generate QR code</span>
+              </div>
+            </Transition>
           </div>
 
-          <Toolbar v-if="qrCodeDataUrl" class="editor-toolbar">
-            <template #start>
-              <Button label="Download PNG" icon="pi pi-image" @click="downloadPng" />
-              <Button
-                label="Download SVG"
-                icon="pi pi-file"
-                severity="secondary"
-                @click="downloadSvg"
-              />
-            </template>
-            <template #end>
-              <Button
-                v-tooltip.top="'Copy Data URL'"
-                icon="pi pi-copy"
-                severity="secondary"
-                text
-                @click="copyDataUrl"
-              />
-              <Button
-                v-tooltip.top="'Copy SVG'"
-                icon="pi pi-code"
-                severity="secondary"
-                text
-                @click="copySvg"
-              />
-            </template>
-          </Toolbar>
+          <Transition name="fade-slide">
+            <Toolbar v-if="qrCodeDataUrl" class="editor-toolbar">
+              <template #start>
+                <Button label="Download PNG" icon="pi pi-image" @click="downloadPng" />
+                <Button
+                  label="Download SVG"
+                  icon="pi pi-file"
+                  severity="secondary"
+                  @click="downloadSvg"
+                />
+              </template>
+              <template #end>
+                <Button
+                  v-tooltip.top="'Copy Data URL'"
+                  icon="pi pi-copy"
+                  severity="secondary"
+                  text
+                  @click="copyDataUrl"
+                />
+                <Button
+                  v-tooltip.top="'Copy SVG'"
+                  icon="pi pi-code"
+                  severity="secondary"
+                  text
+                  @click="copySvg"
+                />
+              </template>
+            </Toolbar>
+          </Transition>
         </div>
       </div>
     </template>
@@ -463,6 +436,10 @@ const inputStats = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+
+  @media (max-width: $breakpoint) {
+    flex-direction: column;
+  }
 }
 
 .option-item {
@@ -470,7 +447,7 @@ const inputStats = computed(() => {
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
-  min-width: 120px;
+  min-width: 0;
 
   label {
     display: flex;

@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { useToast } from 'primevue/usetoast'
-
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Panel from 'primevue/panel'
@@ -14,402 +10,49 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ToggleSwitch from 'primevue/toggleswitch'
 import SelectButton from 'primevue/selectbutton'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Message from 'primevue/message'
 
-const toast = useToast()
-const { copy } = useClipboard()
+import {
+  useCronBuilder,
+  FIELD_TYPE_OPTIONS,
+  MONTH_NAMES,
+  DAY_NAMES,
+  PRESETS,
+  CRON_REFERENCE,
+  generateValueOptions,
+} from '@/composables/useCronBuilder'
+import { useClipboardToast } from '@/composables/useClipboardToast'
 
-// Types
-interface CronField {
-  type: 'every' | 'specific' | 'range' | 'step'
-  values: number[]
-  rangeStart: number
-  rangeEnd: number
-  stepValue: number
-}
+const { copy, showSuccess } = useClipboardToast()
 
-// State
-const useSeconds = ref(false)
-const cronExpression = ref('* * * * *')
+// Use composable
+const {
+  useSeconds,
+  manualInput,
+  parseError,
+  seconds,
+  minutes,
+  hours,
+  dayOfMonth,
+  month,
+  dayOfWeek,
+  humanReadable,
+  nextExecutions,
+  applyPreset: applyPresetInternal,
+  resetAll,
+  formatDate,
+} = useCronBuilder()
 
-const seconds = ref<CronField>({
-  type: 'every',
-  values: [],
-  rangeStart: 0,
-  rangeEnd: 59,
-  stepValue: 1,
-})
-
-const minutes = ref<CronField>({
-  type: 'every',
-  values: [],
-  rangeStart: 0,
-  rangeEnd: 59,
-  stepValue: 1,
-})
-
-const hours = ref<CronField>({
-  type: 'every',
-  values: [],
-  rangeStart: 0,
-  rangeEnd: 23,
-  stepValue: 1,
-})
-
-const dayOfMonth = ref<CronField>({
-  type: 'every',
-  values: [],
-  rangeStart: 1,
-  rangeEnd: 31,
-  stepValue: 1,
-})
-
-const month = ref<CronField>({
-  type: 'every',
-  values: [],
-  rangeStart: 1,
-  rangeEnd: 12,
-  stepValue: 1,
-})
-
-const dayOfWeek = ref<CronField>({
-  type: 'every',
-  values: [],
-  rangeStart: 0,
-  rangeEnd: 6,
-  stepValue: 1,
-})
-
-// Options
-const fieldTypeOptions = [
-  { label: 'Every', value: 'every' },
-  { label: 'Specific', value: 'specific' },
-  { label: 'Range', value: 'range' },
-  { label: 'Step', value: 'step' },
-]
-
-const monthNames = [
-  { label: 'January', value: 1 },
-  { label: 'February', value: 2 },
-  { label: 'March', value: 3 },
-  { label: 'April', value: 4 },
-  { label: 'May', value: 5 },
-  { label: 'June', value: 6 },
-  { label: 'July', value: 7 },
-  { label: 'August', value: 8 },
-  { label: 'September', value: 9 },
-  { label: 'October', value: 10 },
-  { label: 'November', value: 11 },
-  { label: 'December', value: 12 },
-]
-
-const dayNames = [
-  { label: 'Sunday', value: 0 },
-  { label: 'Monday', value: 1 },
-  { label: 'Tuesday', value: 2 },
-  { label: 'Wednesday', value: 3 },
-  { label: 'Thursday', value: 4 },
-  { label: 'Friday', value: 5 },
-  { label: 'Saturday', value: 6 },
-]
-
-// Generate field expression
-const generateFieldExpression = (field: CronField, min: number, max: number): string => {
-  switch (field.type) {
-    case 'every':
-      return '*'
-    case 'specific':
-      return field.values.length > 0 ? field.values.sort((a, b) => a - b).join(',') : '*'
-    case 'range':
-      return `${Math.max(min, field.rangeStart)}-${Math.min(max, field.rangeEnd)}`
-    case 'step':
-      return field.stepValue > 1 ? `*/${field.stepValue}` : '*'
-    default:
-      return '*'
-  }
-}
-
-// Generate cron expression
-const generateCronExpression = () => {
-  const parts = [
-    generateFieldExpression(minutes.value, 0, 59),
-    generateFieldExpression(hours.value, 0, 23),
-    generateFieldExpression(dayOfMonth.value, 1, 31),
-    generateFieldExpression(month.value, 1, 12),
-    generateFieldExpression(dayOfWeek.value, 0, 6),
-  ]
-
-  if (useSeconds.value) {
-    parts.unshift(generateFieldExpression(seconds.value, 0, 59))
-  }
-
-  cronExpression.value = parts.join(' ')
-}
-
-// Watch for changes
-watch(
-  [useSeconds, seconds, minutes, hours, dayOfMonth, month, dayOfWeek],
-  () => {
-    generateCronExpression()
-  },
-  { deep: true, immediate: true },
-)
-
-// Human readable description
-const humanReadable = computed(() => {
-  const parts: string[] = []
-
-  // Seconds
-  if (useSeconds.value) {
-    if (seconds.value.type === 'every') {
-      parts.push('Every second')
-    } else if (seconds.value.type === 'step') {
-      parts.push(`Every ${seconds.value.stepValue} seconds`)
-    } else if (seconds.value.type === 'specific' && seconds.value.values.length > 0) {
-      parts.push(`At second ${seconds.value.values.join(', ')}`)
-    } else if (seconds.value.type === 'range') {
-      parts.push(`Seconds ${seconds.value.rangeStart}-${seconds.value.rangeEnd}`)
-    }
-  }
-
-  // Minutes
-  if (minutes.value.type === 'every') {
-    if (!useSeconds.value || seconds.value.type !== 'every') {
-      parts.push('Every minute')
-    }
-  } else if (minutes.value.type === 'step') {
-    parts.push(`Every ${minutes.value.stepValue} minutes`)
-  } else if (minutes.value.type === 'specific' && minutes.value.values.length > 0) {
-    parts.push(`At minute ${minutes.value.values.join(', ')}`)
-  } else if (minutes.value.type === 'range') {
-    parts.push(`Minutes ${minutes.value.rangeStart}-${minutes.value.rangeEnd}`)
-  }
-
-  // Hours
-  if (hours.value.type === 'step') {
-    parts.push(`every ${hours.value.stepValue} hours`)
-  } else if (hours.value.type === 'specific' && hours.value.values.length > 0) {
-    parts.push(`at hour ${hours.value.values.join(', ')}`)
-  } else if (hours.value.type === 'range') {
-    parts.push(`hours ${hours.value.rangeStart}-${hours.value.rangeEnd}`)
-  }
-
-  // Day of month
-  if (dayOfMonth.value.type === 'specific' && dayOfMonth.value.values.length > 0) {
-    parts.push(`on day ${dayOfMonth.value.values.join(', ')} of the month`)
-  } else if (dayOfMonth.value.type === 'range') {
-    parts.push(`days ${dayOfMonth.value.rangeStart}-${dayOfMonth.value.rangeEnd} of the month`)
-  } else if (dayOfMonth.value.type === 'step') {
-    parts.push(`every ${dayOfMonth.value.stepValue} days`)
-  }
-
-  // Month
-  if (month.value.type === 'specific' && month.value.values.length > 0) {
-    const monthLabels = month.value.values.map(
-      v => monthNames.find(m => m.value === v)?.label ?? v.toString(),
-    )
-    parts.push(`in ${monthLabels.join(', ')}`)
-  } else if (month.value.type === 'range') {
-    const startMonth = monthNames.find(m => m.value === month.value.rangeStart)?.label
-    const endMonth = monthNames.find(m => m.value === month.value.rangeEnd)?.label
-    parts.push(`from ${startMonth} to ${endMonth}`)
-  }
-
-  // Day of week
-  if (dayOfWeek.value.type === 'specific' && dayOfWeek.value.values.length > 0) {
-    const dayLabels = dayOfWeek.value.values.map(
-      v => dayNames.find(d => d.value === v)?.label ?? v.toString(),
-    )
-    parts.push(`on ${dayLabels.join(', ')}`)
-  } else if (dayOfWeek.value.type === 'range') {
-    const startDay = dayNames.find(d => d.value === dayOfWeek.value.rangeStart)?.label
-    const endDay = dayNames.find(d => d.value === dayOfWeek.value.rangeEnd)?.label
-    parts.push(`from ${startDay} to ${endDay}`)
-  }
-
-  return parts.length > 0 ? parts.join(', ') : 'Every minute'
-})
-
-// Next executions
-const nextExecutions = computed(() => {
-  const now = new Date()
-  const executions: Date[] = []
-  const current = new Date(now)
-
-  // Simple approximation for next 5 executions
-  const maxIterations = 1000
-  const iterationCount = { value: 0 }
-
-  const matchesField = (value: number, field: CronField, min: number, max: number): boolean => {
-    switch (field.type) {
-      case 'every':
-        return true
-      case 'specific':
-        return field.values.includes(value)
-      case 'range':
-        return value >= Math.max(min, field.rangeStart) && value <= Math.min(max, field.rangeEnd)
-      case 'step':
-        return value % field.stepValue === 0
-      default:
-        return true
-    }
-  }
-
-  const matchesCron = (date: Date): boolean => {
-    if (useSeconds.value && !matchesField(date.getSeconds(), seconds.value, 0, 59)) return false
-    if (!matchesField(date.getMinutes(), minutes.value, 0, 59)) return false
-    if (!matchesField(date.getHours(), hours.value, 0, 23)) return false
-    if (!matchesField(date.getDate(), dayOfMonth.value, 1, 31)) return false
-    if (!matchesField(date.getMonth() + 1, month.value, 1, 12)) return false
-    if (!matchesField(date.getDay(), dayOfWeek.value, 0, 6)) return false
-    return true
-  }
-
-  const incrementTime = (): void => {
-    if (useSeconds.value) {
-      current.setSeconds(current.getSeconds() + 1)
-    } else {
-      current.setMinutes(current.getMinutes() + 1)
-    }
-  }
-
-  // Find next 5 executions
-  const findExecutions = (): void => {
-    incrementTime()
-
-    if (iterationCount.value >= maxIterations || executions.length >= 5) {
-      return
-    }
-
-    iterationCount.value++
-
-    if (matchesCron(current)) {
-      executions.push(new Date(current))
-    }
-
-    if (executions.length < 5 && iterationCount.value < maxIterations) {
-      findExecutions()
-    }
-  }
-
-  findExecutions()
-
-  return executions
-})
-
-// Format date
-const formatDate = (date: Date): string => {
-  return date.toLocaleString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: useSeconds.value ? '2-digit' : undefined,
-  })
-}
-
-// Presets
-const presets = [
-  { label: 'Every minute', value: '* * * * *' },
-  { label: 'Every hour', value: '0 * * * *' },
-  { label: 'Every day at midnight', value: '0 0 * * *' },
-  { label: 'Every day at noon', value: '0 12 * * *' },
-  { label: 'Every Monday', value: '0 0 * * 1' },
-  { label: 'Every weekday', value: '0 0 * * 1-5' },
-  { label: 'Every month (1st)', value: '0 0 1 * *' },
-  { label: 'Every 15 minutes', value: '*/15 * * * *' },
-  { label: 'Every 30 minutes', value: '*/30 * * * *' },
-]
-
-// Parse cron expression
-const parseCronExpression = (expr: string): void => {
-  const parts = expr.trim().split(/\s+/)
-
-  const parseField = (value: string, min: number, max: number): CronField => {
-    if (value === '*') {
-      return { type: 'every', values: [], rangeStart: min, rangeEnd: max, stepValue: 1 }
-    }
-    if (value.startsWith('*/')) {
-      const step = parseInt(value.slice(2), 10)
-      return { type: 'step', values: [], rangeStart: min, rangeEnd: max, stepValue: step }
-    }
-    if (value.includes('-') && !value.includes(',')) {
-      const rangeMatch = value.match(/(\d+)-(\d+)/)
-      if (rangeMatch?.[1] && rangeMatch[2]) {
-        return {
-          type: 'range',
-          values: [],
-          rangeStart: parseInt(rangeMatch[1], 10),
-          rangeEnd: parseInt(rangeMatch[2], 10),
-          stepValue: 1,
-        }
-      }
-    }
-    if (value.includes(',') || /^\d+$/.test(value)) {
-      const values = value.split(',').map(v => parseInt(v, 10))
-      return { type: 'specific', values, rangeStart: min, rangeEnd: max, stepValue: 1 }
-    }
-    return { type: 'every', values: [], rangeStart: min, rangeEnd: max, stepValue: 1 }
-  }
-
-  if (parts.length === 6) {
-    useSeconds.value = true
-    seconds.value = parseField(parts[0] ?? '*', 0, 59)
-    minutes.value = parseField(parts[1] ?? '*', 0, 59)
-    hours.value = parseField(parts[2] ?? '*', 0, 23)
-    dayOfMonth.value = parseField(parts[3] ?? '*', 1, 31)
-    month.value = parseField(parts[4] ?? '*', 1, 12)
-    dayOfWeek.value = parseField(parts[5] ?? '*', 0, 6)
-  } else if (parts.length === 5) {
-    useSeconds.value = false
-    minutes.value = parseField(parts[0] ?? '*', 0, 59)
-    hours.value = parseField(parts[1] ?? '*', 0, 23)
-    dayOfMonth.value = parseField(parts[2] ?? '*', 1, 31)
-    month.value = parseField(parts[3] ?? '*', 1, 12)
-    dayOfWeek.value = parseField(parts[4] ?? '*', 0, 6)
-  }
-}
-
-// Apply preset
+// UI actions with toast notifications
 const applyPreset = (preset: string) => {
-  parseCronExpression(preset)
-  toast.add({
-    severity: 'success',
-    summary: 'Applied',
-    detail: 'Preset applied',
-    life: 2000,
-  })
+  applyPresetInternal(preset)
+  showSuccess('Applied', 'Preset applied')
 }
 
-// Copy expression
 const copyExpression = () => {
-  copy(cronExpression.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Cron expression copied to clipboard',
-    life: 2000,
-  })
-}
-
-// Reset
-const resetAll = () => {
-  useSeconds.value = false
-  seconds.value = { type: 'every', values: [], rangeStart: 0, rangeEnd: 59, stepValue: 1 }
-  minutes.value = { type: 'every', values: [], rangeStart: 0, rangeEnd: 59, stepValue: 1 }
-  hours.value = { type: 'every', values: [], rangeStart: 0, rangeEnd: 23, stepValue: 1 }
-  dayOfMonth.value = { type: 'every', values: [], rangeStart: 1, rangeEnd: 31, stepValue: 1 }
-  month.value = { type: 'every', values: [], rangeStart: 1, rangeEnd: 12, stepValue: 1 }
-  dayOfWeek.value = { type: 'every', values: [], rangeStart: 0, rangeEnd: 6, stepValue: 1 }
-}
-
-// Generate value options for specific selection
-const generateValueOptions = (min: number, max: number) => {
-  return Array.from({ length: max - min + 1 }, (_, i) => ({
-    label: String(min + i),
-    value: min + i,
-  }))
+  void copy(manualInput.value, { detail: 'Cron expression copied to clipboard' })
 }
 </script>
 
@@ -428,14 +71,22 @@ const generateValueOptions = (min: number, max: number) => {
         <template #header>
           <div class="panel-header">
             <i class="pi pi-code"></i>
-            <span>Generated Expression</span>
+            <span>Expression</span>
           </div>
         </template>
 
         <div class="result-content">
-          <div class="cron-expression">
-            <code>{{ cronExpression }}</code>
+          <div class="cron-expression-input">
+            <InputText
+              v-model="manualInput"
+              class="cron-input"
+              placeholder="Enter cron expression (e.g., */5 * * * *)"
+              :invalid="!!parseError"
+            />
           </div>
+          <Message v-if="parseError" severity="error" :closable="false" class="parse-error">
+            {{ parseError }}
+          </Message>
           <div class="human-readable">
             <Tag severity="info" :value="humanReadable" />
           </div>
@@ -444,13 +95,20 @@ const generateValueOptions = (min: number, max: number) => {
         <Toolbar class="editor-toolbar">
           <template #start>
             <div class="seconds-toggle">
-              <ToggleSwitch v-model="useSeconds" inputId="useSeconds" />
+              <ToggleSwitch v-model="useSeconds" input-id="useSeconds" />
               <label for="useSeconds">Include Seconds</label>
             </div>
           </template>
           <template #end>
             <Button icon="pi pi-copy" label="Copy" @click="copyExpression" />
-            <Button icon="pi pi-refresh" severity="secondary" text @click="resetAll" />
+            <Button
+              v-tooltip.top="'Reset'"
+              icon="pi pi-refresh"
+              severity="secondary"
+              text
+              rounded
+              @click="resetAll"
+            />
           </template>
         </Toolbar>
       </Panel>
@@ -475,20 +133,20 @@ const generateValueOptions = (min: number, max: number) => {
               <div class="field-controls">
                 <SelectButton
                   v-model="seconds.type"
-                  :options="fieldTypeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allowEmpty="false"
+                  :options="FIELD_TYPE_OPTIONS"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
                 />
                 <div v-if="seconds.type === 'specific'" class="value-select">
                   <Select
                     v-model="seconds.values"
                     :options="generateValueOptions(0, 59)"
-                    optionLabel="label"
-                    optionValue="value"
+                    option-label="label"
+                    option-value="value"
                     placeholder="Select values"
                     multiple
-                    :maxSelectedLabels="5"
+                    :max-selected-labels="5"
                   />
                 </div>
                 <div v-if="seconds.type === 'range'" class="range-inputs">
@@ -520,20 +178,20 @@ const generateValueOptions = (min: number, max: number) => {
               <div class="field-controls">
                 <SelectButton
                   v-model="minutes.type"
-                  :options="fieldTypeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allowEmpty="false"
+                  :options="FIELD_TYPE_OPTIONS"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
                 />
                 <div v-if="minutes.type === 'specific'" class="value-select">
                   <Select
                     v-model="minutes.values"
                     :options="generateValueOptions(0, 59)"
-                    optionLabel="label"
-                    optionValue="value"
+                    option-label="label"
+                    option-value="value"
                     placeholder="Select values"
                     multiple
-                    :maxSelectedLabels="5"
+                    :max-selected-labels="5"
                   />
                 </div>
                 <div v-if="minutes.type === 'range'" class="range-inputs">
@@ -565,20 +223,20 @@ const generateValueOptions = (min: number, max: number) => {
               <div class="field-controls">
                 <SelectButton
                   v-model="hours.type"
-                  :options="fieldTypeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allowEmpty="false"
+                  :options="FIELD_TYPE_OPTIONS"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
                 />
                 <div v-if="hours.type === 'specific'" class="value-select">
                   <Select
                     v-model="hours.values"
                     :options="generateValueOptions(0, 23)"
-                    optionLabel="label"
-                    optionValue="value"
+                    option-label="label"
+                    option-value="value"
                     placeholder="Select values"
                     multiple
-                    :maxSelectedLabels="5"
+                    :max-selected-labels="5"
                   />
                 </div>
                 <div v-if="hours.type === 'range'" class="range-inputs">
@@ -605,20 +263,20 @@ const generateValueOptions = (min: number, max: number) => {
               <div class="field-controls">
                 <SelectButton
                   v-model="dayOfMonth.type"
-                  :options="fieldTypeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allowEmpty="false"
+                  :options="FIELD_TYPE_OPTIONS"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
                 />
                 <div v-if="dayOfMonth.type === 'specific'" class="value-select">
                   <Select
                     v-model="dayOfMonth.values"
                     :options="generateValueOptions(1, 31)"
-                    optionLabel="label"
-                    optionValue="value"
+                    option-label="label"
+                    option-value="value"
                     placeholder="Select values"
                     multiple
-                    :maxSelectedLabels="5"
+                    :max-selected-labels="5"
                   />
                 </div>
                 <div v-if="dayOfMonth.type === 'range'" class="range-inputs">
@@ -660,37 +318,37 @@ const generateValueOptions = (min: number, max: number) => {
               <div class="field-controls">
                 <SelectButton
                   v-model="month.type"
-                  :options="fieldTypeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allowEmpty="false"
+                  :options="FIELD_TYPE_OPTIONS"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
                 />
                 <div v-if="month.type === 'specific'" class="value-select">
                   <Select
                     v-model="month.values"
-                    :options="monthNames"
-                    optionLabel="label"
-                    optionValue="value"
+                    :options="MONTH_NAMES"
+                    option-label="label"
+                    option-value="value"
                     placeholder="Select months"
                     multiple
-                    :maxSelectedLabels="3"
+                    :max-selected-labels="3"
                   />
                 </div>
                 <div v-if="month.type === 'range'" class="range-inputs">
                   <Select
                     v-model="month.rangeStart"
-                    :options="monthNames"
-                    optionLabel="label"
-                    optionValue="value"
+                    :options="MONTH_NAMES"
+                    option-label="label"
+                    option-value="value"
                     placeholder="From"
                     class="month-select"
                   />
                   <span>to</span>
                   <Select
                     v-model="month.rangeEnd"
-                    :options="monthNames"
-                    optionLabel="label"
-                    optionValue="value"
+                    :options="MONTH_NAMES"
+                    option-label="label"
+                    option-value="value"
                     placeholder="To"
                     class="month-select"
                   />
@@ -714,37 +372,37 @@ const generateValueOptions = (min: number, max: number) => {
               <div class="field-controls">
                 <SelectButton
                   v-model="dayOfWeek.type"
-                  :options="fieldTypeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allowEmpty="false"
+                  :options="FIELD_TYPE_OPTIONS"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
                 />
                 <div v-if="dayOfWeek.type === 'specific'" class="value-select">
                   <Select
                     v-model="dayOfWeek.values"
-                    :options="dayNames"
-                    optionLabel="label"
-                    optionValue="value"
+                    :options="DAY_NAMES"
+                    option-label="label"
+                    option-value="value"
                     placeholder="Select days"
                     multiple
-                    :maxSelectedLabels="3"
+                    :max-selected-labels="3"
                   />
                 </div>
                 <div v-if="dayOfWeek.type === 'range'" class="range-inputs">
                   <Select
                     v-model="dayOfWeek.rangeStart"
-                    :options="dayNames"
-                    optionLabel="label"
-                    optionValue="value"
+                    :options="DAY_NAMES"
+                    option-label="label"
+                    option-value="value"
                     placeholder="From"
                     class="day-select"
                   />
                   <span>to</span>
                   <Select
                     v-model="dayOfWeek.rangeEnd"
-                    :options="dayNames"
-                    optionLabel="label"
-                    optionValue="value"
+                    :options="DAY_NAMES"
+                    option-label="label"
+                    option-value="value"
                     placeholder="To"
                     class="day-select"
                   />
@@ -772,7 +430,7 @@ const generateValueOptions = (min: number, max: number) => {
 
             <div class="presets-list">
               <Button
-                v-for="preset in presets"
+                v-for="preset in PRESETS"
                 :key="preset.value"
                 :label="preset.label"
                 severity="secondary"
@@ -812,17 +470,7 @@ const generateValueOptions = (min: number, max: number) => {
               </div>
             </template>
 
-            <DataTable
-              :value="[
-                { field: 'Seconds', range: '0-59', allowed: '* , - /' },
-                { field: 'Minutes', range: '0-59', allowed: '* , - /' },
-                { field: 'Hours', range: '0-23', allowed: '* , - /' },
-                { field: 'Day of Month', range: '1-31', allowed: '* , - / ? L W' },
-                { field: 'Month', range: '1-12', allowed: '* , - /' },
-                { field: 'Day of Week', range: '0-6', allowed: '* , - / ? L #' },
-              ]"
-              size="small"
-            >
+            <DataTable :value="CRON_REFERENCE" size="small">
               <Column field="field" header="Field" />
               <Column field="range" header="Range" />
               <Column field="allowed" header="Allowed" />
@@ -868,15 +516,28 @@ const generateValueOptions = (min: number, max: number) => {
   padding: 1rem;
 }
 
-.cron-expression {
-  code {
+.cron-expression-input {
+  width: 100%;
+  max-width: 500px;
+
+  .cron-input {
+    width: 100%;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    background-color: var(--surface-ground);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    font-size: 1.25rem;
+    text-align: center;
+    padding: 0.75rem 1rem;
+
+    &:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 20%, transparent);
+    }
   }
+}
+
+.parse-error {
+  width: 100%;
+  max-width: 500px;
+  margin: 0;
 }
 
 .human-readable {
@@ -943,11 +604,16 @@ const generateValueOptions = (min: number, max: number) => {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+  overflow-x: auto;
+
+  :deep(.p-selectbutton) {
+    flex-shrink: 0;
+  }
 }
 
 .value-select {
   flex: 1;
-  min-width: 200px;
+  min-width: 0;
 }
 
 .range-inputs {

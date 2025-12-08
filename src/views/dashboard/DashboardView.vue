@@ -12,7 +12,7 @@ import Divider from 'primevue/divider'
 
 import { getIpAddress, getHttpHeaders, getGeoInfo, getRdapInfo } from '@/api'
 
-const userAgent = globalThis.navigator?.userAgent ?? ''
+const userAgent = navigator.userAgent
 const uaParser = new UAParser()
 const uaParserResult = uaParser.getResult()
 
@@ -194,8 +194,8 @@ const browserInformation = {
           :value="httpHeaders.headers"
           :paginator="true"
           :rows="10"
-          :rowsPerPageOptions="[10, 20, 50]"
-          stripedRows
+          :rows-per-page-options="[10, 20, 50]"
+          striped-rows
           class="headers-table"
         >
           <Column field="name" header="Name" :sortable="true" style="width: 250px">
@@ -266,7 +266,7 @@ const browserInformation = {
             </div>
           </template>
           <div class="json-tree-container">
-            <JsonTreeView :json="JSON.stringify(geo)" :maxDepth="100" />
+            <JsonTreeView :json="JSON.stringify(geo)" :max-depth="100" />
           </div>
         </Panel>
 
@@ -279,7 +279,7 @@ const browserInformation = {
             </div>
           </template>
           <div class="json-tree-container">
-            <JsonTreeView :json="JSON.stringify(rdap)" :maxDepth="100" />
+            <JsonTreeView :json="JSON.stringify(rdap)" :max-depth="100" />
           </div>
         </Panel>
       </div>
