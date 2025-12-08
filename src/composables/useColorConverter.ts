@@ -228,7 +228,7 @@ export const expandShorthandHex = (hex: string): string => {
   const withHash = trimmed.startsWith('#') ? trimmed : '#' + trimmed
 
   if (/^#[a-fA-F0-9]{3}$/.test(withHash)) {
-    return `#${withHash[1] ?? ''}${withHash[1] ?? ''}${withHash[2] ?? ''}${withHash[2] ?? ''}${withHash[3] ?? ''}${withHash[3] ?? ''}`
+    return '#' + [1, 2, 3].map(i => (withHash[i] ?? '').repeat(2)).join('')
   }
   return withHash
 }
