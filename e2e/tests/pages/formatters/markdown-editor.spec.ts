@@ -7,7 +7,8 @@ test.describe('Markdown Previewer', () => {
     })
 
     await test.step('Enter markdown text', async () => {
-      const editor = page.locator('.ace_editor').first()
+      // CodeMirror editor
+      const editor = page.locator('.cm-editor').first()
       await editor.click()
       await page.keyboard.type('# Hello World')
     })

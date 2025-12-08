@@ -10,8 +10,8 @@ test.describe('JWT Decoder', () => {
     })
 
     await test.step('Enter JWT token', async () => {
-      // CodeEditor uses ace_editor, click and type
-      const editor = page.locator('.ace_editor').first()
+      // CodeMirror editor
+      const editor = page.locator('.cm-editor').first()
       await editor.click()
       await page.keyboard.type(sampleJwt)
     })
@@ -43,8 +43,8 @@ test.describe('JWT Decoder', () => {
     })
 
     await test.step('Enter invalid JWT', async () => {
-      // CodeEditor uses ace_editor
-      const editor = page.locator('.ace_editor').first()
+      // CodeMirror editor
+      const editor = page.locator('.cm-editor').first()
       await editor.click()
       await page.keyboard.type('invalid-jwt-token')
     })

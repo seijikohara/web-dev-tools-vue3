@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { useToast } from 'primevue/usetoast'
-
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
-import CodeEditor from '@/components/CodeEditor.vue'
+import CodeEditor from '@/components/editors/CodeEditor.vue'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Message from 'primevue/message'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import Divider from 'primevue/divider'
@@ -20,210 +19,57 @@ import InputGroupAddon from 'primevue/inputgroupaddon'
 import Toolbar from 'primevue/toolbar'
 import Panel from 'primevue/panel'
 
-const toast = useToast()
-const { copy } = useClipboard()
+import { useRegexTester, COMMON_PATTERNS } from '@/composables/useRegexTester'
+import { useClipboardToast } from '@/composables/useClipboardToast'
 
-// State
-const pattern = ref('')
-const testString = ref('')
-const replacement = ref('')
+const { copy, showInfo } = useClipboardToast()
 
-// Flags
-const flagGlobal = ref(true)
-const flagCaseInsensitive = ref(false)
-const flagMultiline = ref(false)
-const flagDotAll = ref(false)
-const flagUnicode = ref(false)
+// Use composable
+const {
+  // State
+  pattern,
+  testString,
+  replacement,
 
-interface Match {
-  index: number
-  match: string
-  groups: string[]
-  start: number
-  end: number
-}
+  // Flags
+  flagGlobal,
+  flagCaseInsensitive,
+  flagMultiline,
+  flagDotAll,
+  flagUnicode,
+  flags,
 
-const flags = computed(() => {
-  const parts: string[] = []
-  if (flagGlobal.value) parts.push('g')
-  if (flagCaseInsensitive.value) parts.push('i')
-  if (flagMultiline.value) parts.push('m')
-  if (flagDotAll.value) parts.push('s')
-  if (flagUnicode.value) parts.push('u')
-  return parts.join('')
-})
+  // Visualizer
+  showAst,
+  svgDiagram,
+  astJson,
+  visualizerError,
 
-const regexError = computed(() => {
-  if (!pattern.value) return ''
-  try {
-    new RegExp(pattern.value, flags.value)
-    return ''
-  } catch (e) {
-    return e instanceof Error ? e.message : 'Invalid regular expression'
-  }
-})
+  // Computed
+  regexError,
+  matches,
+  highlightedText,
+  replacedText,
+  fullPattern,
 
-const matches = computed((): Match[] => {
-  if (!pattern.value || !testString.value || regexError.value) return []
+  // Actions
+  usePattern,
+  loadSampleData,
+  clearAll,
+} = useRegexTester()
 
-  try {
-    const re = new RegExp(pattern.value, flags.value)
-
-    if (flagGlobal.value) {
-      return [...testString.value.matchAll(re)].map((match, index) => ({
-        index,
-        match: match[0],
-        groups: match.slice(1),
-        start: match.index ?? 0,
-        end: (match.index ?? 0) + match[0].length,
-      }))
-    }
-
-    const match = re.exec(testString.value)
-    if (match) {
-      return [
-        {
-          index: 0,
-          match: match[0],
-          groups: match.slice(1),
-          start: match.index,
-          end: match.index + match[0].length,
-        },
-      ]
-    }
-
-    return []
-  } catch {
-    return []
-  }
-})
-
-const highlightedText = computed(() => {
-  if (!pattern.value || !testString.value || matches.value.length === 0) {
-    return escapeHtml(testString.value)
-  }
-
-  try {
-    const re = new RegExp(pattern.value, flags.value)
-    return testString.value.replace(
-      re,
-      match => `<mark class="highlight">${escapeHtml(match)}</mark>`,
-    )
-  } catch {
-    return escapeHtml(testString.value)
-  }
-})
-
-const replacedText = computed(() => {
-  if (!pattern.value || !testString.value) return ''
-  try {
-    const re = new RegExp(pattern.value, flags.value)
-    return testString.value.replace(re, replacement.value)
-  } catch {
-    return ''
-  }
-})
-
-const escapeHtml = (str: string): string => {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-}
-
+// UI actions with toast notifications
 const copyPattern = () => {
-  const fullPattern = `/${pattern.value}/${flags.value}`
-  copy(fullPattern)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Pattern copied to clipboard',
-    life: 2000,
-  })
+  void copy(fullPattern.value, { detail: 'Pattern copied to clipboard' })
 }
 
 const copyReplaced = () => {
-  copy(replacedText.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Replaced text copied to clipboard',
-    life: 2000,
-  })
+  void copy(replacedText.value, { detail: 'Replaced text copied to clipboard' })
 }
 
-const clearAll = () => {
-  pattern.value = ''
-  testString.value = ''
-  replacement.value = ''
-}
-
-// Common patterns
-const commonPatterns = [
-  {
-    name: 'Email',
-    pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',
-    icon: 'pi pi-envelope',
-  },
-  {
-    name: 'URL',
-    pattern: "https?://[\\w\\-._~:/?#\\[\\]@!$&'()*+,;=%]+",
-    icon: 'pi pi-link',
-  },
-  {
-    name: 'IPv4',
-    pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b',
-    icon: 'pi pi-globe',
-  },
-  {
-    name: 'Phone (US)',
-    pattern: '\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}',
-    icon: 'pi pi-phone',
-  },
-  {
-    name: 'Date (YYYY-MM-DD)',
-    pattern: '\\d{4}-\\d{2}-\\d{2}',
-    icon: 'pi pi-calendar',
-  },
-  {
-    name: 'Time (HH:MM:SS)',
-    pattern: '\\d{2}:\\d{2}:\\d{2}',
-    icon: 'pi pi-clock',
-  },
-  {
-    name: 'Hex Color',
-    pattern: '#[0-9A-Fa-f]{6}\\b|#[0-9A-Fa-f]{3}\\b',
-    icon: 'pi pi-palette',
-  },
-  {
-    name: 'UUID',
-    pattern: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
-    icon: 'pi pi-id-card',
-  },
-]
-
-const usePattern = (p: string) => {
-  pattern.value = p
-  toast.add({
-    severity: 'info',
-    summary: 'Pattern Applied',
-    detail: 'Pattern has been loaded',
-    life: 2000,
-  })
-}
-
-// Sample test data
-const loadSampleData = () => {
-  pattern.value = '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}'
-  testString.value = `Contact us at:
-support@example.com
-sales@company.org
-invalid.email@
-john.doe+tag@subdomain.domain.co.uk
-not-an-email
-admin@localhost`
+const handleUsePattern = (p: string) => {
+  usePattern(p)
+  showInfo('Pattern Applied', 'Pattern has been loaded')
 }
 </script>
 
@@ -308,35 +154,35 @@ admin@localhost`
 
             <div class="flags-row">
               <div class="flag-option">
-                <ToggleSwitch v-model="flagGlobal" inputId="flagG" />
+                <ToggleSwitch v-model="flagGlobal" input-id="flagG" />
                 <label for="flagG">
                   <Tag value="g" :severity="flagGlobal ? 'success' : 'secondary'" />
                   <span>Global</span>
                 </label>
               </div>
               <div class="flag-option">
-                <ToggleSwitch v-model="flagCaseInsensitive" inputId="flagI" />
+                <ToggleSwitch v-model="flagCaseInsensitive" input-id="flagI" />
                 <label for="flagI">
                   <Tag value="i" :severity="flagCaseInsensitive ? 'success' : 'secondary'" />
                   <span>Case Insensitive</span>
                 </label>
               </div>
               <div class="flag-option">
-                <ToggleSwitch v-model="flagMultiline" inputId="flagM" />
+                <ToggleSwitch v-model="flagMultiline" input-id="flagM" />
                 <label for="flagM">
                   <Tag value="m" :severity="flagMultiline ? 'success' : 'secondary'" />
                   <span>Multiline</span>
                 </label>
               </div>
               <div class="flag-option">
-                <ToggleSwitch v-model="flagDotAll" inputId="flagS" />
+                <ToggleSwitch v-model="flagDotAll" input-id="flagS" />
                 <label for="flagS">
                   <Tag value="s" :severity="flagDotAll ? 'success' : 'secondary'" />
                   <span>Dot All</span>
                 </label>
               </div>
               <div class="flag-option">
-                <ToggleSwitch v-model="flagUnicode" inputId="flagU" />
+                <ToggleSwitch v-model="flagUnicode" input-id="flagU" />
                 <label for="flagU">
                   <Tag value="u" :severity="flagUnicode ? 'success' : 'secondary'" />
                   <span>Unicode</span>
@@ -354,194 +200,289 @@ admin@localhost`
         </Panel>
 
         <!-- Tabs -->
-        <TabView>
-          <TabPanel value="0" header="Test">
-            <div class="test-section">
-              <div class="field">
-                <label for="testString">
-                  <i class="pi pi-file-edit"></i>
-                  Test String
-                </label>
-                <CodeEditor v-model="testString" mode="plain_text" height="200px" />
-              </div>
+        <Tabs value="0">
+          <TabList>
+            <Tab value="0">Test</Tab>
+            <Tab value="1">Replace</Tab>
+            <Tab value="2">Visualize</Tab>
+            <Tab value="3">Common Patterns</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel value="0">
+              <div class="test-section">
+                <div class="field">
+                  <label for="testString">
+                    <i class="pi pi-file-edit"></i>
+                    Test String
+                  </label>
+                  <CodeEditor v-model="testString" mode="plain_text" height="200px" />
+                </div>
 
-              <div v-if="testString" class="results">
-                <Toolbar class="result-toolbar">
-                  <template #start>
-                    <div class="match-stats">
-                      <Tag
-                        :value="`${matches.length} match${matches.length !== 1 ? 'es' : ''}`"
-                        :severity="matches.length > 0 ? 'success' : 'secondary'"
-                        icon="pi pi-search"
-                      />
-                    </div>
-                  </template>
-                </Toolbar>
+                <div v-if="testString" class="results">
+                  <Toolbar class="result-toolbar">
+                    <template #start>
+                      <div class="match-stats">
+                        <Tag
+                          :value="`${matches.length} match${matches.length !== 1 ? 'es' : ''}`"
+                          :severity="matches.length > 0 ? 'success' : 'secondary'"
+                          icon="pi pi-search"
+                        />
+                      </div>
+                    </template>
+                  </Toolbar>
 
-                <Divider align="left">
-                  <span class="divider-text">
-                    <i class="pi pi-eye"></i>
-                    Highlighted Matches
-                  </span>
-                </Divider>
-
-                <div class="highlighted-text" v-html="highlightedText"></div>
-
-                <div v-if="matches.length > 0">
                   <Divider align="left">
                     <span class="divider-text">
-                      <i class="pi pi-list"></i>
-                      Match Details
+                      <i class="pi pi-eye"></i>
+                      Highlighted Matches
                     </span>
                   </Divider>
 
-                  <DataTable
-                    :value="matches"
-                    stripedRows
-                    size="small"
-                    :paginator="matches.length > 10"
-                    :rows="10"
-                    class="match-table"
-                  >
-                    <Column field="index" header="#" :headerStyle="{ width: '60px' }">
-                      <template #body="slotProps">
-                        <Tag :value="slotProps.data.index + 1" severity="secondary" />
-                      </template>
-                    </Column>
-                    <Column field="match" header="Match">
-                      <template #body="slotProps">
-                        <code class="match-value">{{ slotProps.data.match }}</code>
-                      </template>
-                    </Column>
-                    <Column header="Position" :headerStyle="{ width: '120px' }">
-                      <template #body="slotProps">
-                        <Tag
-                          :value="`${slotProps.data.start}-${slotProps.data.end}`"
-                          severity="info"
-                        />
-                      </template>
-                    </Column>
-                    <Column header="Groups">
-                      <template #body="slotProps">
-                        <div v-if="slotProps.data.groups.length > 0" class="groups-list">
+                  <div class="highlighted-text" v-html="highlightedText"></div>
+
+                  <div v-if="matches.length > 0">
+                    <Divider align="left">
+                      <span class="divider-text">
+                        <i class="pi pi-list"></i>
+                        Match Details
+                      </span>
+                    </Divider>
+
+                    <DataTable
+                      :value="matches"
+                      striped-rows
+                      size="small"
+                      :paginator="matches.length > 10"
+                      :rows="10"
+                      class="match-table"
+                    >
+                      <Column field="index" header="#" :header-style="{ width: '60px' }">
+                        <template #body="slotProps">
+                          <Tag :value="slotProps.data.index + 1" severity="secondary" />
+                        </template>
+                      </Column>
+                      <Column field="match" header="Match">
+                        <template #body="slotProps">
+                          <code class="match-value">{{ slotProps.data.match }}</code>
+                        </template>
+                      </Column>
+                      <Column header="Position" :header-style="{ width: '120px' }">
+                        <template #body="slotProps">
                           <Tag
-                            v-for="(g, i) in slotProps.data.groups"
-                            :key="i"
-                            :value="`$${i + 1}: ${g}`"
-                            severity="warn"
+                            :value="`${slotProps.data.start}-${slotProps.data.end}`"
+                            severity="info"
                           />
-                        </div>
-                        <span v-else class="no-groups">No groups</span>
-                      </template>
-                    </Column>
-                  </DataTable>
+                        </template>
+                      </Column>
+                      <Column header="Groups">
+                        <template #body="slotProps">
+                          <div v-if="slotProps.data.groups.length > 0" class="groups-list">
+                            <Tag
+                              v-for="(g, i) in slotProps.data.groups"
+                              :key="i"
+                              :value="`$${i + 1}: ${g}`"
+                              severity="warn"
+                            />
+                          </div>
+                          <span v-else class="no-groups">No groups</span>
+                        </template>
+                      </Column>
+                    </DataTable>
+                  </div>
                 </div>
-              </div>
 
-              <div v-else class="empty-state">
-                <i class="pi pi-file-edit"></i>
-                <span>Enter a test string to see matches</span>
-              </div>
-            </div>
-          </TabPanel>
-
-          <TabPanel value="1" header="Replace">
-            <div class="replace-section">
-              <div class="field">
-                <label for="testStringReplace">
+                <div v-else class="empty-state">
                   <i class="pi pi-file-edit"></i>
-                  Test String
-                </label>
-                <CodeEditor v-model="testString" mode="plain_text" height="150px" />
+                  <span>Enter a test string to see matches</span>
+                </div>
               </div>
+            </TabPanel>
 
-              <div class="field">
-                <label for="replacement">
-                  <i class="pi pi-pencil"></i>
-                  Replacement
-                </label>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <i class="pi pi-arrow-right"></i>
-                  </InputGroupAddon>
-                  <InputText
-                    id="replacement"
-                    v-model="replacement"
-                    class="w-full"
-                    placeholder="Replacement string (use $1, $2 for groups)"
-                  />
-                </InputGroup>
-                <small class="hint-text">
-                  <i class="pi pi-info-circle"></i>
-                  Use $1, $2, etc. to reference captured groups
-                </small>
-              </div>
+            <TabPanel value="1">
+              <div class="replace-section">
+                <div class="field">
+                  <label for="testStringReplace">
+                    <i class="pi pi-file-edit"></i>
+                    Test String
+                  </label>
+                  <CodeEditor v-model="testString" mode="plain_text" height="150px" />
+                </div>
 
-              <div v-if="testString && pattern" class="result-section">
-                <Divider align="left">
-                  <span class="divider-text">
-                    <i class="pi pi-check-circle"></i>
-                    Result
-                  </span>
-                </Divider>
-
-                <CodeEditor
-                  :model-value="replacedText"
-                  mode="plain_text"
-                  height="150px"
-                  :options="{ readOnly: true }"
-                />
-                <Toolbar class="result-actions">
-                  <template #end>
-                    <Button
-                      icon="pi pi-copy"
-                      label="Copy Result"
-                      severity="secondary"
-                      :disabled="!replacedText"
-                      @click="copyReplaced"
+                <div class="field">
+                  <label for="replacement">
+                    <i class="pi pi-pencil"></i>
+                    Replacement
+                  </label>
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <i class="pi pi-arrow-right"></i>
+                    </InputGroupAddon>
+                    <InputText
+                      id="replacement"
+                      v-model="replacement"
+                      class="w-full"
+                      placeholder="Replacement string (use $1, $2 for groups)"
                     />
-                  </template>
-                </Toolbar>
-              </div>
+                  </InputGroup>
+                  <small class="hint-text">
+                    <i class="pi pi-info-circle"></i>
+                    Use $1, $2, etc. to reference captured groups
+                  </small>
+                </div>
 
-              <div v-else class="empty-state">
-                <i class="pi pi-info-circle"></i>
-                <span>Enter pattern and test string to see replacement result</span>
-              </div>
-            </div>
-          </TabPanel>
+                <div v-if="testString && pattern" class="result-section">
+                  <Divider align="left">
+                    <span class="divider-text">
+                      <i class="pi pi-check-circle"></i>
+                      Result
+                    </span>
+                  </Divider>
 
-          <TabPanel value="2" header="Common Patterns">
-            <div class="common-patterns">
-              <div class="patterns-intro">
-                <Message severity="info" :closable="false">
-                  <div class="intro-content">
-                    <i class="pi pi-lightbulb"></i>
-                    <span>Click on a pattern to load it into the editor</span>
+                  <CodeEditor
+                    :model-value="replacedText"
+                    mode="plain_text"
+                    height="150px"
+                    :options="{ readOnly: true }"
+                  />
+                  <Toolbar class="result-actions">
+                    <template #end>
+                      <Button
+                        icon="pi pi-copy"
+                        label="Copy Result"
+                        severity="secondary"
+                        :disabled="!replacedText"
+                        @click="copyReplaced"
+                      />
+                    </template>
+                  </Toolbar>
+                </div>
+
+                <div v-else class="empty-state">
+                  <i class="pi pi-info-circle"></i>
+                  <span>Enter pattern and test string to see replacement result</span>
+                </div>
+              </div>
+            </TabPanel>
+
+            <TabPanel value="2">
+              <div class="visualize-section">
+                <div v-if="!pattern" class="empty-state">
+                  <i class="pi pi-sitemap"></i>
+                  <span>Enter a pattern to see visualization</span>
+                </div>
+
+                <div v-else-if="visualizerError" class="error-state">
+                  <Message severity="error" :closable="false">
+                    <div class="error-content">
+                      <i class="pi pi-exclamation-triangle"></i>
+                      <span>{{ visualizerError }}</span>
+                    </div>
+                  </Message>
+                </div>
+
+                <div v-else class="visualization-content">
+                  <Toolbar class="viz-toolbar">
+                    <template #start>
+                      <span class="viz-title">
+                        <i class="pi pi-sitemap"></i>
+                        Railroad Diagram
+                      </span>
+                    </template>
+                    <template #end>
+                      <div class="viz-actions">
+                        <ToggleSwitch v-model="showAst" input-id="showAst" />
+                        <label for="showAst">Show AST</label>
+                      </div>
+                    </template>
+                  </Toolbar>
+
+                  <div class="diagram-container">
+                    <div v-if="svgDiagram" class="svg-wrapper" v-html="svgDiagram"></div>
                   </div>
-                </Message>
-              </div>
 
-              <div class="patterns-grid">
-                <div
-                  v-for="p in commonPatterns"
-                  :key="p.name"
-                  class="pattern-card"
-                  @click="usePattern(p.pattern)"
-                >
-                  <div class="pattern-header">
-                    <i :class="p.icon"></i>
-                    <span class="pattern-name">{{ p.name }}</span>
+                  <div v-if="showAst && astJson" class="ast-section">
+                    <Divider align="left">
+                      <span class="divider-text">
+                        <i class="pi pi-code"></i>
+                        Abstract Syntax Tree (AST)
+                      </span>
+                    </Divider>
+                    <CodeEditor
+                      :model-value="astJson"
+                      mode="json"
+                      height="300px"
+                      :options="{ readOnly: true }"
+                    />
                   </div>
-                  <code class="pattern-value">{{ p.pattern }}</code>
-                  <div class="pattern-action">
-                    <Tag value="Click to use" severity="secondary" icon="pi pi-arrow-right" />
+
+                  <Divider align="left">
+                    <span class="divider-text">
+                      <i class="pi pi-palette"></i>
+                      Legend
+                    </span>
+                  </Divider>
+                  <div class="legend">
+                    <div class="legend-item">
+                      <span class="legend-box legend-char"></span>
+                      <span>Character</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-box legend-meta"></span>
+                      <span>Meta Character</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-box legend-charclass"></span>
+                      <span>Character Class</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-box legend-group"></span>
+                      <span>Group</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-box legend-quantifier"></span>
+                      <span>Quantifier</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-box legend-assertion"></span>
+                      <span>Assertion</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </TabPanel>
-        </TabView>
+            </TabPanel>
+
+            <TabPanel value="3">
+              <div class="common-patterns">
+                <div class="patterns-intro">
+                  <Message severity="info" :closable="false">
+                    <div class="intro-content">
+                      <i class="pi pi-lightbulb"></i>
+                      <span>Click on a pattern to load it into the editor</span>
+                    </div>
+                  </Message>
+                </div>
+
+                <div class="patterns-grid">
+                  <div
+                    v-for="p in COMMON_PATTERNS"
+                    :key="p.name"
+                    class="pattern-card"
+                    @click="handleUsePattern(p.pattern)"
+                  >
+                    <div class="pattern-header">
+                      <i :class="p.icon"></i>
+                      <span class="pattern-name">{{ p.name }}</span>
+                    </div>
+                    <code class="pattern-value">{{ p.pattern }}</code>
+                    <div class="pattern-action">
+                      <Tag value="Click to use" severity="secondary" icon="pi pi-arrow-right" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </div>
     </template>
   </Card>
@@ -826,5 +767,127 @@ admin@localhost`
 .pattern-action {
   display: flex;
   justify-content: flex-end;
+}
+
+// Visualize tab styles
+.visualize-section {
+  padding: 0.5rem 0;
+}
+
+.error-state {
+  padding: 1rem 0;
+}
+
+.visualization-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.viz-toolbar {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.viz-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+
+  i {
+    color: var(--primary-color);
+  }
+}
+
+.viz-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+}
+
+.diagram-container {
+  background: #fafafa;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  overflow-x: auto;
+  min-height: 150px;
+}
+
+.svg-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+
+  :deep(svg) {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.ast-section {
+  margin-top: 1rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-ground);
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.legend-box {
+  display: inline-block;
+  width: 24px;
+  height: 16px;
+  border-radius: 4px;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.legend-char {
+  background: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.legend-meta {
+  background: #fff9c4;
+  border-color: #ffc107;
+}
+
+.legend-charclass {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.legend-group {
+  background: #fff3e0;
+  border-color: #ff9800;
+}
+
+.legend-quantifier {
+  background: #fce4ec;
+  border-color: #e91e63;
+}
+
+.legend-assertion {
+  background: #f3e5f5;
+  border-color: #9c27b0;
 }
 </style>

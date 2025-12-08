@@ -7,15 +7,15 @@ test.describe('Diff Viewer', () => {
     })
 
     await test.step('Enter original text', async () => {
-      // First CodeEditor is for original text
-      const originalEditor = page.locator('.ace_editor').first()
+      // First CodeMirror editor is for original text
+      const originalEditor = page.locator('.cm-editor').first()
       await originalEditor.click()
       await page.keyboard.type('Hello World\nThis is a test')
     })
 
     await test.step('Enter modified text', async () => {
-      // Second CodeEditor is for modified text
-      const modifiedEditor = page.locator('.ace_editor').nth(1)
+      // Second CodeMirror editor is for modified text
+      const modifiedEditor = page.locator('.cm-editor').nth(1)
       await modifiedEditor.click()
       await page.keyboard.type('Hello World\nThis is modified')
     })

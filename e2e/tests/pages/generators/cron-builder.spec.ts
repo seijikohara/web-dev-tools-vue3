@@ -7,9 +7,10 @@ test.describe('Cron Builder', () => {
     })
 
     await test.step('Verify default expression is displayed', async () => {
-      const expression = page.locator('.cron-expression code')
-      await expect(expression).toBeVisible()
-      await expect(expression).toContainText('* * * * *')
+      // Expression is in InputText with .cron-input class
+      const expressionInput = page.locator('.cron-input')
+      await expect(expressionInput).toBeVisible()
+      await expect(expressionInput).toHaveValue('* * * * *')
     })
   })
 
@@ -23,8 +24,8 @@ test.describe('Cron Builder', () => {
     })
 
     await test.step('Verify expression is updated', async () => {
-      const expression = page.locator('.cron-expression code')
-      await expect(expression).toContainText('0 * * * *')
+      const expressionInput = page.locator('.cron-input')
+      await expect(expressionInput).toHaveValue('0 * * * *')
     })
   })
 
@@ -45,14 +46,15 @@ test.describe('Cron Builder', () => {
     })
 
     await test.step('Toggle seconds switch', async () => {
-      const secondsToggle = page.locator('#useSeconds')
+      // ToggleSwitch component
+      const secondsToggle = page.locator('.p-toggleswitch')
       await secondsToggle.click()
     })
 
     await test.step('Verify expression has 6 fields', async () => {
-      const expression = page.locator('.cron-expression code')
-      const text = await expression.textContent()
-      const fields = text?.trim().split(' ')
+      const expressionInput = page.locator('.cron-input')
+      const text = await expressionInput.inputValue()
+      const fields = text.trim().split(' ')
       expect(fields?.length).toBe(6)
     })
   })

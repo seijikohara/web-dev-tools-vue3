@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { useToast } from 'primevue/usetoast'
+import { useClipboardToast } from '@/composables/useClipboardToast'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
-import Slider from 'primevue/slider'
+import InputNumber from 'primevue/inputnumber'
 import ColorPicker from 'primevue/colorpicker'
 import Tag from 'primevue/tag'
 import Divider from 'primevue/divider'
@@ -14,310 +12,37 @@ import InputGroup from 'primevue/inputgroup'
 import InputGroupAddon from 'primevue/inputgroupaddon'
 import Panel from 'primevue/panel'
 
-const toast = useToast()
-const { copy } = useClipboard()
+import { useColorConverter, COLOR_PALETTE } from '@/composables/useColorConverter'
 
-// Color state
-const hex = ref('#3b82f6')
-const rgb = ref({ r: 59, g: 130, b: 246 })
-const hsl = ref({ h: 217, s: 91, l: 60 })
-const hsv = ref({ h: 217, s: 76, v: 96 })
+const { copy } = useClipboardToast()
 
-// Input states for manual editing
-const hexInput = ref('#3b82f6')
-const rgbInput = ref('rgb(59, 130, 246)')
-const hslInput = ref('hsl(217, 91%, 60%)')
-const cmykInput = ref('cmyk(76%, 47%, 0%, 4%)')
+// Use composable
+const {
+  hex,
+  rgb,
+  hsl,
+  hsv,
+  hexInput,
+  rgbInput,
+  hslInput,
+  cmykInput,
+  alpha,
+  colorPickerValue,
+  rgbaString,
+  hslaString,
+  hex8String,
+  cmyk,
+  contrastColor,
+  applyHexInput,
+  applyRgbInput,
+  applyHslInput,
+  selectPaletteColor,
+} = useColorConverter()
 
-// Alpha channel
-const alpha = ref(100)
-
-// Color picker value (without #)
-const colorPickerValue = ref('3b82f6')
-
-// Conversion functions
-const hexToRgb = (hexValue: string): { r: number; g: number; b: number } | null => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexValue)
-  if (!result?.[1] || !result[2] || !result[3]) return null
-  return {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16),
-  }
-}
-
-const rgbToHex = (r: number, g: number, b: number): string => {
-  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')
-}
-
-const rgbToHsl = (r: number, g: number, b: number): { h: number; s: number; l: number } => {
-  const rNorm = r / 255
-  const gNorm = g / 255
-  const bNorm = b / 255
-
-  const max = Math.max(rNorm, gNorm, bNorm)
-  const min = Math.min(rNorm, gNorm, bNorm)
-  const l = (max + min) / 2
-
-  if (max === min) {
-    return { h: 0, s: 0, l: Math.round(l * 100) }
-  }
-
-  const d = max - min
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-
-  const computeHue = (): number => {
-    switch (max) {
-      case rNorm:
-        return ((gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0)) / 6
-      case gNorm:
-        return ((bNorm - rNorm) / d + 2) / 6
-      case bNorm:
-        return ((rNorm - gNorm) / d + 4) / 6
-      default:
-        return 0
-    }
-  }
-
-  return {
-    h: Math.round(computeHue() * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100),
-  }
-}
-
-const hslToRgb = (h: number, s: number, l: number): { r: number; g: number; b: number } => {
-  const hNorm = h / 360
-  const sNorm = s / 100
-  const lNorm = l / 100
-
-  if (sNorm === 0) {
-    const gray = Math.round(lNorm * 255)
-    return { r: gray, g: gray, b: gray }
-  }
-
-  const hue2rgb = (p: number, q: number, t: number): number => {
-    const tNorm = t < 0 ? t + 1 : t > 1 ? t - 1 : t
-    if (tNorm < 1 / 6) return p + (q - p) * 6 * tNorm
-    if (tNorm < 1 / 2) return q
-    if (tNorm < 2 / 3) return p + (q - p) * (2 / 3 - tNorm) * 6
-    return p
-  }
-
-  const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm
-  const p = 2 * lNorm - q
-
-  return {
-    r: Math.round(hue2rgb(p, q, hNorm + 1 / 3) * 255),
-    g: Math.round(hue2rgb(p, q, hNorm) * 255),
-    b: Math.round(hue2rgb(p, q, hNorm - 1 / 3) * 255),
-  }
-}
-
-const rgbToHsv = (r: number, g: number, b: number): { h: number; s: number; v: number } => {
-  const rNorm = r / 255
-  const gNorm = g / 255
-  const bNorm = b / 255
-
-  const max = Math.max(rNorm, gNorm, bNorm)
-  const min = Math.min(rNorm, gNorm, bNorm)
-  const v = max
-  const d = max - min
-  const s = max === 0 ? 0 : d / max
-
-  if (max === min) {
-    return { h: 0, s: Math.round(s * 100), v: Math.round(v * 100) }
-  }
-
-  const computeHue = (): number => {
-    switch (max) {
-      case rNorm:
-        return ((gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0)) / 6
-      case gNorm:
-        return ((bNorm - rNorm) / d + 2) / 6
-      case bNorm:
-        return ((rNorm - gNorm) / d + 4) / 6
-      default:
-        return 0
-    }
-  }
-
-  return {
-    h: Math.round(computeHue() * 360),
-    s: Math.round(s * 100),
-    v: Math.round(v * 100),
-  }
-}
-
-const rgbToCmyk = (
-  r: number,
-  g: number,
-  b: number,
-): { c: number; m: number; y: number; k: number } => {
-  const rNorm = r / 255
-  const gNorm = g / 255
-  const bNorm = b / 255
-
-  const k = 1 - Math.max(rNorm, gNorm, bNorm)
-  const c = k === 1 ? 0 : (1 - rNorm - k) / (1 - k)
-  const m = k === 1 ? 0 : (1 - gNorm - k) / (1 - k)
-  const y = k === 1 ? 0 : (1 - bNorm - k) / (1 - k)
-
-  return {
-    c: Math.round(c * 100),
-    m: Math.round(m * 100),
-    y: Math.round(y * 100),
-    k: Math.round(k * 100),
-  }
-}
-
-// Update all values from RGB
-const updateFromRgb = (r: number, g: number, b: number) => {
-  rgb.value = { r, g, b }
-  hex.value = rgbToHex(r, g, b)
-  hsl.value = rgbToHsl(r, g, b)
-  hsv.value = rgbToHsv(r, g, b)
-  colorPickerValue.value = hex.value.slice(1)
-  updateInputStrings()
-}
-
-// Update input string representations
-const updateInputStrings = () => {
-  hexInput.value = hex.value.toUpperCase()
-  rgbInput.value = `rgb(${rgb.value.r}, ${rgb.value.g}, ${rgb.value.b})`
-  hslInput.value = `hsl(${hsl.value.h}, ${hsl.value.s}%, ${hsl.value.l}%)`
-  const cmyk = rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b)
-  cmykInput.value = `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`
-}
-
-// Parse and apply hex input
-const applyHexInput = () => {
-  const trimmed = hexInput.value.trim()
-  const withHash = trimmed.startsWith('#') ? trimmed : '#' + trimmed
-
-  // Expand shorthand (#RGB to #RRGGBB)
-  const expanded = /^#[a-fA-F0-9]{3}$/.test(withHash)
-    ? `#${withHash[1] ?? ''}${withHash[1] ?? ''}${withHash[2] ?? ''}${withHash[2] ?? ''}${withHash[3] ?? ''}${withHash[3] ?? ''}`
-    : withHash
-
-  const rgbVal = hexToRgb(expanded)
-  if (rgbVal) {
-    updateFromRgb(rgbVal.r, rgbVal.g, rgbVal.b)
-  }
-}
-
-// Parse and apply RGB input
-const applyRgbInput = () => {
-  const match = rgbInput.value.match(/rgba?\(?\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/)
-  if (match?.[1] && match[2] && match[3]) {
-    const r = Math.min(255, Math.max(0, parseInt(match[1])))
-    const g = Math.min(255, Math.max(0, parseInt(match[2])))
-    const b = Math.min(255, Math.max(0, parseInt(match[3])))
-    updateFromRgb(r, g, b)
-  }
-}
-
-// Parse and apply HSL input
-const applyHslInput = () => {
-  const match = hslInput.value.match(/hsla?\(?\s*(\d+)\s*,\s*(\d+)%?\s*,\s*(\d+)%?/)
-  if (match?.[1] && match[2] && match[3]) {
-    const h = Math.min(360, Math.max(0, parseInt(match[1])))
-    const s = Math.min(100, Math.max(0, parseInt(match[2])))
-    const l = Math.min(100, Math.max(0, parseInt(match[3])))
-    const rgbVal = hslToRgb(h, s, l)
-    updateFromRgb(rgbVal.r, rgbVal.g, rgbVal.b)
-  }
-}
-
-// Watch color picker changes
-watch(colorPickerValue, newValue => {
-  const rgbVal = hexToRgb(newValue)
-  if (rgbVal) {
-    updateFromRgb(rgbVal.r, rgbVal.g, rgbVal.b)
-  }
-})
-
-// Watch individual RGB sliders
-watch(
-  () => [rgb.value.r, rgb.value.g, rgb.value.b],
-  () => {
-    hex.value = rgbToHex(rgb.value.r, rgb.value.g, rgb.value.b)
-    hsl.value = rgbToHsl(rgb.value.r, rgb.value.g, rgb.value.b)
-    hsv.value = rgbToHsv(rgb.value.r, rgb.value.g, rgb.value.b)
-    colorPickerValue.value = hex.value.slice(1)
-    updateInputStrings()
-  },
-)
-
-// Computed values with alpha
-const rgbaString = computed(() => {
-  const a = alpha.value / 100
-  return `rgba(${rgb.value.r}, ${rgb.value.g}, ${rgb.value.b}, ${a})`
-})
-
-const hslaString = computed(() => {
-  const a = alpha.value / 100
-  return `hsla(${hsl.value.h}, ${hsl.value.s}%, ${hsl.value.l}%, ${a})`
-})
-
-const hex8String = computed(() => {
-  const alphaHex = Math.round((alpha.value / 100) * 255)
-    .toString(16)
-    .padStart(2, '0')
-  return hex.value + alphaHex
-})
-
-// Copy functions
+// UI action with toast notification
 const copyValue = (value: string, label: string) => {
-  copy(value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: `${label} copied to clipboard`,
-    life: 2000,
-  })
+  void copy(value, { detail: `${label} copied to clipboard` })
 }
-
-// Initialize
-updateInputStrings()
-
-// Common color palette
-const colorPalette = [
-  { name: 'Red', hex: '#ef4444' },
-  { name: 'Orange', hex: '#f97316' },
-  { name: 'Amber', hex: '#f59e0b' },
-  { name: 'Yellow', hex: '#eab308' },
-  { name: 'Lime', hex: '#84cc16' },
-  { name: 'Green', hex: '#22c55e' },
-  { name: 'Emerald', hex: '#10b981' },
-  { name: 'Teal', hex: '#14b8a6' },
-  { name: 'Cyan', hex: '#06b6d4' },
-  { name: 'Sky', hex: '#0ea5e9' },
-  { name: 'Blue', hex: '#3b82f6' },
-  { name: 'Indigo', hex: '#6366f1' },
-  { name: 'Violet', hex: '#8b5cf6' },
-  { name: 'Purple', hex: '#a855f7' },
-  { name: 'Fuchsia', hex: '#d946ef' },
-  { name: 'Pink', hex: '#ec4899' },
-  { name: 'Rose', hex: '#f43f5e' },
-  { name: 'Slate', hex: '#64748b' },
-]
-
-const selectPaletteColor = (hexValue: string) => {
-  const rgbVal = hexToRgb(hexValue)
-  if (rgbVal) {
-    updateFromRgb(rgbVal.r, rgbVal.g, rgbVal.b)
-  }
-}
-
-// Contrast color for text
-const contrastColor = computed(() => {
-  const luminance = (0.299 * rgb.value.r + 0.587 * rgb.value.g + 0.114 * rgb.value.b) / 255
-  return luminance > 0.5 ? '#000000' : '#ffffff'
-})
-
-// CMYK computed
-const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
 </script>
 
 <template>
@@ -373,6 +98,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                       icon="pi pi-copy"
                       severity="secondary"
                       text
+                      rounded
                       @click="copyValue(hexInput, 'HEX')"
                     />
                   </InputGroupAddon>
@@ -399,6 +125,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                       icon="pi pi-copy"
                       severity="secondary"
                       text
+                      rounded
                       @click="copyValue(rgbInput, 'RGB')"
                     />
                   </InputGroupAddon>
@@ -425,6 +152,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                       icon="pi pi-copy"
                       severity="secondary"
                       text
+                      rounded
                       @click="copyValue(hslInput, 'HSL')"
                     />
                   </InputGroupAddon>
@@ -446,6 +174,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                       icon="pi pi-copy"
                       severity="secondary"
                       text
+                      rounded
                       @click="copyValue(cmykInput, 'CMYK')"
                     />
                   </InputGroupAddon>
@@ -464,7 +193,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
             </template>
 
             <div class="alpha-section">
-              <Slider v-model="alpha" :min="0" :max="100" class="alpha-slider" />
+              <InputNumber v-model="alpha" :min="0" :max="100" show-buttons suffix="%" />
 
               <div class="alpha-formats">
                 <div class="alpha-format-item">
@@ -477,6 +206,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                         icon="pi pi-copy"
                         severity="secondary"
                         text
+                        rounded
                         @click="copyValue(rgbaString, 'RGBA')"
                       />
                     </InputGroupAddon>
@@ -492,6 +222,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                         icon="pi pi-copy"
                         severity="secondary"
                         text
+                        rounded
                         @click="copyValue(hslaString, 'HSLA')"
                       />
                     </InputGroupAddon>
@@ -507,6 +238,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
                         icon="pi pi-copy"
                         severity="secondary"
                         text
+                        rounded
                         @click="copyValue(hex8String.toUpperCase(), 'HEX8')"
                       />
                     </InputGroupAddon>
@@ -523,30 +255,23 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
             <template #header>
               <div class="panel-header">
                 <i class="pi pi-sliders-h"></i>
-                <span>RGB Sliders</span>
+                <span>RGB Values</span>
               </div>
             </template>
 
-            <div class="slider-group">
-              <div class="slider-header">
+            <div class="rgb-inputs">
+              <div class="rgb-input-group">
                 <Tag value="R" class="slider-tag slider-tag-red" />
-                <span class="slider-value">{{ rgb.r }}</span>
+                <InputNumber v-model="rgb.r" :min="0" :max="255" show-buttons />
               </div>
-              <Slider v-model="rgb.r" :min="0" :max="255" class="slider-red" />
-            </div>
-            <div class="slider-group">
-              <div class="slider-header">
+              <div class="rgb-input-group">
                 <Tag value="G" class="slider-tag slider-tag-green" />
-                <span class="slider-value">{{ rgb.g }}</span>
+                <InputNumber v-model="rgb.g" :min="0" :max="255" show-buttons />
               </div>
-              <Slider v-model="rgb.g" :min="0" :max="255" class="slider-green" />
-            </div>
-            <div class="slider-group">
-              <div class="slider-header">
+              <div class="rgb-input-group">
                 <Tag value="B" class="slider-tag slider-tag-blue" />
-                <span class="slider-value">{{ rgb.b }}</span>
+                <InputNumber v-model="rgb.b" :min="0" :max="255" show-buttons />
               </div>
-              <Slider v-model="rgb.b" :min="0" :max="255" class="slider-blue" />
             </div>
           </Panel>
 
@@ -628,7 +353,7 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
       </Divider>
       <div class="palette-grid">
         <div
-          v-for="color in colorPalette"
+          v-for="color in COLOR_PALETTE"
           :key="color.name"
           v-tooltip.top="color.name"
           class="palette-item"
@@ -751,10 +476,6 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
   gap: 1rem;
 }
 
-.alpha-slider {
-  margin-bottom: 0.5rem;
-}
-
 .alpha-formats {
   display: flex;
   flex-direction: column;
@@ -774,15 +495,16 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
   min-width: 220px;
 }
 
-.slider-group {
-  margin-bottom: 1rem;
+.rgb-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.slider-header {
+.rgb-input-group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+  gap: 0.75rem;
 }
 
 .slider-tag-red {
@@ -794,27 +516,6 @@ const cmyk = computed(() => rgbToCmyk(rgb.value.r, rgb.value.g, rgb.value.b))
 }
 
 .slider-tag-blue {
-  background: #3b82f6 !important;
-}
-
-.slider-value {
-  font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 0.9rem;
-  color: var(--text-color-secondary);
-}
-
-.slider-red :deep(.p-slider-range),
-.slider-red :deep(.p-slider-handle) {
-  background: #ef4444 !important;
-}
-
-.slider-green :deep(.p-slider-range),
-.slider-green :deep(.p-slider-handle) {
-  background: #22c55e !important;
-}
-
-.slider-blue :deep(.p-slider-range),
-.slider-blue :deep(.p-slider-handle) {
   background: #3b82f6 !important;
 }
 

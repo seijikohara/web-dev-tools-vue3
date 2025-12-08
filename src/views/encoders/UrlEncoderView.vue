@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { useToast } from 'primevue/usetoast'
-
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -19,307 +18,78 @@ import InputGroup from 'primevue/inputgroup'
 import InputGroupAddon from 'primevue/inputgroupaddon'
 import SelectButton from 'primevue/selectbutton'
 
-import CodeEditor from '@/components/CodeEditor.vue'
+import CodeEditor from '@/components/editors/CodeEditor.vue'
 
-const toast = useToast()
-const { copy } = useClipboard()
+import {
+  useUrlEncoder,
+  ENCODING_MODE_OPTIONS,
+  ENCODING_EXAMPLES,
+} from '@/composables/useUrlEncoder'
+import { useClipboardToast } from '@/composables/useClipboardToast'
 
-// Encode/Decode tab - Two editor layout
-const inputText = ref('')
-const outputText = ref('')
-const encodeError = ref('')
+const { copy, showSuccess, showError } = useClipboardToast()
 
-type EncodingMode = 'encodeURIComponent' | 'encodeURI'
-const encodingMode = ref<EncodingMode>('encodeURIComponent')
-const encodingModeOptions = [
-  { label: 'Component', value: 'encodeURIComponent', tooltip: 'encodeURIComponent' },
-  { label: 'URI', value: 'encodeURI', tooltip: 'encodeURI' },
-]
+// Use composable
+const {
+  // Encode/Decode
+  inputText,
+  outputText,
+  encodeError,
+  encodingMode,
+  inputStats,
+  outputStats,
+  swapValues,
+  decodeOutput,
+  loadSample,
+  clearAll,
 
-// Auto-encode when input changes
-watch([inputText, encodingMode], () => {
-  encodeError.value = ''
-  if (!inputText.value) {
-    outputText.value = ''
-    return
-  }
+  // URL Parser
+  urlInput,
+  urlParseError,
+  parsedUrl,
+  queryParams,
+  loadSampleUrl,
 
-  try {
-    if (encodingMode.value === 'encodeURIComponent') {
-      outputText.value = encodeURIComponent(inputText.value)
-    } else {
-      outputText.value = encodeURI(inputText.value)
-    }
-  } catch (error) {
-    encodeError.value = error instanceof Error ? error.message : 'Encode failed'
-    outputText.value = ''
-  }
-})
+  // Query Builder
+  builderBaseUrl,
+  builderParams,
+  builtUrl,
+  addParam,
+  removeParam,
+  loadUrlToBuilder,
+  clearBuilder,
+} = useUrlEncoder()
 
-const swapValues = () => {
-  const temp = inputText.value
-  inputText.value = outputText.value
-  outputText.value = temp
-}
-
-const decodeOutput = () => {
-  encodeError.value = ''
-  if (!outputText.value) return
-
-  try {
-    if (encodingMode.value === 'encodeURIComponent') {
-      inputText.value = decodeURIComponent(outputText.value)
-    } else {
-      inputText.value = decodeURI(outputText.value)
-    }
-    toast.add({
-      severity: 'success',
-      summary: 'Decoded',
-      detail: 'Text decoded successfully',
-      life: 2000,
-    })
-  } catch (error) {
-    encodeError.value =
-      error instanceof Error ? error.message : 'Decode failed - Invalid URL encoding'
-  }
-}
-
+// UI actions with toast notifications
 const copyInput = () => {
-  copy(inputText.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Input copied to clipboard',
-    life: 2000,
-  })
+  void copy(inputText.value, { detail: 'Input copied to clipboard' })
 }
 
 const copyOutput = () => {
-  copy(outputText.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Encoded text copied to clipboard',
-    life: 2000,
-  })
+  void copy(outputText.value, { detail: 'Encoded text copied to clipboard' })
 }
 
-const loadSample = () => {
-  inputText.value = 'Hello World! こんにちは 你好 🌍 #test?query=value&foo=bar'
+const handleDecode = () => {
+  const success = decodeOutput()
+  if (success) {
+    showSuccess('Decoded', 'Text decoded successfully')
+  }
 }
-
-const clearAll = () => {
-  inputText.value = ''
-  outputText.value = ''
-  encodeError.value = ''
-}
-
-// Stats
-const inputStats = computed(() => {
-  if (!inputText.value) return null
-  return {
-    chars: inputText.value.length,
-    bytes: new TextEncoder().encode(inputText.value).length,
-  }
-})
-
-const outputStats = computed(() => {
-  if (!outputText.value) return null
-  return {
-    chars: outputText.value.length,
-    ratio: inputText.value
-      ? ((outputText.value.length / inputText.value.length) * 100).toFixed(0)
-      : '0',
-  }
-})
-
-// URL Parser tab
-const urlInput = ref('')
-
-interface ParsedUrl {
-  protocol: string
-  hostname: string
-  port: string
-  pathname: string
-  search: string
-  hash: string
-  origin: string
-  username: string
-  password: string
-}
-
-// Compute URL parse error separately to avoid side effects
-const urlParseError = computed(() => {
-  if (!urlInput.value.trim()) return ''
-  try {
-    new URL(urlInput.value)
-    return ''
-  } catch {
-    return 'Invalid URL format'
-  }
-})
-
-const parsedUrl = computed((): ParsedUrl | null => {
-  if (!urlInput.value.trim() || urlParseError.value) return null
-
-  try {
-    const url = new URL(urlInput.value)
-    return {
-      protocol: url.protocol,
-      hostname: url.hostname,
-      port: url.port,
-      pathname: url.pathname,
-      search: url.search,
-      hash: url.hash,
-      origin: url.origin,
-      username: url.username,
-      password: url.password,
-    }
-  } catch {
-    return null
-  }
-})
-
-interface QueryParam {
-  key: string
-  value: string
-  encodedKey: string
-  encodedValue: string
-}
-
-const queryParams = computed((): QueryParam[] => {
-  if (!urlInput.value.trim()) return []
-
-  try {
-    const url = new URL(urlInput.value)
-    const params: QueryParam[] = []
-    url.searchParams.forEach((value, key) => {
-      params.push({
-        key,
-        value,
-        encodedKey: encodeURIComponent(key),
-        encodedValue: encodeURIComponent(value),
-      })
-    })
-    return params
-  } catch {
-    return []
-  }
-})
 
 const copyParsedValue = (value: string, label: string) => {
-  copy(value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: `${label} copied to clipboard`,
-    life: 2000,
-  })
+  void copy(value, { detail: `${label} copied to clipboard` })
 }
-
-const loadSampleUrl = () => {
-  urlInput.value =
-    'https://user:pass@example.com:8080/path/to/page?name=John%20Doe&age=30&city=Tokyo#section1'
-}
-
-// Query Builder tab
-interface BuilderParam {
-  id: number
-  key: string
-  value: string
-}
-
-const builderBaseUrl = ref('https://example.com/path')
-const builderParams = ref<BuilderParam[]>([{ id: 1, key: '', value: '' }])
-const nextParamId = ref(2)
-
-const addParam = () => {
-  builderParams.value.push({ id: nextParamId.value++, key: '', value: '' })
-}
-
-const removeParam = (id: number) => {
-  builderParams.value = builderParams.value.filter(p => p.id !== id)
-  if (builderParams.value.length === 0) {
-    addParam()
-  }
-}
-
-const builtUrl = computed(() => {
-  try {
-    const url = new URL(builderBaseUrl.value)
-    builderParams.value.forEach(param => {
-      if (param.key.trim()) {
-        url.searchParams.append(param.key, param.value)
-      }
-    })
-    return url.toString()
-  } catch {
-    return ''
-  }
-})
 
 const copyBuiltUrl = () => {
-  copy(builtUrl.value)
-  toast.add({
-    severity: 'success',
-    summary: 'Copied',
-    detail: 'Built URL copied to clipboard',
-    life: 2000,
-  })
+  void copy(builtUrl.value, { detail: 'Built URL copied to clipboard' })
 }
 
-const loadUrlToBuilder = () => {
-  if (!urlInput.value.trim()) return
-
-  try {
-    const url = new URL(urlInput.value)
-    builderBaseUrl.value = url.origin + url.pathname
-    const params: BuilderParam[] = []
-    url.searchParams.forEach((value, key) => {
-      params.push({ id: nextParamId.value++, key, value })
-    })
-    if (params.length === 0) {
-      params.push({ id: nextParamId.value++, key: '', value: '' })
-    }
-    builderParams.value = params
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Invalid URL',
-      life: 3000,
-    })
+const handleLoadUrlToBuilder = () => {
+  const success = loadUrlToBuilder()
+  if (!success) {
+    showError('Error', 'Invalid URL')
   }
 }
-
-const clearBuilder = () => {
-  builderBaseUrl.value = 'https://example.com/path'
-  builderParams.value = [{ id: 1, key: '', value: '' }]
-  nextParamId.value = 2
-}
-
-// Common encoding examples
-const encodingExamples = [
-  { char: ' ', encoded: '%20 or +', description: 'Space' },
-  { char: '!', encoded: '%21', description: 'Exclamation' },
-  { char: '#', encoded: '%23', description: 'Hash' },
-  { char: '$', encoded: '%24', description: 'Dollar' },
-  { char: '&', encoded: '%26', description: 'Ampersand' },
-  { char: "'", encoded: '%27', description: 'Single quote' },
-  { char: '(', encoded: '%28', description: 'Open paren' },
-  { char: ')', encoded: '%29', description: 'Close paren' },
-  { char: '*', encoded: '%2A', description: 'Asterisk' },
-  { char: '+', encoded: '%2B', description: 'Plus' },
-  { char: ',', encoded: '%2C', description: 'Comma' },
-  { char: '/', encoded: '%2F', description: 'Slash' },
-  { char: ':', encoded: '%3A', description: 'Colon' },
-  { char: ';', encoded: '%3B', description: 'Semicolon' },
-  { char: '=', encoded: '%3D', description: 'Equals' },
-  { char: '?', encoded: '%3F', description: 'Question' },
-  { char: '@', encoded: '%40', description: 'At sign' },
-  { char: '[', encoded: '%5B', description: 'Open bracket' },
-  { char: ']', encoded: '%5D', description: 'Close bracket' },
-]
 </script>
 
 <template>
@@ -332,493 +102,503 @@ const encodingExamples = [
     </template>
     <template #subtitle> Encode/decode URLs, parse URLs, and build query strings </template>
     <template #content>
-      <TabView>
-        <TabPanel value="0" header="Encode/Decode">
-          <Panel toggleable class="options-panel">
-            <template #header>
-              <div class="panel-header">
-                <i class="pi pi-cog"></i>
-                <span>Encoding Options</span>
-              </div>
-            </template>
-            <div class="options-content">
-              <div class="option-item">
-                <label>
-                  <i class="pi pi-code"></i>
-                  Method
-                </label>
-                <SelectButton
-                  v-model="encodingMode"
-                  :options="encodingModeOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  :allow-empty="false"
-                />
-              </div>
+      <Tabs value="0">
+        <TabList>
+          <Tab value="0">Encode/Decode</Tab>
+          <Tab value="1">URL Parser</Tab>
+          <Tab value="2">Query Builder</Tab>
+          <Tab value="3">Reference</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel value="0">
+            <Panel toggleable class="options-panel">
+              <template #header>
+                <div class="panel-header">
+                  <i class="pi pi-cog"></i>
+                  <span>Encoding Options</span>
+                </div>
+              </template>
+              <div class="options-content">
+                <div class="option-item">
+                  <label>
+                    <i class="pi pi-code"></i>
+                    Method
+                  </label>
+                  <SelectButton
+                    v-model="encodingMode"
+                    :options="ENCODING_MODE_OPTIONS"
+                    option-label="label"
+                    option-value="value"
+                    :allow-empty="false"
+                  />
+                </div>
 
-              <Divider layout="vertical" />
+                <Divider layout="vertical" />
 
-              <div class="method-info">
-                <Tag
-                  v-if="encodingMode === 'encodeURIComponent'"
-                  value="encodeURIComponent"
-                  severity="info"
-                />
-                <Tag v-else value="encodeURI" severity="secondary" />
-                <span v-if="encodingMode === 'encodeURIComponent'" class="info-text">
-                  Encodes all except <code>A-Z a-z 0-9 - _ . ! ~ * ' ( )</code>
-                </span>
-                <span v-else class="info-text">
-                  Encodes all except
-                  <code>A-Z a-z 0-9 ; , / ? : @ & = + $ - _ . ! ~ * ' ( ) #</code>
-                </span>
-              </div>
-            </div>
-          </Panel>
-
-          <Message v-if="encodeError" severity="error" :closable="false" class="error-message">
-            <i class="pi pi-times-circle"></i>
-            {{ encodeError }}
-          </Message>
-
-          <div class="editor-grid">
-            <div class="editor-panel">
-              <div class="panel-label">
-                <i class="pi pi-file-edit"></i>
-                <span>Input (Plain Text)</span>
-                <Tag
-                  v-if="inputStats"
-                  :value="`${inputStats.chars} chars / ${inputStats.bytes} bytes`"
-                  severity="secondary"
-                />
-              </div>
-              <CodeEditor v-model="inputText" mode="plain_text" height="300px" />
-              <Toolbar class="editor-toolbar">
-                <template #start>
-                  <Button
-                    v-tooltip.top="'Load Sample'"
-                    icon="pi pi-file"
-                    label="Sample"
+                <div class="method-info">
+                  <Tag
+                    v-if="encodingMode === 'encodeURIComponent'"
+                    value="encodeURIComponent"
                     severity="info"
-                    text
-                    @click="loadSample"
                   />
-                </template>
-                <template #end>
-                  <Button
-                    v-tooltip.top="'Copy'"
-                    icon="pi pi-copy"
+                  <Tag v-else value="encodeURI" severity="secondary" />
+                  <span v-if="encodingMode === 'encodeURIComponent'" class="info-text">
+                    Encodes all except <code>A-Z a-z 0-9 - _ . ! ~ * ' ( )</code>
+                  </span>
+                  <span v-else class="info-text">
+                    Encodes all except
+                    <code>A-Z a-z 0-9 ; , / ? : @ & = + $ - _ . ! ~ * ' ( ) #</code>
+                  </span>
+                </div>
+              </div>
+            </Panel>
+
+            <Message v-if="encodeError" severity="error" :closable="false" class="error-message">
+              <i class="pi pi-times-circle"></i>
+              {{ encodeError }}
+            </Message>
+
+            <div class="editor-grid">
+              <div class="editor-panel">
+                <div class="panel-label">
+                  <i class="pi pi-file-edit"></i>
+                  <span>Input (Plain Text)</span>
+                  <Tag
+                    v-if="inputStats"
+                    :value="`${inputStats.chars} chars / ${inputStats.bytes} bytes`"
                     severity="secondary"
-                    text
-                    :disabled="!inputText"
-                    @click="copyInput"
                   />
-                  <Button
-                    v-tooltip.top="'Clear'"
-                    icon="pi pi-trash"
-                    severity="danger"
-                    text
-                    :disabled="!inputText"
-                    @click="clearAll"
-                  />
-                </template>
-              </Toolbar>
-            </div>
-
-            <div class="swap-button">
-              <Button
-                v-tooltip.top="'Swap'"
-                icon="pi pi-arrow-right-arrow-left"
-                severity="secondary"
-                rounded
-                :disabled="!outputText"
-                @click="swapValues"
-              />
-              <Button
-                v-tooltip.top="'Decode Output'"
-                icon="pi pi-unlock"
-                severity="info"
-                rounded
-                text
-                :disabled="!outputText"
-                @click="decodeOutput"
-              />
-            </div>
-
-            <div class="editor-panel">
-              <div class="panel-label">
-                <i class="pi pi-lock"></i>
-                <span>Output (Encoded)</span>
-                <Tag
-                  v-if="outputStats"
-                  :value="`${outputStats.chars} chars (${outputStats.ratio}%)`"
-                  severity="info"
-                />
-              </div>
-              <CodeEditor
-                v-model="outputText"
-                mode="plain_text"
-                height="300px"
-                :options="{ readOnly: true }"
-              />
-              <Toolbar class="editor-toolbar">
-                <template #start>
-                  <Button
-                    icon="pi pi-copy"
-                    label="Copy"
-                    severity="secondary"
-                    :disabled="!outputText"
-                    @click="copyOutput"
-                  />
-                </template>
-              </Toolbar>
-            </div>
-          </div>
-        </TabPanel>
-
-        <TabPanel value="1" header="URL Parser">
-          <Panel toggleable class="url-input-panel">
-            <template #header>
-              <div class="panel-header">
-                <i class="pi pi-globe"></i>
-                <span>URL to Parse</span>
-                <Tag
-                  v-if="urlInput && !urlParseError"
-                  value="Valid URL"
-                  severity="success"
-                  icon="pi pi-check-circle"
-                />
-                <Tag
-                  v-else-if="urlParseError"
-                  value="Invalid"
-                  severity="danger"
-                  icon="pi pi-times-circle"
-                />
-              </div>
-            </template>
-
-            <InputGroup>
-              <InputGroupAddon>
-                <i class="pi pi-link"></i>
-              </InputGroupAddon>
-              <InputText
-                v-model="urlInput"
-                placeholder="https://example.com/path?query=value#hash"
-              />
-              <Button
-                v-tooltip.top="'Load Sample'"
-                icon="pi pi-file"
-                severity="info"
-                text
-                @click="loadSampleUrl"
-              />
-              <Button
-                label="Load to Builder"
-                icon="pi pi-arrow-right"
-                severity="secondary"
-                :disabled="!parsedUrl"
-                @click="loadUrlToBuilder"
-              />
-            </InputGroup>
-          </Panel>
-
-          <Message v-if="urlParseError" severity="error" :closable="false" class="error-message">
-            <i class="pi pi-times-circle"></i>
-            {{ urlParseError }}
-          </Message>
-
-          <div v-if="parsedUrl" class="parsed-results">
-            <Divider align="left">
-              <span class="divider-text">
-                <i class="pi pi-list"></i>
-                Parsed Components
-              </span>
-            </Divider>
-
-            <div class="component-grid">
-              <div v-if="parsedUrl.protocol" class="component-item">
-                <Tag value="Protocol" severity="secondary" />
-                <code class="component-value">{{ parsedUrl.protocol }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.protocol, 'Protocol')"
-                />
-              </div>
-              <div v-if="parsedUrl.hostname" class="component-item">
-                <Tag value="Hostname" severity="secondary" />
-                <code class="component-value">{{ parsedUrl.hostname }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.hostname, 'Hostname')"
-                />
-              </div>
-              <div v-if="parsedUrl.port" class="component-item">
-                <Tag value="Port" severity="secondary" />
-                <code class="component-value">{{ parsedUrl.port }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.port, 'Port')"
-                />
-              </div>
-              <div v-if="parsedUrl.pathname" class="component-item">
-                <Tag value="Pathname" severity="secondary" />
-                <code class="component-value">{{ parsedUrl.pathname }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.pathname, 'Pathname')"
-                />
-              </div>
-              <div v-if="parsedUrl.search" class="component-item">
-                <Tag value="Search" severity="info" />
-                <code class="component-value">{{ parsedUrl.search }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.search, 'Search')"
-                />
-              </div>
-              <div v-if="parsedUrl.hash" class="component-item">
-                <Tag value="Hash" severity="warn" />
-                <code class="component-value">{{ parsedUrl.hash }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.hash, 'Hash')"
-                />
-              </div>
-              <div v-if="parsedUrl.origin" class="component-item">
-                <Tag value="Origin" severity="success" />
-                <code class="component-value">{{ parsedUrl.origin }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.origin, 'Origin')"
-                />
-              </div>
-              <div v-if="parsedUrl.username" class="component-item">
-                <Tag value="Username" severity="contrast" />
-                <code class="component-value">{{ parsedUrl.username }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.username, 'Username')"
-                />
-              </div>
-              <div v-if="parsedUrl.password" class="component-item">
-                <Tag value="Password" severity="danger" />
-                <code class="component-value">{{ parsedUrl.password }}</code>
-                <Button
-                  v-tooltip.top="'Copy'"
-                  icon="pi pi-copy"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="copyParsedValue(parsedUrl.password, 'Password')"
-                />
-              </div>
-            </div>
-
-            <div v-if="queryParams.length > 0" class="query-params">
-              <Divider align="left">
-                <span class="divider-text">
-                  <i class="pi pi-filter"></i>
-                  Query Parameters
-                  <Tag :value="`${queryParams.length} params`" severity="info" />
-                </span>
-              </Divider>
-
-              <DataTable :value="queryParams" stripedRows size="small">
-                <Column field="key" header="Key">
-                  <template #body="slotProps">
-                    <code class="param-key">{{ slotProps.data.key }}</code>
+                </div>
+                <CodeEditor v-model="inputText" mode="plain_text" height="300px" />
+                <Toolbar class="editor-toolbar">
+                  <template #start>
+                    <Button
+                      v-tooltip.top="'Load Sample'"
+                      icon="pi pi-file"
+                      label="Sample"
+                      severity="info"
+                      text
+                      @click="loadSample"
+                    />
                   </template>
-                </Column>
-                <Column field="value" header="Value (Decoded)">
-                  <template #body="slotProps">
-                    <code>{{ slotProps.data.value }}</code>
-                  </template>
-                </Column>
-                <Column field="encodedValue" header="Value (Encoded)">
-                  <template #body="slotProps">
-                    <code class="encoded-value">{{ slotProps.data.encodedValue }}</code>
-                  </template>
-                </Column>
-                <Column style="width: 60px">
-                  <template #body="slotProps">
+                  <template #end>
                     <Button
                       v-tooltip.top="'Copy'"
                       icon="pi pi-copy"
                       severity="secondary"
                       text
                       rounded
-                      size="small"
-                      @click="copyParsedValue(slotProps.data.value, slotProps.data.key)"
-                    />
-                  </template>
-                </Column>
-              </DataTable>
-            </div>
-          </div>
-        </TabPanel>
-
-        <TabPanel value="2" header="Query Builder">
-          <Panel toggleable class="builder-panel">
-            <template #header>
-              <div class="panel-header">
-                <i class="pi pi-cog"></i>
-                <span>URL Builder</span>
-              </div>
-            </template>
-
-            <div class="builder-content">
-              <div class="field">
-                <label for="baseUrl">
-                  <i class="pi pi-globe"></i>
-                  Base URL
-                </label>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <i class="pi pi-link"></i>
-                  </InputGroupAddon>
-                  <InputText
-                    id="baseUrl"
-                    v-model="builderBaseUrl"
-                    placeholder="https://example.com/api/endpoint"
-                  />
-                </InputGroup>
-              </div>
-
-              <Divider align="left">
-                <span class="divider-text">
-                  <i class="pi pi-filter"></i>
-                  Query Parameters
-                  <Tag
-                    :value="`${builderParams.filter(p => p.key).length} params`"
-                    severity="secondary"
-                  />
-                </span>
-              </Divider>
-
-              <div class="params-list">
-                <div v-for="param in builderParams" :key="param.id" class="param-row">
-                  <InputGroup>
-                    <InputText v-model="param.key" placeholder="Key" class="param-key-input" />
-                    <InputGroupAddon>=</InputGroupAddon>
-                    <InputText
-                      v-model="param.value"
-                      placeholder="Value"
-                      class="param-value-input"
+                      :disabled="!inputText"
+                      @click="copyInput"
                     />
                     <Button
+                      v-tooltip.top="'Clear'"
                       icon="pi pi-trash"
                       severity="danger"
                       text
-                      @click="removeParam(param.id)"
+                      rounded
+                      :disabled="!inputText"
+                      @click="clearAll"
                     />
-                  </InputGroup>
+                  </template>
+                </Toolbar>
+              </div>
+
+              <div class="swap-button">
+                <Button
+                  v-tooltip.top="'Swap'"
+                  icon="pi pi-arrow-right-arrow-left"
+                  severity="secondary"
+                  rounded
+                  :disabled="!outputText"
+                  @click="swapValues"
+                />
+                <Button
+                  v-tooltip.top="'Decode Output'"
+                  icon="pi pi-unlock"
+                  severity="info"
+                  rounded
+                  text
+                  :disabled="!outputText"
+                  @click="handleDecode"
+                />
+              </div>
+
+              <div class="editor-panel">
+                <div class="panel-label">
+                  <i class="pi pi-lock"></i>
+                  <span>Output (Encoded)</span>
+                  <Tag
+                    v-if="outputStats"
+                    :value="`${outputStats.chars} chars (${outputStats.ratio}%)`"
+                    severity="info"
+                  />
+                </div>
+                <CodeEditor
+                  v-model="outputText"
+                  mode="plain_text"
+                  height="300px"
+                  :options="{ readOnly: true }"
+                />
+                <Toolbar class="editor-toolbar">
+                  <template #start>
+                    <Button
+                      icon="pi pi-copy"
+                      label="Copy"
+                      severity="secondary"
+                      :disabled="!outputText"
+                      @click="copyOutput"
+                    />
+                  </template>
+                </Toolbar>
+              </div>
+            </div>
+          </TabPanel>
+
+          <TabPanel value="1">
+            <Panel toggleable class="url-input-panel">
+              <template #header>
+                <div class="panel-header">
+                  <i class="pi pi-globe"></i>
+                  <span>URL to Parse</span>
+                  <Tag
+                    v-if="urlInput && !urlParseError"
+                    value="Valid URL"
+                    severity="success"
+                    icon="pi pi-check-circle"
+                  />
+                  <Tag
+                    v-else-if="urlParseError"
+                    value="Invalid"
+                    severity="danger"
+                    icon="pi pi-times-circle"
+                  />
+                </div>
+              </template>
+
+              <InputGroup>
+                <InputGroupAddon>
+                  <i class="pi pi-link"></i>
+                </InputGroupAddon>
+                <InputText
+                  v-model="urlInput"
+                  placeholder="https://example.com/path?query=value#hash"
+                />
+                <Button
+                  v-tooltip.top="'Load Sample'"
+                  icon="pi pi-file"
+                  severity="info"
+                  text
+                  @click="loadSampleUrl"
+                />
+                <Button
+                  label="Load to Builder"
+                  icon="pi pi-arrow-right"
+                  severity="secondary"
+                  :disabled="!parsedUrl"
+                  @click="handleLoadUrlToBuilder"
+                />
+              </InputGroup>
+            </Panel>
+
+            <Message v-if="urlParseError" severity="error" :closable="false" class="error-message">
+              <i class="pi pi-times-circle"></i>
+              {{ urlParseError }}
+            </Message>
+
+            <div v-if="parsedUrl" class="parsed-results">
+              <Divider align="left">
+                <span class="divider-text">
+                  <i class="pi pi-list"></i>
+                  Parsed Components
+                </span>
+              </Divider>
+
+              <div class="component-grid">
+                <div v-if="parsedUrl.protocol" class="component-item">
+                  <Tag value="Protocol" severity="secondary" />
+                  <code class="component-value">{{ parsedUrl.protocol }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.protocol, 'Protocol')"
+                  />
+                </div>
+                <div v-if="parsedUrl.hostname" class="component-item">
+                  <Tag value="Hostname" severity="secondary" />
+                  <code class="component-value">{{ parsedUrl.hostname }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.hostname, 'Hostname')"
+                  />
+                </div>
+                <div v-if="parsedUrl.port" class="component-item">
+                  <Tag value="Port" severity="secondary" />
+                  <code class="component-value">{{ parsedUrl.port }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.port, 'Port')"
+                  />
+                </div>
+                <div v-if="parsedUrl.pathname" class="component-item">
+                  <Tag value="Pathname" severity="secondary" />
+                  <code class="component-value">{{ parsedUrl.pathname }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.pathname, 'Pathname')"
+                  />
+                </div>
+                <div v-if="parsedUrl.search" class="component-item">
+                  <Tag value="Search" severity="info" />
+                  <code class="component-value">{{ parsedUrl.search }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.search, 'Search')"
+                  />
+                </div>
+                <div v-if="parsedUrl.hash" class="component-item">
+                  <Tag value="Hash" severity="warn" />
+                  <code class="component-value">{{ parsedUrl.hash }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.hash, 'Hash')"
+                  />
+                </div>
+                <div v-if="parsedUrl.origin" class="component-item">
+                  <Tag value="Origin" severity="success" />
+                  <code class="component-value">{{ parsedUrl.origin }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.origin, 'Origin')"
+                  />
+                </div>
+                <div v-if="parsedUrl.username" class="component-item">
+                  <Tag value="Username" severity="contrast" />
+                  <code class="component-value">{{ parsedUrl.username }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.username, 'Username')"
+                  />
+                </div>
+                <div v-if="parsedUrl.password" class="component-item">
+                  <Tag value="Password" severity="danger" />
+                  <code class="component-value">{{ parsedUrl.password }}</code>
+                  <Button
+                    v-tooltip.top="'Copy'"
+                    icon="pi pi-copy"
+                    severity="secondary"
+                    text
+                    rounded
+                    @click="copyParsedValue(parsedUrl.password, 'Password')"
+                  />
                 </div>
               </div>
 
-              <Button
-                label="Add Parameter"
-                icon="pi pi-plus"
-                severity="secondary"
-                size="small"
-                @click="addParam"
-              />
-            </div>
-          </Panel>
+              <div v-if="queryParams.length > 0" class="query-params">
+                <Divider align="left">
+                  <span class="divider-text">
+                    <i class="pi pi-filter"></i>
+                    Query Parameters
+                    <Tag :value="`${queryParams.length} params`" severity="info" />
+                  </span>
+                </Divider>
 
-          <div v-if="builtUrl" class="built-url-section">
-            <Divider align="left">
-              <span class="divider-text">
-                <i class="pi pi-check-circle"></i>
-                Generated URL
-              </span>
-            </Divider>
-
-            <CodeEditor
-              :model-value="builtUrl"
-              mode="plain_text"
-              height="100px"
-              :options="{ readOnly: true }"
-            />
-
-            <Toolbar class="action-toolbar">
-              <template #start>
-                <Button label="Copy URL" icon="pi pi-copy" @click="copyBuiltUrl" />
-              </template>
-              <template #end>
-                <Button
-                  v-tooltip.top="'Clear Builder'"
-                  icon="pi pi-trash"
-                  severity="danger"
-                  text
-                  @click="clearBuilder"
-                />
-              </template>
-            </Toolbar>
-          </div>
-        </TabPanel>
-
-        <TabPanel value="3" header="Reference">
-          <Panel toggleable>
-            <template #header>
-              <div class="panel-header">
-                <i class="pi pi-book"></i>
-                <span>Common URL Encoding Characters</span>
-                <Tag :value="`${encodingExamples.length} chars`" severity="secondary" />
+                <DataTable :value="queryParams" striped-rows size="small">
+                  <Column field="key" header="Key">
+                    <template #body="slotProps">
+                      <code class="param-key">{{ slotProps.data.key }}</code>
+                    </template>
+                  </Column>
+                  <Column field="value" header="Value (Decoded)">
+                    <template #body="slotProps">
+                      <code>{{ slotProps.data.value }}</code>
+                    </template>
+                  </Column>
+                  <Column field="encodedValue" header="Value (Encoded)">
+                    <template #body="slotProps">
+                      <code class="encoded-value">{{ slotProps.data.encodedValue }}</code>
+                    </template>
+                  </Column>
+                  <Column :header-style="{ width: '60px' }">
+                    <template #body="slotProps">
+                      <Button
+                        v-tooltip.top="'Copy'"
+                        icon="pi pi-copy"
+                        severity="secondary"
+                        text
+                        rounded
+                        @click="copyParsedValue(slotProps.data.value, slotProps.data.key)"
+                      />
+                    </template>
+                  </Column>
+                </DataTable>
               </div>
-            </template>
+            </div>
+          </TabPanel>
 
-            <DataTable :value="encodingExamples" stripedRows size="small">
-              <Column field="char" header="Character" style="width: 100px">
-                <template #body="slotProps">
-                  <code class="char-display">{{ slotProps.data.char }}</code>
+          <TabPanel value="2">
+            <Panel toggleable class="builder-panel">
+              <template #header>
+                <div class="panel-header">
+                  <i class="pi pi-cog"></i>
+                  <span>URL Builder</span>
+                </div>
+              </template>
+
+              <div class="builder-content">
+                <div class="field">
+                  <label for="baseUrl">
+                    <i class="pi pi-globe"></i>
+                    Base URL
+                  </label>
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <i class="pi pi-link"></i>
+                    </InputGroupAddon>
+                    <InputText
+                      id="baseUrl"
+                      v-model="builderBaseUrl"
+                      placeholder="https://example.com/api/endpoint"
+                    />
+                  </InputGroup>
+                </div>
+
+                <Divider align="left">
+                  <span class="divider-text">
+                    <i class="pi pi-filter"></i>
+                    Query Parameters
+                    <Tag
+                      :value="`${builderParams.filter(p => p.key).length} params`"
+                      severity="secondary"
+                    />
+                  </span>
+                </Divider>
+
+                <div class="params-list">
+                  <div v-for="param in builderParams" :key="param.id" class="param-row">
+                    <InputGroup>
+                      <InputText v-model="param.key" placeholder="Key" class="param-key-input" />
+                      <InputGroupAddon>=</InputGroupAddon>
+                      <InputText
+                        v-model="param.value"
+                        placeholder="Value"
+                        class="param-value-input"
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        severity="danger"
+                        text
+                        @click="removeParam(param.id)"
+                      />
+                    </InputGroup>
+                  </div>
+                </div>
+
+                <Button
+                  label="Add Parameter"
+                  icon="pi pi-plus"
+                  severity="secondary"
+                  text
+                  @click="addParam"
+                />
+              </div>
+            </Panel>
+
+            <div v-if="builtUrl" class="built-url-section">
+              <Divider align="left">
+                <span class="divider-text">
+                  <i class="pi pi-check-circle"></i>
+                  Generated URL
+                </span>
+              </Divider>
+
+              <CodeEditor
+                :model-value="builtUrl"
+                mode="plain_text"
+                height="100px"
+                :options="{ readOnly: true }"
+              />
+
+              <Toolbar class="action-toolbar">
+                <template #start>
+                  <Button label="Copy URL" icon="pi pi-copy" @click="copyBuiltUrl" />
                 </template>
-              </Column>
-              <Column field="encoded" header="Encoded" style="width: 120px">
-                <template #body="slotProps">
-                  <Tag :value="slotProps.data.encoded" severity="info" />
+                <template #end>
+                  <Button
+                    v-tooltip.top="'Clear Builder'"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    text
+                    rounded
+                    @click="clearBuilder"
+                  />
                 </template>
-              </Column>
-              <Column field="description" header="Description">
-                <template #body="slotProps">
-                  <span class="description-text">{{ slotProps.data.description }}</span>
-                </template>
-              </Column>
-            </DataTable>
-          </Panel>
-        </TabPanel>
-      </TabView>
+              </Toolbar>
+            </div>
+          </TabPanel>
+
+          <TabPanel value="3">
+            <Panel toggleable>
+              <template #header>
+                <div class="panel-header">
+                  <i class="pi pi-book"></i>
+                  <span>Common URL Encoding Characters</span>
+                  <Tag :value="`${ENCODING_EXAMPLES.length} chars`" severity="secondary" />
+                </div>
+              </template>
+
+              <DataTable :value="ENCODING_EXAMPLES" striped-rows size="small">
+                <Column field="char" header="Character" style="width: 100px">
+                  <template #body="slotProps">
+                    <code class="char-display">{{ slotProps.data.char }}</code>
+                  </template>
+                </Column>
+                <Column field="encoded" header="Encoded" style="width: 120px">
+                  <template #body="slotProps">
+                    <Tag :value="slotProps.data.encoded" severity="info" />
+                  </template>
+                </Column>
+                <Column field="description" header="Description">
+                  <template #body="slotProps">
+                    <span class="description-text">{{ slotProps.data.description }}</span>
+                  </template>
+                </Column>
+              </DataTable>
+            </Panel>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </template>
   </Card>
 </template>

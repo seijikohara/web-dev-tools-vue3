@@ -13,10 +13,10 @@ export default defineConfig({
 
   // Parallel execution
   fullyParallel: true,
-  workers: process.env.CI ? 2 : undefined, // 2 workers in CI, automatic locally
+  workers: process.env.CI ? '50%' : undefined, // Use 50% of CPU cores in CI, automatic locally
 
-  // Retry on failures (CI only)
-  retries: process.env.CI ? 2 : 0,
+  // Retry on failures (CI only) - reduced for faster feedback
+  retries: process.env.CI ? 1 : 0,
 
   // Timeout configuration
   timeout: 60 * 1000, // 60 seconds - increased for CI environment with slower API responses
@@ -25,12 +25,15 @@ export default defineConfig({
   },
 
   // Reporter configuration
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
-    ['list'], // Console output for CI
-  ],
+  reporter: process.env.CI
+    ? [
+        ['blob', { outputDir: 'blob-report' }], // For sharding - merge reports later
+        ['list'], // Console output for CI
+      ]
+    : [
+        ['html', { outputFolder: 'playwright-report' }],
+        ['list'],
+      ],
 
   // Shared settings
   use: {

@@ -5,23 +5,55 @@ on:
 
 jobs:
   e2e-test:
-    name: E2E Tests (${{ matrix.browser }})
-    timeout-minutes: 30
+    name: E2E (${{ matrix.browser }}${{ matrix.shardIndex && format(' {0}/{1}', matrix.shardIndex, matrix.shardTotal) || '' }})
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Desktop browsers with sharding (2 shards each)
           - browser: chromium
             binary: chromium
+            shardIndex: 1
+            shardTotal: 2
+          - browser: chromium
+            binary: chromium
+            shardIndex: 2
+            shardTotal: 2
           - browser: firefox
             binary: firefox
+            shardIndex: 1
+            shardTotal: 2
+          - browser: firefox
+            binary: firefox
+            shardIndex: 2
+            shardTotal: 2
           - browser: webkit
             binary: webkit
+            shardIndex: 1
+            shardTotal: 2
+          - browser: webkit
+            binary: webkit
+            shardIndex: 2
+            shardTotal: 2
+          # Mobile browsers with sharding (2 shards each)
           - browser: mobile-chrome
             binary: chromium
+            shardIndex: 1
+            shardTotal: 2
+          - browser: mobile-chrome
+            binary: chromium
+            shardIndex: 2
+            shardTotal: 2
           - browser: mobile-safari
             binary: webkit
+            shardIndex: 1
+            shardTotal: 2
+          - browser: mobile-safari
+            binary: webkit
+            shardIndex: 2
+            shardTotal: 2
 
     steps:
       - name: Checkout repository
@@ -51,23 +83,50 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps ${{ matrix.binary }}
 
-      - name: Run Playwright tests (${{ matrix.browser }})
-        run: npm run test:e2e -- --project=${{ matrix.browser }}
+      - name: Run Playwright tests
+        run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Upload test results
+      - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: blob-report-${{ matrix.browser }}-${{ matrix.shardIndex }}
+          path: blob-report/
+          retention-days: 1
+
+  merge-reports:
+    name: Merge Reports
+    if: ${{ !cancelled() }}
+    needs: [e2e-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v5
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge into HTML Report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
           path: playwright-report/
-          retention-days: 30
-
-      - name: Upload test artifacts
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v5
-        with:
-          name: test-results-${{ matrix.browser }}
-          path: test-results/
           retention-days: 30
 
   e2e-test-summary:

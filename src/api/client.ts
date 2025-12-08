@@ -20,7 +20,8 @@ export class ApiError extends Error {
  */
 const handleApiError = (error: AxiosError): never => {
   const status = error.response?.status
-  const message = (error.response?.data as { message?: string })?.message ?? error.message
+  const data = error.response?.data as { message?: string } | undefined
+  const message = data?.message ?? error.message
 
   throw new ApiError(message, status, error.code)
 }
@@ -30,7 +31,7 @@ const handleApiError = (error: AxiosError): never => {
  */
 export const createApiClient = (): AxiosInstance => {
   const client = axios.create({
-    baseURL: `${import.meta.env.VUE_APP_API_BASE_URL}api`,
+    baseURL: `${import.meta.env.VUE_APP_API_BASE_URL}api/`,
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ export const createApiClient = (): AxiosInstance => {
   // Response interceptor for error handling
   client.interceptors.response.use(
     response => response,
-    error => handleApiError(error),
+    (error: AxiosError) => handleApiError(error),
   )
 
   return client

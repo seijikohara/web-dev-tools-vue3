@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { useDrawerStore } from '@/stores/drawer'
+import { useUIStore } from '@/stores/ui'
+import { LAYOUT } from '@/constants/layout'
 
-const drawerStore = useDrawerStore()
-const onClickMenu = () => drawerStore.open()
+const uiStore = useUIStore()
+
+const onClickMenu = () => {
+  if (window.innerWidth <= LAYOUT.BREAKPOINT) {
+    uiStore.openDrawer()
+  } else {
+    uiStore.toggleSidebar()
+  }
+}
 </script>
 
 <template>
@@ -17,7 +25,7 @@ const onClickMenu = () => drawerStore.open()
 
 <style lang="scss">
 .layout-topbar {
-  background-color: #59606d;
+  background-color: $topbarBgColor;
   height: $topbarHeight;
   position: fixed;
   top: 0;
@@ -31,15 +39,17 @@ const onClickMenu = () => drawerStore.open()
   padding: 0 35px;
 
   .menu-button {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #ffffff;
-    width: 70px;
-    height: $topbarHeight;
-    line-height: 70px;
-    text-align: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
     transition: background-color $transitionDuration;
     cursor: pointer;
     font-size: 1.25rem;
+    margin-right: 0.5rem;
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);
@@ -60,7 +70,7 @@ const onClickMenu = () => drawerStore.open()
   }
 
   .logo-text {
-    color: #70acb1;
+    color: $topbarLogoColor;
     font-family: 'Inconsolata', monospace;
     font-size: 1.5rem;
     font-weight: 400;
@@ -74,7 +84,19 @@ const onClickMenu = () => drawerStore.open()
     padding: 0;
 
     .menu-button {
-      display: block;
+      width: 70px;
+      height: $topbarHeight;
+      border-radius: 0;
+      margin-right: 0;
+    }
+
+    .logo-svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo-text {
+      font-size: 1.1rem;
     }
 
     .logo-svg {

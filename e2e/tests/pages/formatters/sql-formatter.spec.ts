@@ -18,7 +18,8 @@ test.describe('SQL Formatter', () => {
     await test.step('Verify output is formatted', async () => {
       // Wait for formatting to complete
       await page.waitForTimeout(500)
-      const outputEditor = page.locator('.ace_content').nth(1)
+      // Output editor uses CodeMirror
+      const outputEditor = page.locator('.cm-editor').nth(1)
       await expect(outputEditor).toBeVisible()
       await expect(outputEditor).toContainText('SELECT')
     })
