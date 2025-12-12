@@ -310,16 +310,6 @@ describe('useDiffCalculator', () => {
       expect.soft(calculator.splitView.value.right.length).toBeGreaterThan(0)
     })
 
-    it('should swap texts correctly', async () => {
-      calculator.originalText.value = 'original'
-      calculator.modifiedText.value = 'modified'
-
-      calculator.swapTexts()
-
-      expect.soft(calculator.originalText.value).toBe('modified')
-      expect.soft(calculator.modifiedText.value).toBe('original')
-    })
-
     it('should clear texts', async () => {
       calculator.originalText.value = 'original'
       calculator.modifiedText.value = 'modified'

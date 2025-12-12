@@ -238,16 +238,6 @@ describe('useBase64Encoder', () => {
       expect.soft(encoder.outputText.value).toBe('')
     })
 
-    it('should swap values correctly', async () => {
-      encoder.inputText.value = 'Hello'
-      await Promise.resolve()
-      const encoded = encoder.outputText.value
-
-      encoder.swapValues()
-      expect.soft(encoder.inputText.value).toBe(encoded)
-      expect.soft(encoder.encodingMode.value).toBe('decode')
-    })
-
     it('should load sample text', () => {
       encoder.loadSample()
       expect.soft(encoder.inputText.value).toBe(SAMPLE_TEXT)

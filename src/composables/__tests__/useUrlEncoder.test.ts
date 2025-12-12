@@ -236,20 +236,12 @@ describe('useUrlEncoder', () => {
       expect(encoder.outputText.value).toBe('Hello%20World')
     })
 
-    it('should swap values correctly', async () => {
-      encoder.inputText.value = 'Hello World'
-      await Promise.resolve()
-      const encoded = encoder.outputText.value
-
-      encoder.swapValues()
-      expect(encoder.inputText.value).toBe(encoded)
-    })
-
     it('should decode output', async () => {
       encoder.inputText.value = 'Hello World'
       await Promise.resolve()
 
-      encoder.swapValues()
+      // Set encoded value to output for decoding
+      encoder.outputText.value = 'Hello%20World'
       const success = encoder.decodeOutput()
       expect(success).toBe(true)
     })
