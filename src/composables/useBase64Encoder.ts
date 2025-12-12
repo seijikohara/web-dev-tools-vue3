@@ -145,13 +145,6 @@ export const useBase64Encoder = () => {
   const outputStats = computed(() => getOutputStats(inputText.value, outputText.value))
 
   // Text actions
-  const swapValues = () => {
-    const temp = inputText.value
-    inputText.value = outputText.value
-    outputText.value = temp
-    encodingMode.value = encodingMode.value === 'encode' ? 'decode' : 'encode'
-  }
-
   const loadSample = () => {
     inputText.value = SAMPLE_TEXT
     encodingMode.value = 'encode'
@@ -239,7 +232,6 @@ export const useBase64Encoder = () => {
     outputStats,
 
     // Text actions
-    swapValues,
     loadSample,
     clearAll,
 

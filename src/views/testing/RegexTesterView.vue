@@ -77,7 +77,7 @@ const handleUsePattern = (p: string) => {
   <Card>
     <template #title>
       <div class="card-title">
-        <i class="pi pi-code"></i>
+        <i class="pi pi-search"></i>
         <span>Regex Tester</span>
       </div>
     </template>

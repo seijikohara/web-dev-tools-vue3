@@ -379,14 +379,6 @@ const clearAll = () => {
   yamlStats.value = null
 }
 
-// Swap input and output
-const swapValues = () => {
-  const temp = state.input
-  state.input = state.output
-  state.output = temp
-  validateYaml()
-}
-
 // Copy output
 const copyOutput = () => {
   void copy(state.output, { detail: 'Output copied to clipboard' })
@@ -1138,13 +1130,13 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
               </div>
             </Panel>
 
-            <div class="editor-grid">
+            <div class="editor-grid-2col">
               <div class="editor-panel">
                 <div class="panel-label">
                   <i class="pi pi-file-import"></i>
                   <span>Input</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="yaml" height="350px" />
+                <CodeEditor v-model="state.input" mode="yaml" height="clamp(300px, calc(100vh - 520px), 600px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1181,17 +1173,6 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                 </Toolbar>
               </div>
 
-              <div class="swap-button">
-                <Button
-                  v-tooltip.top="'Swap'"
-                  icon="pi pi-arrow-right-arrow-left"
-                  severity="secondary"
-                  rounded
-                  :disabled="!state.output"
-                  @click="swapValues"
-                />
-              </div>
-
               <div class="editor-panel">
                 <div class="panel-label">
                   <i class="pi pi-file-export"></i>
@@ -1200,7 +1181,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                 <CodeEditor
                   v-model="state.output"
                   mode="yaml"
-                  height="350px"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
                   :options="{ readOnly: true }"
                 />
                 <Toolbar class="editor-toolbar">
@@ -1311,7 +1292,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                   <i class="pi pi-file"></i>
                   <span>Source YAML</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="yaml" height="350px" />
+                <CodeEditor v-model="state.input" mode="yaml" height="clamp(300px, calc(100vh - 520px), 600px)" />
               </div>
 
               <div class="editor-panel">
@@ -1328,7 +1309,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                 <CodeEditor
                   v-model="yamlPathResult"
                   mode="yaml"
-                  height="350px"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
                   :options="{ readOnly: true }"
                 />
               </div>
@@ -1336,46 +1317,44 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
           </TabPanel>
 
           <TabPanel value="2">
-            <div class="compare-grid">
-              <Panel class="compare-panel">
-                <template #header>
-                  <div class="panel-header">
-                    <i class="pi pi-file"></i>
-                    <span>YAML 1</span>
-                  </div>
-                </template>
-                <CodeEditor v-model="compareYaml1" mode="yaml" height="300px" />
-                <div class="panel-actions">
-                  <Button
-                    label="Load Current"
-                    icon="pi pi-download"
-                    severity="secondary"
-                    text
-                    :disabled="!state.input"
-                    @click="loadToCompare1"
-                  />
+            <div class="editor-grid-2col">
+              <div class="editor-panel">
+                <div class="panel-label">
+                  <i class="pi pi-file"></i>
+                  <span>YAML 1</span>
                 </div>
-              </Panel>
+                <CodeEditor v-model="compareYaml1" mode="yaml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <Toolbar class="editor-toolbar">
+                  <template #start>
+                    <Button
+                      label="Load Current"
+                      icon="pi pi-download"
+                      severity="secondary"
+                      :disabled="!state.input"
+                      @click="loadToCompare1"
+                    />
+                  </template>
+                </Toolbar>
+              </div>
 
-              <Panel class="compare-panel">
-                <template #header>
-                  <div class="panel-header">
-                    <i class="pi pi-file"></i>
-                    <span>YAML 2</span>
-                  </div>
-                </template>
-                <CodeEditor v-model="compareYaml2" mode="yaml" height="300px" />
-                <div class="panel-actions">
-                  <Button
-                    label="Load Current"
-                    icon="pi pi-download"
-                    severity="secondary"
-                    text
-                    :disabled="!state.input"
-                    @click="loadToCompare2"
-                  />
+              <div class="editor-panel">
+                <div class="panel-label">
+                  <i class="pi pi-file"></i>
+                  <span>YAML 2</span>
                 </div>
-              </Panel>
+                <CodeEditor v-model="compareYaml2" mode="yaml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <Toolbar class="editor-toolbar">
+                  <template #start>
+                    <Button
+                      label="Load Current"
+                      icon="pi pi-download"
+                      severity="secondary"
+                      :disabled="!state.input"
+                      @click="loadToCompare2"
+                    />
+                  </template>
+                </Toolbar>
+              </div>
             </div>
 
             <Message v-if="yamlCompareError" severity="error" :closable="false">
@@ -1453,7 +1432,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                   <i class="pi pi-file-edit"></i>
                   <span>YAML Input</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="yaml" height="350px" />
+                <CodeEditor v-model="state.input" mode="yaml" height="clamp(300px, calc(100vh - 520px), 600px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1486,7 +1465,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                 <CodeEditor
                   v-model="convertOutput"
                   :mode="convertOutputMode"
-                  height="350px"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
                   :options="{ readOnly: true }"
                 />
                 <Toolbar class="editor-toolbar">
@@ -1559,7 +1538,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                   <i class="pi pi-file-edit"></i>
                   <span>YAML Data</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="yaml" height="300px" />
+                <CodeEditor v-model="state.input" mode="yaml" height="clamp(250px, calc(100vh - 580px), 500px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1578,7 +1557,7 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
                   <i class="pi pi-cog"></i>
                   <span>JSON Schema</span>
                 </div>
-                <CodeEditor v-model="schemaInput" mode="json" height="300px" />
+                <CodeEditor v-model="schemaInput" mode="json" height="clamp(250px, calc(100vh - 580px), 500px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1700,11 +1679,6 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
 
   :deep(.p-panel-header) {
     padding: 0.75rem 1rem;
-  }
-
-  :deep(.p-panel-content) {
-    background-color: var(--surface-50, #f9fafb);
-    padding: 1rem;
   }
 }
 
@@ -1839,21 +1813,6 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
   }
 }
 
-.editor-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 1rem;
-  align-items: start;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-
-    .swap-button {
-      justify-self: center;
-      transform: rotate(90deg);
-    }
-  }
-}
 
 .editor-panel {
   display: flex;
@@ -1872,14 +1831,6 @@ watchDebounced(() => state.input, validateYaml, { immediate: true, debounce: 300
   i {
     color: var(--primary-color);
   }
-}
-
-.swap-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  margin-top: 180px;
 }
 
 .editor-toolbar {

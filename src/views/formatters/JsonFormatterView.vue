@@ -362,14 +362,6 @@ const onClickMinify = () => {
   }
 }
 
-// Swap input and output
-const swapValues = () => {
-  const temp = state.input
-  state.input = state.output
-  state.output = temp
-  validateJson()
-}
-
 // Copy output
 const copyOutput = () => {
   void copy(state.output, { detail: 'Output copied to clipboard' })
@@ -1066,13 +1058,13 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
               </div>
             </Panel>
 
-            <div class="editor-grid">
+            <div class="editor-grid-2col">
               <div class="editor-panel">
                 <div class="panel-label">
                   <i class="pi pi-file-import"></i>
                   <span>Input</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="json" height="350px" />
+                <CodeEditor v-model="state.input" mode="json" height="clamp(300px, calc(100vh - 520px), 600px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1109,17 +1101,6 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                 </Toolbar>
               </div>
 
-              <div class="swap-button">
-                <Button
-                  v-tooltip.top="'Swap'"
-                  icon="pi pi-arrow-right-arrow-left"
-                  severity="secondary"
-                  rounded
-                  :disabled="!state.output"
-                  @click="swapValues"
-                />
-              </div>
-
               <div class="editor-panel">
                 <div class="panel-label">
                   <i class="pi pi-file-export"></i>
@@ -1128,7 +1109,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                 <CodeEditor
                   v-model="state.output"
                   mode="json"
-                  height="350px"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
                   :options="{ readOnly: true }"
                 />
                 <Toolbar class="editor-toolbar">
@@ -1240,7 +1221,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                   <i class="pi pi-file"></i>
                   <span>Source JSON</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="json" height="350px" />
+                <CodeEditor v-model="state.input" mode="json" height="clamp(300px, calc(100vh - 520px), 600px)" />
               </div>
 
               <div class="editor-panel">
@@ -1257,7 +1238,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                 <CodeEditor
                   v-model="jsonPathResult"
                   mode="json"
-                  height="350px"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
                   :options="{ readOnly: true }"
                 />
               </div>
@@ -1265,46 +1246,44 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
           </TabPanel>
 
           <TabPanel value="2">
-            <div class="compare-grid">
-              <Panel class="compare-panel">
-                <template #header>
-                  <div class="panel-header">
-                    <i class="pi pi-file"></i>
-                    <span>JSON 1</span>
-                  </div>
-                </template>
-                <CodeEditor v-model="compareJson1" mode="json" height="300px" />
-                <div class="panel-actions">
-                  <Button
-                    label="Load Current"
-                    icon="pi pi-download"
-                    severity="secondary"
-                    text
-                    :disabled="!state.input"
-                    @click="loadToCompare1"
-                  />
+            <div class="editor-grid-2col">
+              <div class="editor-panel">
+                <div class="panel-label">
+                  <i class="pi pi-file"></i>
+                  <span>JSON 1</span>
                 </div>
-              </Panel>
+                <CodeEditor v-model="compareJson1" mode="json" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <Toolbar class="editor-toolbar">
+                  <template #start>
+                    <Button
+                      label="Load Current"
+                      icon="pi pi-download"
+                      severity="secondary"
+                      :disabled="!state.input"
+                      @click="loadToCompare1"
+                    />
+                  </template>
+                </Toolbar>
+              </div>
 
-              <Panel class="compare-panel">
-                <template #header>
-                  <div class="panel-header">
-                    <i class="pi pi-file"></i>
-                    <span>JSON 2</span>
-                  </div>
-                </template>
-                <CodeEditor v-model="compareJson2" mode="json" height="300px" />
-                <div class="panel-actions">
-                  <Button
-                    label="Load Current"
-                    icon="pi pi-download"
-                    severity="secondary"
-                    text
-                    :disabled="!state.input"
-                    @click="loadToCompare2"
-                  />
+              <div class="editor-panel">
+                <div class="panel-label">
+                  <i class="pi pi-file"></i>
+                  <span>JSON 2</span>
                 </div>
-              </Panel>
+                <CodeEditor v-model="compareJson2" mode="json" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <Toolbar class="editor-toolbar">
+                  <template #start>
+                    <Button
+                      label="Load Current"
+                      icon="pi pi-download"
+                      severity="secondary"
+                      :disabled="!state.input"
+                      @click="loadToCompare2"
+                    />
+                  </template>
+                </Toolbar>
+              </div>
             </div>
 
             <Message v-if="jsonCompareError" severity="error" :closable="false">
@@ -1382,7 +1361,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                   <i class="pi pi-file-edit"></i>
                   <span>JSON Input</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="json" height="350px" />
+                <CodeEditor v-model="state.input" mode="json" height="clamp(300px, calc(100vh - 520px), 600px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1415,7 +1394,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                 <CodeEditor
                   v-model="convertOutput"
                   :mode="convertOutputMode"
-                  height="350px"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
                   :options="{ readOnly: true }"
                 />
                 <Toolbar class="editor-toolbar">
@@ -1488,7 +1467,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                   <i class="pi pi-file-edit"></i>
                   <span>JSON Data</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="json" height="300px" />
+                <CodeEditor v-model="state.input" mode="json" height="clamp(250px, calc(100vh - 580px), 500px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1507,7 +1486,7 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
                   <i class="pi pi-cog"></i>
                   <span>JSON Schema</span>
                 </div>
-                <CodeEditor v-model="schemaInput" mode="json" height="300px" />
+                <CodeEditor v-model="schemaInput" mode="json" height="clamp(250px, calc(100vh - 580px), 500px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1653,11 +1632,22 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
 .options-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--surface-ground);
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--surface-0, #ffffff);
   border-radius: 8px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--surface-200, #e5e7eb);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  :deep(.p-inputnumber),
+  :deep(.p-select) {
+    width: 100%;
+  }
+
+  :deep(.p-inputnumber-input) {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .section-title {
@@ -1665,37 +1655,43 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--primary-color);
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
   border-bottom: 1px solid var(--surface-border);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
 
   i {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 }
 
 .option-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 
   label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
 .toggle-option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 
   label {
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -1738,22 +1734,6 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
   }
 }
 
-.editor-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 1rem;
-  align-items: start;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-
-    .swap-button {
-      justify-self: center;
-      transform: rotate(90deg);
-    }
-  }
-}
-
 .editor-grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1781,14 +1761,6 @@ watchDebounced(() => state.input, validateJson, { immediate: true, debounce: 300
   i {
     color: var(--primary-color);
   }
-}
-
-.swap-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  margin-top: 180px;
 }
 
 .editor-toolbar {

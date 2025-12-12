@@ -82,7 +82,7 @@ await onClickSearch()
   <Card>
     <template #title>
       <div class="card-title">
-        <i class="pi pi-code"></i>
+        <i class="pi pi-tag"></i>
         <span>HTML Entities</span>
       </div>
     </template>
