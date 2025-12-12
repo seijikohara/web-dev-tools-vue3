@@ -31,7 +31,6 @@ const {
   diffAsText,
   originalLineCount,
   modifiedLineCount,
-  swapTexts,
   clear: clearAll,
   loadSample,
 } = useDiffCalculator()
@@ -128,46 +127,32 @@ const copyDiff = () => {
         </Panel>
 
         <!-- Input Section -->
-        <div class="input-section">
-          <Panel class="input-panel">
-            <template #header>
-              <div class="panel-header">
-                <i class="pi pi-file"></i>
-                <span>Original</span>
-                <Tag
-                  v-if="originalText"
-                  :value="`${originalLineCount} lines`"
-                  severity="secondary"
-                />
-              </div>
-            </template>
-            <CodeEditor v-model="originalText" mode="plain_text" height="250px" />
-          </Panel>
-
-          <div class="swap-button-container">
-            <Button
-              v-tooltip.top="'Swap texts'"
-              icon="pi pi-arrows-h"
-              severity="secondary"
-              rounded
-              @click="swapTexts"
-            />
+        <div class="editor-grid-2col">
+          <div class="editor-panel">
+            <div class="panel-label">
+              <i class="pi pi-file"></i>
+              <span>Original</span>
+              <Tag
+                v-if="originalText"
+                :value="`${originalLineCount} lines`"
+                severity="secondary"
+              />
+            </div>
+            <CodeEditor v-model="originalText" mode="plain_text" height="clamp(300px, calc(100vh - 520px), 600px)" />
           </div>
 
-          <Panel class="input-panel">
-            <template #header>
-              <div class="panel-header">
-                <i class="pi pi-file-edit"></i>
-                <span>Modified</span>
-                <Tag
-                  v-if="modifiedText"
-                  :value="`${modifiedLineCount} lines`"
-                  severity="secondary"
-                />
-              </div>
-            </template>
-            <CodeEditor v-model="modifiedText" mode="plain_text" height="250px" />
-          </Panel>
+          <div class="editor-panel">
+            <div class="panel-label">
+              <i class="pi pi-file-edit"></i>
+              <span>Modified</span>
+              <Tag
+                v-if="modifiedText"
+                :value="`${modifiedLineCount} lines`"
+                severity="secondary"
+              />
+            </div>
+            <CodeEditor v-model="modifiedText" mode="plain_text" height="clamp(300px, calc(100vh - 520px), 600px)" />
+          </div>
         </div>
 
         <!-- Results Section -->
@@ -390,30 +375,32 @@ const copyDiff = () => {
   }
 }
 
-.input-section {
+.editor-grid-2col {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  align-items: start;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
   }
 }
 
-.input-panel {
-  min-width: 0;
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.swap-button-container {
+.panel-label {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding-top: 3rem;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
 
-  @media (max-width: 768px) {
-    padding-top: 0;
-    order: -1;
+  i {
+    color: var(--primary-color);
   }
 }
 

@@ -256,13 +256,6 @@ const minifySql = () => {
   }
 }
 
-// Swap values
-const swapValues = () => {
-  const temp = state.input
-  state.input = state.output
-  state.output = temp
-}
-
 // Copy output
 const copyOutput = () => {
   if (!state.output) return
@@ -552,13 +545,13 @@ const sqlStats = computed(() => {
         {{ formatError }}
       </Message>
 
-      <div class="editor-grid">
+      <div class="editor-grid-2col">
         <div class="editor-panel">
           <div class="panel-label">
             <i class="pi pi-file-import"></i>
             <span>Input</span>
           </div>
-          <CodeEditor v-model="state.input" mode="sql" height="350px" />
+          <CodeEditor v-model="state.input" mode="sql" height="clamp(300px, calc(100vh - 520px), 600px)" />
           <Toolbar class="editor-toolbar">
             <template #start>
               <Button
@@ -595,17 +588,6 @@ const sqlStats = computed(() => {
           </Toolbar>
         </div>
 
-        <div class="swap-button">
-          <Button
-            v-tooltip.top="'Swap'"
-            icon="pi pi-arrow-right-arrow-left"
-            severity="secondary"
-            rounded
-            :disabled="!state.output"
-            @click="swapValues"
-          />
-        </div>
-
         <div class="editor-panel">
           <div class="panel-label">
             <i class="pi pi-file-export"></i>
@@ -614,7 +596,7 @@ const sqlStats = computed(() => {
           <CodeEditor
             v-model="state.output"
             mode="sql"
-            height="350px"
+            height="clamp(300px, calc(100vh - 520px), 600px)"
             :options="{ readOnly: true }"
           />
           <Toolbar class="editor-toolbar">
@@ -674,11 +656,22 @@ const sqlStats = computed(() => {
 .options-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--surface-ground);
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--surface-0, #ffffff);
   border-radius: 8px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--surface-200, #e5e7eb);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  :deep(.p-inputnumber),
+  :deep(.p-select) {
+    width: 100%;
+  }
+
+  :deep(.p-inputnumber-input) {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .section-title {
@@ -686,37 +679,43 @@ const sqlStats = computed(() => {
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--primary-color);
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
   border-bottom: 1px solid var(--surface-border);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
 
   i {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 }
 
 .option-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 
   label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
 .toggle-option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 
   label {
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -741,11 +740,10 @@ const sqlStats = computed(() => {
   }
 }
 
-.editor-grid {
+.editor-grid-2col {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  align-items: start;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
@@ -768,21 +766,6 @@ const sqlStats = computed(() => {
 
   i {
     color: var(--primary-color);
-  }
-}
-
-.swap-button {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-  padding-top: 175px;
-
-  @media (max-width: 1024px) {
-    flex-direction: row;
-    padding-top: 0;
-    padding: 1rem 0;
   }
 }
 

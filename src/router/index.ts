@@ -114,19 +114,19 @@ const APP_ROUTES: readonly AppRoute[] = [
       '/json-formatter',
       'JSON Formatter',
       () => import('@/views/formatters/JsonFormatterView.vue'),
-      'pi pi-file',
+      'pi pi-code',
     ],
     [
       '/xml-formatter',
       'XML Formatter',
       () => import('@/views/formatters/XmlFormatterView.vue'),
-      'pi pi-file',
+      'pi pi-file-edit',
     ],
     [
       '/yaml-formatter',
       'YAML Formatter',
       () => import('@/views/formatters/YamlFormatterView.vue'),
-      'pi pi-file',
+      'pi pi-file-edit',
     ],
     [
       '/sql-formatter',
@@ -144,13 +144,13 @@ const APP_ROUTES: readonly AppRoute[] = [
       '/markdown',
       'Markdown Editor',
       () => import('@/views/text/MarkdownEditorView.vue'),
-      'pi pi-pencil',
+      'pi pi-file-edit',
     ],
     [
       '/diff-viewer',
       'Diff Viewer',
       () => import('@/views/text/DiffView.vue'),
-      'pi pi-arrows-h',
+      'pi pi-arrows-alt',
     ],
     [
       '/string-case',
@@ -246,7 +246,7 @@ const APP_ROUTES: readonly AppRoute[] = [
       '/curl-builder',
       'cURL Builder',
       () => import('@/views/generators/CurlBuilderView.vue'),
-      'pi pi-code',
+      'pi pi-send',
     ],
   ]),
 

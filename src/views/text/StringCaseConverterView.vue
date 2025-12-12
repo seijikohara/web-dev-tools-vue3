@@ -42,18 +42,16 @@ const copyResult = (result: string, name: string) => {
       Convert text between camelCase, PascalCase, snake_case, kebab-case, and more
     </template>
     <template #content>
-      <Panel toggleable class="input-panel">
-        <template #header>
-          <div class="panel-header">
-            <i class="pi pi-pencil"></i>
-            <span>Input Text</span>
-            <Tag
-              v-if="inputStats"
-              :value="`${inputStats.words} words / ${inputStats.chars} chars`"
-              severity="info"
-            />
-          </div>
-        </template>
+      <div class="editor-panel">
+        <div class="panel-label">
+          <i class="pi pi-pencil"></i>
+          <span>Input Text</span>
+          <Tag
+            v-if="inputStats"
+            :value="`${inputStats.words} words / ${inputStats.chars} chars`"
+            severity="info"
+          />
+        </div>
 
         <CodeEditor v-model="inputText" mode="plain_text" height="100px" />
 
@@ -80,7 +78,7 @@ const copyResult = (result: string, name: string) => {
             />
           </template>
         </Toolbar>
-      </Panel>
+      </div>
 
       <Transition name="fade-slide">
         <div v-if="conversions.length > 0" class="results-section">
@@ -139,19 +137,20 @@ const copyResult = (result: string, name: string) => {
   }
 }
 
-.input-panel {
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
-
-  :deep(.p-panel-header) {
-    padding: 0.75rem 1rem;
-  }
 }
 
-.panel-header {
+.panel-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
 
   i {
     color: var(--primary-color);

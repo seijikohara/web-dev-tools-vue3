@@ -268,12 +268,6 @@ export const useDiffCalculator = () => {
   )
 
   // Actions
-  const swapTexts = () => {
-    const temp = originalText.value
-    originalText.value = modifiedText.value
-    modifiedText.value = temp
-  }
-
   const clear = () => {
     originalText.value = ''
     modifiedText.value = ''
@@ -303,7 +297,6 @@ export const useDiffCalculator = () => {
     modifiedLineCount,
 
     // Actions
-    swapTexts,
     clear,
     loadSample,
   }

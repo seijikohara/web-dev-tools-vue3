@@ -66,7 +66,7 @@ const parseCurlCommand = () => {
   <Card>
     <template #title>
       <div class="card-title">
-        <i class="pi pi-code"></i>
+        <i class="pi pi-send"></i>
         <span>cURL Command Builder</span>
       </div>
     </template>

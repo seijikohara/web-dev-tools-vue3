@@ -226,12 +226,6 @@ export const useUrlEncoder = () => {
   const outputStats = computed(() => getOutputStats(inputText.value, outputText.value))
 
   // Encode/Decode actions
-  const swapValues = () => {
-    const temp = inputText.value
-    inputText.value = outputText.value
-    outputText.value = temp
-  }
-
   const decodeOutput = (): boolean => {
     encodeError.value = ''
     if (!outputText.value) return false
@@ -319,7 +313,6 @@ export const useUrlEncoder = () => {
     outputStats,
 
     // Encode/Decode actions
-    swapValues,
     decodeOutput,
     loadSample,
     clearAll,

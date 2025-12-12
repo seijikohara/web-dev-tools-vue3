@@ -38,7 +38,6 @@ const {
   encodingMode,
   inputStats,
   outputStats,
-  swapValues,
   loadSample,
   clearAll,
 
@@ -172,7 +171,7 @@ const handleDownload = () => {
               </Message>
             </Transition>
 
-            <div class="editor-grid">
+            <div class="editor-grid-2col">
               <div class="editor-panel">
                 <div class="panel-label">
                   <i class="pi pi-file-edit"></i>
@@ -185,7 +184,7 @@ const handleDownload = () => {
                     severity="secondary"
                   />
                 </div>
-                <CodeEditor v-model="inputText" mode="plain_text" height="300px" />
+                <CodeEditor v-model="inputText" mode="plain_text" height="clamp(250px, calc(100vh - 550px), 500px)" />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -220,17 +219,6 @@ const handleDownload = () => {
                 </Toolbar>
               </div>
 
-              <div class="swap-button">
-                <Button
-                  v-tooltip.top="'Swap & Toggle Mode'"
-                  icon="pi pi-arrow-right-arrow-left"
-                  severity="secondary"
-                  rounded
-                  :disabled="!outputText"
-                  @click="swapValues"
-                />
-              </div>
-
               <div class="editor-panel">
                 <div class="panel-label">
                   <i class="pi pi-lock"></i>
@@ -246,7 +234,7 @@ const handleDownload = () => {
                 <CodeEditor
                   v-model="outputText"
                   mode="plain_text"
-                  height="300px"
+                  height="clamp(250px, calc(100vh - 550px), 500px)"
                   :options="{ readOnly: true }"
                 />
                 <Toolbar class="editor-toolbar">
@@ -360,7 +348,7 @@ const handleDownload = () => {
                 <CodeEditor
                   :model-value="fileBase64"
                   mode="plain_text"
-                  height="200px"
+                  height="clamp(180px, calc(100vh - 650px), 300px)"
                   :options="{ readOnly: true }"
                 />
 
@@ -404,7 +392,7 @@ const handleDownload = () => {
                     severity="secondary"
                   />
                 </div>
-                <CodeEditor v-model="base64Input" mode="plain_text" height="250px" />
+                <CodeEditor v-model="base64Input" mode="plain_text" height="clamp(220px, calc(100vh - 580px), 450px)" />
                 <Toolbar class="editor-toolbar">
                   <template #end>
                     <Button
@@ -543,11 +531,10 @@ const handleDownload = () => {
   }
 }
 
-.editor-grid {
+.editor-grid-2col {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  align-items: start;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
@@ -570,21 +557,6 @@ const handleDownload = () => {
 
   i {
     color: var(--primary-color);
-  }
-}
-
-.swap-button {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-  padding-top: 150px;
-
-  @media (max-width: 1024px) {
-    flex-direction: row;
-    padding-top: 0;
-    padding: 1rem 0;
   }
 }
 
