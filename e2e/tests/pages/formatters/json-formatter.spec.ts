@@ -214,11 +214,12 @@ test.describe('JSON Formatter', () => {
 
       await test.step('Enter same JSON in both editors', async () => {
         const json = '{"name": "test"}'
-        const editor1 = page.locator('.compare-panel').first().locator('.cm-editor')
+        const comparePanel = page.getByRole('tabpanel', { name: 'Compare' })
+        const editor1 = comparePanel.locator('.cm-editor').first()
         await editor1.click()
         await page.keyboard.type(json)
 
-        const editor2 = page.locator('.compare-panel').nth(1).locator('.cm-editor')
+        const editor2 = comparePanel.locator('.cm-editor').nth(1)
         await editor2.click()
         await page.keyboard.type(json)
       })
