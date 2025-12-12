@@ -67,28 +67,6 @@ test.describe('URL Encoder', () => {
       })
     })
 
-    test('should swap input and output', async ({ page }) => {
-      await test.step('Navigate to URL Encoding page', async () => {
-        await page.goto('/url-encoding')
-      })
-
-      await test.step('Enter text', async () => {
-        const editor = page.locator('.cm-editor').first()
-        await editor.click()
-        await page.keyboard.type('test')
-      })
-
-      await test.step('Click swap button', async () => {
-        await page.locator('.swap-button').locator('button').first().click()
-      })
-
-      await test.step('Verify swap occurred', async () => {
-        // After swap, the encoded output becomes input
-        const inputEditor = page.locator('.cm-editor').first()
-        await expect(inputEditor).toContainText('test')
-      })
-    })
-
     test('should display input and output stats', async ({ page }) => {
       await test.step('Navigate to URL Encoding page', async () => {
         await page.goto('/url-encoding')

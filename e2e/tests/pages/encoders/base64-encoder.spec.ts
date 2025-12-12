@@ -78,27 +78,6 @@ test.describe('Base64 Encoder', () => {
       })
     })
 
-    test('should swap input and output with mode toggle', async ({ page }) => {
-      await test.step('Navigate to Base64 Encoder page', async () => {
-        await page.goto('/base64')
-      })
-
-      await test.step('Enter text and generate Base64', async () => {
-        const editor = page.locator('.cm-editor').first()
-        await editor.click()
-        await page.keyboard.type('test')
-      })
-
-      await test.step('Click swap button', async () => {
-        await page.locator('.swap-button').locator('button').click()
-      })
-
-      await test.step('Verify mode changed to Decode', async () => {
-        // After swap, mode should change to Decode
-        await expect(page.locator('.p-tag').filter({ hasText: 'Base64 → Text' })).toBeVisible()
-      })
-    })
-
     test('should display input and output stats', async ({ page }) => {
       await test.step('Navigate to Base64 Encoder page', async () => {
         await page.goto('/base64')

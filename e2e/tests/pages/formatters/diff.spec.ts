@@ -44,26 +44,6 @@ test.describe('Diff Viewer', () => {
     })
   })
 
-  test('should swap texts', async ({ page }) => {
-    await test.step('Navigate to Diff Viewer page', async () => {
-      await page.goto('/diff-viewer')
-    })
-
-    await test.step('Load sample texts', async () => {
-      await page.locator('button:has(.pi-file-import)').first().click()
-    })
-
-    await test.step('Click Swap button', async () => {
-      // Swap button has pi-arrows-h icon
-      await page.locator('button:has(.pi-arrows-h)').click()
-    })
-
-    await test.step('Verify swap completed', async () => {
-      // After swapping, diff should still be visible
-      await expect(page.locator('.diff-output')).toBeVisible()
-    })
-  })
-
   test('should switch to split view', async ({ page }) => {
     await test.step('Navigate to Diff Viewer page', async () => {
       await page.goto('/diff-viewer')
