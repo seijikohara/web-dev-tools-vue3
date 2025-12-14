@@ -80,15 +80,16 @@ admin@localhost`,
 }
 
 // Pure functions
-export const buildFlagsString = (flags: RegexFlags): string => {
-  const parts: string[] = []
-  if (flags.global) parts.push('g')
-  if (flags.caseInsensitive) parts.push('i')
-  if (flags.multiline) parts.push('m')
-  if (flags.dotAll) parts.push('s')
-  if (flags.unicode) parts.push('u')
-  return parts.join('')
-}
+export const buildFlagsString = (flags: RegexFlags): string =>
+  [
+    flags.global && 'g',
+    flags.caseInsensitive && 'i',
+    flags.multiline && 'm',
+    flags.dotAll && 's',
+    flags.unicode && 'u',
+  ]
+    .filter(Boolean)
+    .join('')
 
 export const validateRegex = (pattern: string, flags: string): string => {
   if (!pattern) return ''

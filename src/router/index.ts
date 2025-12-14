@@ -146,12 +146,7 @@ const APP_ROUTES: readonly AppRoute[] = [
       () => import('@/views/text/MarkdownEditorView.vue'),
       'pi pi-file-edit',
     ],
-    [
-      '/diff-viewer',
-      'Diff Viewer',
-      () => import('@/views/text/DiffView.vue'),
-      'pi pi-arrows-alt',
-    ],
+    ['/diff-viewer', 'Diff Viewer', () => import('@/views/text/DiffView.vue'), 'pi pi-arrows-alt'],
     [
       '/string-case',
       'String Case Converter',

@@ -41,7 +41,9 @@ test.describe('Regex Tester', () => {
 
     await test.step('Verify error message', async () => {
       // Tag shows "Invalid" in panel header when pattern is invalid
-      await expect(page.locator('.panel-header .p-tag').filter({ hasText: 'Invalid' })).toBeVisible()
+      await expect(
+        page.locator('.panel-header .p-tag').filter({ hasText: 'Invalid' }),
+      ).toBeVisible()
       // Message component with severity="error" is also displayed
       await expect(page.locator('.p-message-error').first()).toBeVisible()
     })

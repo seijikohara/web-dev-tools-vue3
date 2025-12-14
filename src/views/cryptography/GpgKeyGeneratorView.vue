@@ -134,14 +134,15 @@ const isValid = computed(() => {
 })
 
 // User ID string
-const userId = computed(() => {
-  const parts = [state.name.trim()]
-  if (state.comment.trim()) {
-    parts.push(`(${state.comment.trim()})`)
-  }
-  parts.push(`<${state.email.trim()}>`)
-  return parts.join(' ')
-})
+const userId = computed(() =>
+  [
+    state.name.trim(),
+    state.comment.trim() && `(${state.comment.trim()})`,
+    `<${state.email.trim()}>`,
+  ]
+    .filter(Boolean)
+    .join(' ')
+)
 
 // Generate GPG command
 const gpgCommand = computed((): string => {

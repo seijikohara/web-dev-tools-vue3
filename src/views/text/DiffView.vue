@@ -132,26 +132,26 @@ const copyDiff = () => {
             <div class="panel-label">
               <i class="pi pi-file"></i>
               <span>Original</span>
-              <Tag
-                v-if="originalText"
-                :value="`${originalLineCount} lines`"
-                severity="secondary"
-              />
+              <Tag v-if="originalText" :value="`${originalLineCount} lines`" severity="secondary" />
             </div>
-            <CodeEditor v-model="originalText" mode="plain_text" height="clamp(300px, calc(100vh - 520px), 600px)" />
+            <CodeEditor
+              v-model="originalText"
+              mode="plain_text"
+              height="clamp(300px, calc(100vh - 520px), 600px)"
+            />
           </div>
 
           <div class="editor-panel">
             <div class="panel-label">
               <i class="pi pi-file-edit"></i>
               <span>Modified</span>
-              <Tag
-                v-if="modifiedText"
-                :value="`${modifiedLineCount} lines`"
-                severity="secondary"
-              />
+              <Tag v-if="modifiedText" :value="`${modifiedLineCount} lines`" severity="secondary" />
             </div>
-            <CodeEditor v-model="modifiedText" mode="plain_text" height="clamp(300px, calc(100vh - 520px), 600px)" />
+            <CodeEditor
+              v-model="modifiedText"
+              mode="plain_text"
+              height="clamp(300px, calc(100vh - 520px), 600px)"
+            />
           </div>
         </div>
 

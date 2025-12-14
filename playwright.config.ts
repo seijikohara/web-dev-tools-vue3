@@ -30,10 +30,7 @@ export default defineConfig({
         ['blob', { outputDir: 'blob-report' }], // For sharding - merge reports later
         ['list'], // Console output for CI
       ]
-    : [
-        ['html', { outputFolder: 'playwright-report' }],
-        ['list'],
-      ],
+    : [['html', { outputFolder: 'playwright-report' }], ['list']],
 
   // Shared settings
   use: {

@@ -168,7 +168,11 @@ const handleLoadUrlToBuilder = () => {
                     severity="secondary"
                   />
                 </div>
-                <CodeEditor v-model="inputText" mode="plain_text" height="clamp(250px, calc(100vh - 550px), 500px)" />
+                <CodeEditor
+                  v-model="inputText"
+                  mode="plain_text"
+                  height="clamp(250px, calc(100vh - 550px), 500px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button

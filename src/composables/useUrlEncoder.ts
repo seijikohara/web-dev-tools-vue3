@@ -142,16 +142,12 @@ export const extractQueryParams = (urlString: string): QueryParam[] => {
 
   try {
     const url = new URL(urlString)
-    const params: QueryParam[] = []
-    url.searchParams.forEach((value, key) => {
-      params.push({
-        key,
-        value,
-        encodedKey: encodeURIComponent(key),
-        encodedValue: encodeURIComponent(value),
-      })
-    })
-    return params
+    return Array.from(url.searchParams.entries()).map(([key, value]) => ({
+      key,
+      value,
+      encodedKey: encodeURIComponent(key),
+      encodedValue: encodeURIComponent(value),
+    }))
   } catch {
     return []
   }
@@ -160,12 +156,14 @@ export const extractQueryParams = (urlString: string): QueryParam[] => {
 export const buildUrl = (baseUrl: string, params: BuilderParam[]): string => {
   try {
     const url = new URL(baseUrl)
-    params.forEach(param => {
-      if (param.key.trim()) {
-        url.searchParams.append(param.key, param.value)
-      }
-    })
-    return url.toString()
+    const queryString = params
+      .filter(param => param.key.trim())
+      .map(param => `${encodeURIComponent(param.key)}=${encodeURIComponent(param.value)}`)
+      .join('&')
+
+    return queryString
+      ? `${url.origin}${url.pathname}${url.search ? `${url.search}&` : '?'}${queryString}${url.hash}`
+      : url.toString()
   } catch {
     return ''
   }

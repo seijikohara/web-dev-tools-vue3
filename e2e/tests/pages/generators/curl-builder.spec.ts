@@ -247,7 +247,9 @@ test.describe('cURL Builder', () => {
 
       await test.step('Enter cURL command', async () => {
         const parseInput = page.locator('.parse-input')
-        await parseInput.fill('curl -X POST https://api.example.com/users -H "Content-Type: application/json"')
+        await parseInput.fill(
+          'curl -X POST https://api.example.com/users -H "Content-Type: application/json"',
+        )
       })
 
       await test.step('Click Parse button', async () => {

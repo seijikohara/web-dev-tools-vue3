@@ -1,7 +1,7 @@
 import type { CodeGenerator, JavaScriptOptions, JsonValue, TypeInfo } from './types'
 import { inferType, toCamelCase, generateWithNestedTypes } from './utils'
 
-export const defaultJavaScriptOptions: JavaScriptOptions = {
+export const defaultJavaScriptOptions = {
   rootName: 'Root',
   optionalProperties: false,
   useClass: true,
@@ -9,145 +9,178 @@ export const defaultJavaScriptOptions: JavaScriptOptions = {
   useES6: true,
   generateFactory: false,
   generateValidator: false,
-}
+} as const satisfies JavaScriptOptions
 
 const generateJSDocType = (typeInfo: TypeInfo): string => {
+  // Early return for arrays
   if (typeInfo.isArray && typeInfo.arrayItemType) {
     return `Array<${generateJSDocType(typeInfo.arrayItemType)}>`
   }
+
+  // Early return for objects
   if (typeInfo.isObject) {
     return typeInfo.name
   }
-  switch (typeInfo.name) {
-    case 'string':
-      return 'string'
-    case 'number':
-      return 'number'
-    case 'boolean':
-      return 'boolean'
-    case 'null':
-      return 'null'
-    default:
-      return '*'
-  }
+
+  // Map primitive types
+  const primitiveTypeMap = {
+    string: 'string',
+    number: 'number',
+    boolean: 'boolean',
+    null: 'null',
+  } as const
+
+  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? '*'
 }
 
-// Generate class definition
-const generateClassDefinition = (typeInfo: TypeInfo, options: JavaScriptOptions): string[] => {
-  if (!typeInfo.isObject || !typeInfo.children) return []
+const getDefaultValue = (childType: TypeInfo): string => {
+  if (childType.isArray) return '[]'
+  if (childType.isObject) return 'null'
 
-  const results: string[] = []
-  const entries = Object.entries(typeInfo.children)
-  const name = typeInfo.name
+  const defaultValueMap = {
+    string: "''",
+    number: '0',
+    boolean: 'false',
+  } as const
 
-  // Generate JSDoc
-  const jsDocLines: string[] = []
-  if (options.useJSDoc) {
-    jsDocLines.push('/**')
-    jsDocLines.push(` * @class ${name}`)
-    entries.forEach(([key, childType]) => {
-      const propName = toCamelCase(key)
-      const propType = generateJSDocType(childType)
-      jsDocLines.push(` * @property {${propType}} ${propName}`)
-    })
-    jsDocLines.push(' */')
-  }
+  return defaultValueMap[childType.name as keyof typeof defaultValueMap] ?? 'null'
+}
 
-  const constructorParams = entries.map(([key]) => toCamelCase(key)).join(', ')
-  const constructorBody = entries
+const buildJSDocLines = (name: string, entries: [string, TypeInfo][]): string[] => [
+  '/**',
+  ` * @class ${name}`,
+  ...entries.map(([key, childType]) => {
+    const propName = toCamelCase(key)
+    const propType = generateJSDocType(childType)
+    return ` * @property {${propType}} ${propName}`
+  }),
+  ' */',
+]
+
+const buildConstructorBody = (entries: [string, TypeInfo][]): string =>
+  entries
     .map(([key]) => {
       const propName = toCamelCase(key)
       return `    this.${propName} = ${propName};`
     })
     .join('\n')
 
+const buildValidatorChecks = (entries: [string, TypeInfo][]): string =>
+  entries
+    .map(([key, childType]) => {
+      const propName = toCamelCase(key)
+
+      if (childType.isArray) {
+        return `  if (!Array.isArray(obj.${propName})) return false;`
+      }
+
+      if (childType.isObject) {
+        return `  if (typeof obj.${propName} !== 'object' || obj.${propName} === null) return false;`
+      }
+
+      const typeCheckMap = {
+        string: `  if (typeof obj.${propName} !== 'string') return false;`,
+        number: `  if (typeof obj.${propName} !== 'number') return false;`,
+        boolean: `  if (typeof obj.${propName} !== 'boolean') return false;`,
+      } as const
+
+      return typeCheckMap[childType.name as keyof typeof typeCheckMap] ?? ''
+    })
+    .filter(Boolean)
+    .join('\n')
+
+// Build factory function code
+const buildFactoryFunction = (
+  name: string,
+  params: string,
+  useJSDoc: boolean,
+): string => {
+  const doc = useJSDoc
+    ? `/**
+ * Create a new ${name} instance
+ * @returns {${name}}
+ */
+`
+    : ''
+  return `${doc}function create${name}(${params}) {
+  return new ${name}(${params});
+}`
+}
+
+// Build validator function code
+const buildValidatorFunction = (
+  name: string,
+  entries: [string, TypeInfo][],
+  useJSDoc: boolean,
+): string => {
+  const doc = useJSDoc
+    ? `/**
+ * Validate a ${name} object
+ * @param {Object} obj
+ * @returns {boolean}
+ */
+`
+    : ''
+  const checks = buildValidatorChecks(entries)
+  return `${doc}function is${name}(obj) {
+  if (typeof obj !== 'object' || obj === null) return false;
+${checks}
+  return true;
+}`
+}
+
+// Generate class definition
+const generateClassDefinition = (typeInfo: TypeInfo, options: JavaScriptOptions): string[] => {
+  // Early return for non-objects
+  if (!typeInfo.isObject || !typeInfo.children) return []
+
+  const entries = Object.entries(typeInfo.children)
+  const { name } = typeInfo
+
+  // Generate JSDoc
+  const jsDocLines = options.useJSDoc ? buildJSDocLines(name, entries) : []
+  const constructorParams = entries.map(([key]) => toCamelCase(key)).join(', ')
+  const constructorBody = buildConstructorBody(entries)
+
   const classBody = options.useES6
-    ? `class ${name} {\n  constructor(${constructorParams}) {\n${constructorBody}\n  }\n}`
-    : `function ${name}(${constructorParams}) {\n${constructorBody}\n}`
-
-  const jsDoc = jsDocLines.length > 0 ? jsDocLines.join('\n') + '\n' : ''
-  results.push(jsDoc + classBody)
-
-  // Generate factory function if requested
-  if (options.generateFactory) {
-    const factoryParams = entries.map(([key]) => toCamelCase(key)).join(', ')
-    const factoryDoc = options.useJSDoc
-      ? `/**\n * Create a new ${name} instance\n * @returns {${name}}\n */\n`
-      : ''
-    results.push(
-      `${factoryDoc}function create${name}(${factoryParams}) {\n  return new ${name}(${factoryParams});\n}`,
-    )
+    ? `class ${name} {
+  constructor(${constructorParams}) {
+${constructorBody}
   }
+}`
+    : `function ${name}(${constructorParams}) {
+${constructorBody}
+}`
 
-  // Generate validator if requested
-  if (options.generateValidator) {
-    const validatorDoc = options.useJSDoc
-      ? `/**\n * Validate a ${name} object\n * @param {Object} obj\n * @returns {boolean}\n */\n`
-      : ''
-    const checks = entries
-      .map(([key, childType]) => {
-        const propName = toCamelCase(key)
-        if (childType.isArray) {
-          return `  if (!Array.isArray(obj.${propName})) return false;`
-        }
-        if (childType.isObject) {
-          return `  if (typeof obj.${propName} !== 'object' || obj.${propName} === null) return false;`
-        }
-        switch (childType.name) {
-          case 'string':
-            return `  if (typeof obj.${propName} !== 'string') return false;`
-          case 'number':
-            return `  if (typeof obj.${propName} !== 'number') return false;`
-          case 'boolean':
-            return `  if (typeof obj.${propName} !== 'boolean') return false;`
-          default:
-            return ''
-        }
-      })
-      .filter(Boolean)
-      .join('\n')
+  const jsDoc = jsDocLines.length > 0 ? `${jsDocLines.join('\n')}\n` : ''
 
-    results.push(
-      `${validatorDoc}function is${name}(obj) {\n  if (typeof obj !== 'object' || obj === null) return false;\n${checks}\n  return true;\n}`,
-    )
-  }
-
-  return results
+  return [
+    jsDoc + classBody,
+    ...(options.generateFactory ? [buildFactoryFunction(name, constructorParams, options.useJSDoc)] : []),
+    ...(options.generateValidator ? [buildValidatorFunction(name, entries, options.useJSDoc)] : []),
+  ]
 }
 
 // Generate object literal / typedef
 const generateObjectLiteral = (typeInfo: TypeInfo, options: JavaScriptOptions): string => {
+  // Early return for non-objects
   if (!typeInfo.isObject || !typeInfo.children) return ''
 
   const entries = Object.entries(typeInfo.children)
-  const name = typeInfo.name
+  const { name } = typeInfo
 
-  const jsDocLines: string[] = []
-  if (options.useJSDoc) {
-    jsDocLines.push('/**')
-    jsDocLines.push(` * @typedef {Object} ${name}`)
-    entries.forEach(([key, childType]) => {
-      const propName = toCamelCase(key)
-      const propType = generateJSDocType(childType)
-      jsDocLines.push(` * @property {${propType}} ${propName}`)
-    })
-    jsDocLines.push(' */')
-  }
-
-  const getDefaultValue = (childType: TypeInfo): string => {
-    if (childType.isArray) return '[]'
-    if (childType.isObject) return 'null'
-    switch (childType.name) {
-      case 'string':
-        return "''"
-      case 'number':
-        return '0'
-      case 'boolean':
-        return 'false'
-      default:
-        return 'null'
-    }
-  }
+  const jsDocLines = options.useJSDoc
+    ? [
+        '/**',
+        ` * @typedef {Object} ${name}`,
+        ...entries.map(([key, childType]) => {
+          const propName = toCamelCase(key)
+          const propType = generateJSDocType(childType)
+          return ` * @property {${propType}} ${propName}`
+        }),
+        ' */',
+      ]
+    : []
 
   const objectProps = entries
     .map(([key, childType]) => {
@@ -157,9 +190,11 @@ const generateObjectLiteral = (typeInfo: TypeInfo, options: JavaScriptOptions): 
     })
     .join('\n')
 
-  const jsDoc = jsDocLines.length > 0 ? jsDocLines.join('\n') + '\n' : ''
+  const jsDoc = jsDocLines.length > 0 ? `${jsDocLines.join('\n')}\n` : ''
   const constKeyword = options.useES6 ? 'const' : 'var'
-  return `${jsDoc}${constKeyword} ${name.toLowerCase()}Template = {\n${objectProps}\n};`
+  return `${jsDoc}${constKeyword} ${name.toLowerCase()}Template = {
+${objectProps}
+};`
 }
 
 // Generate code for a single type
@@ -171,7 +206,7 @@ const generateSingleType = (typeInfo: TypeInfo, options: JavaScriptOptions): str
   return literal ? [literal] : []
 }
 
-export const javaScriptGenerator: CodeGenerator<JavaScriptOptions> = {
+export const javaScriptGenerator = {
   generate(data: unknown, options: JavaScriptOptions): string {
     const rootType = inferType(data as JsonValue, options.rootName)
     const allCode = generateWithNestedTypes(rootType, typeInfo =>
@@ -183,4 +218,4 @@ export const javaScriptGenerator: CodeGenerator<JavaScriptOptions> = {
   getDefaultOptions(): JavaScriptOptions {
     return { ...defaultJavaScriptOptions }
   },
-}
+} as const satisfies CodeGenerator<JavaScriptOptions>

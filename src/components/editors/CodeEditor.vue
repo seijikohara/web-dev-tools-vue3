@@ -113,7 +113,7 @@ import {
   crosshairCursor,
   placeholder as placeholderExtension,
 } from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
+import { EditorState, type Extension } from '@codemirror/state'
 import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { closeBrackets, closeBracketsKeymap, autocompletion } from '@codemirror/autocomplete'
@@ -244,117 +244,56 @@ const extensions = computed(() => {
     placeholder: options.placeholder,
   }
 
-  const exts: (ReturnType<typeof json> | ReturnType<typeof EditorState.tabSize.of>)[] = [
-    // Core configuration
-    langExtension.value,
-    themeExtension.value,
-    EditorState.tabSize.of(opts.tabSize),
-  ]
-
-  // Line numbers
-  if (opts.lineNumbers) {
-    exts.push(lineNumbersExtension())
-  }
-
-  // Line wrapping
-  if (opts.lineWrapping) {
-    exts.push(EditorView.lineWrapping)
-  }
-
-  // Highlight active line
-  if (opts.highlightActiveLine) {
-    exts.push(highlightActiveLine())
-    exts.push(highlightActiveLineGutter())
-  }
-
-  // Bracket matching
-  if (opts.bracketMatching) {
-    exts.push(bracketMatching())
-  }
-
-  // Auto-close brackets
-  if (opts.closeBrackets) {
-    exts.push(closeBrackets())
-    exts.push(keymap.of(closeBracketsKeymap))
-  }
-
-  // Code folding
-  if (opts.foldGutter) {
-    exts.push(foldGutter())
-    exts.push(keymap.of(foldKeymap))
-  }
-
-  // Search
-  if (opts.search) {
-    exts.push(keymap.of(searchKeymap))
-  }
-
-  // History (undo/redo)
-  if (opts.history) {
-    exts.push(history())
-    exts.push(keymap.of(historyKeymap))
-  }
-
-  // Autocompletion
-  if (opts.autocompletion) {
-    exts.push(autocompletion())
-  }
-
-  // Multiple selections
-  if (opts.allowMultipleSelections) {
-    exts.push(EditorState.allowMultipleSelections.of(true))
-  }
-
-  // Rectangular selection
-  if (opts.rectangularSelection) {
-    exts.push(rectangularSelection())
-  }
-
-  // Crosshair cursor
-  if (opts.crosshairCursor) {
-    exts.push(crosshairCursor())
-  }
-
-  // Highlight special characters
-  if (opts.highlightSpecialChars) {
-    exts.push(highlightSpecialChars())
-  }
-
-  // Highlight selection matches
-  if (opts.highlightSelectionMatches) {
-    exts.push(highlightSelectionMatches())
-  }
-
-  // Indent on input
-  if (opts.indentOnInput) {
-    exts.push(indentOnInput())
-  }
-
-  // Drop cursor
-  if (opts.dropCursor) {
-    exts.push(dropCursor())
-  }
-
-  // Draw selection
-  if (opts.drawSelection) {
-    exts.push(drawSelection())
-  }
-
-  // Placeholder
-  if (opts.placeholder) {
-    exts.push(placeholderExtension(opts.placeholder))
-  }
-
-  // Default keymap
-  exts.push(keymap.of(defaultKeymap))
-
-  // Read-only mode
-  if (opts.readOnly) {
-    exts.push(EditorState.readOnly.of(true))
-    exts.push(EditorView.editable.of(false))
-  }
-
-  return exts.flat()
+  return (
+    [
+      // Core configuration
+      langExtension.value,
+      themeExtension.value,
+      EditorState.tabSize.of(opts.tabSize),
+      // Line numbers
+      opts.lineNumbers && lineNumbersExtension(),
+      // Line wrapping
+      opts.lineWrapping && EditorView.lineWrapping,
+      // Highlight active line
+      ...(opts.highlightActiveLine ? [highlightActiveLine(), highlightActiveLineGutter()] : []),
+      // Bracket matching
+      opts.bracketMatching && bracketMatching(),
+      // Auto-close brackets
+      ...(opts.closeBrackets ? [closeBrackets(), keymap.of(closeBracketsKeymap)] : []),
+      // Code folding
+      ...(opts.foldGutter ? [foldGutter(), keymap.of(foldKeymap)] : []),
+      // Search
+      opts.search && keymap.of(searchKeymap),
+      // History (undo/redo)
+      ...(opts.history ? [history(), keymap.of(historyKeymap)] : []),
+      // Autocompletion
+      opts.autocompletion && autocompletion(),
+      // Multiple selections
+      opts.allowMultipleSelections && EditorState.allowMultipleSelections.of(true),
+      // Rectangular selection
+      opts.rectangularSelection && rectangularSelection(),
+      // Crosshair cursor
+      opts.crosshairCursor && crosshairCursor(),
+      // Highlight special characters
+      opts.highlightSpecialChars && highlightSpecialChars(),
+      // Highlight selection matches
+      opts.highlightSelectionMatches && highlightSelectionMatches(),
+      // Indent on input
+      opts.indentOnInput && indentOnInput(),
+      // Drop cursor
+      opts.dropCursor && dropCursor(),
+      // Draw selection
+      opts.drawSelection && drawSelection(),
+      // Placeholder
+      opts.placeholder && placeholderExtension(opts.placeholder),
+      // Default keymap
+      keymap.of(defaultKeymap),
+      // Read-only mode
+      ...(opts.readOnly ? [EditorState.readOnly.of(true), EditorView.editable.of(false)] : []),
+    ] as (Extension | false | undefined)[]
+  )
+    .filter((ext): ext is Extension => Boolean(ext))
+    .flat()
 })
 
 // Handle editor ready

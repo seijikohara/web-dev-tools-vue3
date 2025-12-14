@@ -1,7 +1,7 @@
 import type { CodeGenerator, RustOptions, JsonValue, TypeInfo } from './types'
 import { inferType, toSnakeCase, generateWithNestedTypes } from './utils'
 
-export const defaultRustOptions: RustOptions = {
+export const defaultRustOptions = {
   rootName: 'Root',
   optionalProperties: false,
   deriveSerde: true,
@@ -9,37 +9,64 @@ export const defaultRustOptions: RustOptions = {
   deriveClone: true,
   deriveDefault: false,
   useBox: false,
-}
+} as const satisfies RustOptions
 
 const rustType = (typeInfo: TypeInfo, options: RustOptions): string => {
+  // Early return for arrays
   if (typeInfo.isArray && typeInfo.arrayItemType) {
     return `Vec<${rustType(typeInfo.arrayItemType, options)}>`
   }
+
+  // Early return for objects
   if (typeInfo.isObject) {
     return options.useBox ? `Box<${typeInfo.name}>` : typeInfo.name
   }
-  switch (typeInfo.name) {
-    case 'string':
-      return 'String'
-    case 'number':
-      return 'f64'
-    case 'boolean':
-      return 'bool'
-    case 'null':
-      return 'Option<()>'
-    default:
-      return 'serde_json::Value'
-  }
+
+  // Map primitive types
+  const primitiveTypeMap = {
+    string: 'String',
+    number: 'f64',
+    boolean: 'bool',
+    null: 'Option<()>',
+  } as const
+
+  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'serde_json::Value'
 }
 
 // Build derive attributes array based on options
 const buildDerives = (options: RustOptions): string[] => {
-  const derives: string[] = []
-  if (options.deriveSerde) derives.push('Serialize', 'Deserialize')
-  if (options.deriveDebug) derives.push('Debug')
-  if (options.deriveClone) derives.push('Clone')
-  if (options.deriveDefault) derives.push('Default')
+  const derives = [
+    options.deriveSerde && ['Serialize', 'Deserialize'],
+    options.deriveDebug && 'Debug',
+    options.deriveClone && 'Clone',
+    options.deriveDefault && 'Default',
+  ]
+    .filter(Boolean)
+    .flat() as string[]
+
   return derives
+}
+
+const buildFieldAttributes = (key: string, fieldName: string, options: RustOptions): string[] => {
+  if (!options.deriveSerde) return []
+
+  const attributes = [
+    fieldName !== key && `    #[serde(rename = "${key}")]`,
+    options.optionalProperties && `    #[serde(skip_serializing_if = "Option::is_none")]`,
+  ].filter(Boolean) as string[]
+
+  return attributes
+}
+
+const buildFieldDefinition = (key: string, childType: TypeInfo, options: RustOptions): string => {
+  const fieldName = toSnakeCase(key)
+  const baseType = rustType(childType, options)
+  const fieldType = options.optionalProperties ? `Option<${baseType}>` : baseType
+
+  const attributes = buildFieldAttributes(key, fieldName, options)
+  const attributeStr = attributes.length > 0 ? `${attributes.join('\n')}\n` : ''
+
+  return `${attributeStr}    pub ${fieldName}: ${fieldType},`
 }
 
 // Generate a single Rust struct definition
@@ -48,31 +75,21 @@ const generateStructDefinition = (
   options: RustOptions,
   derives: string[],
 ): string => {
+  // Early return for non-objects
   if (!typeInfo.isObject || !typeInfo.children) return ''
 
-  const fields = Object.entries(typeInfo.children).map(([key, childType]) => {
-    const fieldName = toSnakeCase(key)
-    const baseType = rustType(childType, options)
-    const fieldType = options.optionalProperties ? `Option<${baseType}>` : baseType
+  const fields = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildFieldDefinition(key, childType, options),
+  )
 
-    // Add serde rename attribute if field name differs from key
-    const renameAttr =
-      fieldName !== key && options.deriveSerde ? `    #[serde(rename = "${key}")]\n` : ''
-
-    // Add skip_serializing_if for optional fields
-    const skipAttr =
-      options.optionalProperties && options.deriveSerde
-        ? `    #[serde(skip_serializing_if = "Option::is_none")]\n`
-        : ''
-
-    return `${renameAttr}${skipAttr}    pub ${fieldName}: ${fieldType},`
-  })
-
-  const deriveAttr = derives.length > 0 ? `#[derive(${derives.join(', ')})]\n` : ''
-  return `${deriveAttr}pub struct ${typeInfo.name} {\n${fields.join('\n')}\n}`
+  const deriveAttr = derives.length > 0 ? `#[derive(${derives.join(', ')})]
+` : ''
+  return `${deriveAttr}pub struct ${typeInfo.name} {
+${fields.join('\n')}
+}`
 }
 
-export const rustGenerator: CodeGenerator<RustOptions> = {
+export const rustGenerator = {
   generate(data: unknown, options: RustOptions): string {
     const derives = buildDerives(options)
     const rootType = inferType(data as JsonValue, options.rootName)
@@ -80,11 +97,13 @@ export const rustGenerator: CodeGenerator<RustOptions> = {
       generateStructDefinition(typeInfo, options, derives),
     )
 
-    const imports = options.deriveSerde ? 'use serde::{Deserialize, Serialize};\n\n' : ''
+    const imports = options.deriveSerde ? `use serde::{Deserialize, Serialize};
+
+` : ''
     return imports + definitions.filter(Boolean).join('\n\n')
   },
 
   getDefaultOptions(): RustOptions {
     return { ...defaultRustOptions }
   },
-}
+} as const satisfies CodeGenerator<RustOptions>

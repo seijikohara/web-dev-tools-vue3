@@ -17,6 +17,11 @@ export interface DnsTypeOption {
   description: string
 }
 
+interface TableDataRow {
+  label: string
+  value: string
+}
+
 // Constants
 export const DNS_TYPE_OPTIONS: DnsTypeOption[] = [
   { label: 'A', value: 'A', description: 'IPv4 Address' },
@@ -28,7 +33,7 @@ export const DNS_TYPE_OPTIONS: DnsTypeOption[] = [
   { label: 'SOA', value: 'SOA', description: 'Start of Authority' },
   { label: 'PTR', value: 'PTR', description: 'Pointer (Reverse DNS)' },
   { label: 'SRV', value: 'SRV', description: 'Service' },
-]
+] as const
 
 export const DNS_TYPE_MAP: Record<number, string> = {
   1: 'A',
@@ -46,24 +51,24 @@ export const DNS_TYPE_MAP: Record<number, string> = {
   48: 'DNSKEY',
   52: 'TLSA',
   65: 'HTTPS',
-}
+} as const
 
 export const SAMPLE_LOOKUPS = [
   { label: 'Google DNS', value: '8.8.8.8' },
   { label: 'Cloudflare', value: '1.1.1.1' },
   { label: 'Google.com', value: 'google.com' },
   { label: 'GitHub.com', value: 'github.com' },
-]
+] as const
 
 // Pure validation functions
 export const isValidIpv4 = (ip: string): boolean => {
   const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/
   if (!ipv4Regex.test(ip)) return false
-  const parts = ip.split('.')
-  return parts.every(part => {
-    const num = parseInt(part, 10)
-    return num >= 0 && num <= 255
-  })
+
+  return ip
+    .split('.')
+    .map(part => parseInt(part, 10))
+    .every(num => num >= 0 && num <= 255)
 }
 
 export const isValidIpv6 = (ip: string): boolean => {
@@ -80,98 +85,113 @@ export const isValidHostname = (hostname: string): boolean => {
 
 export const getInputType = (input: string): InputType => {
   const trimmed = input.trim()
+
   if (!trimmed) return null
   if (isValidIpv4(trimmed)) return 'ipv4'
   if (isValidIpv6(trimmed)) return 'ipv6'
   if (isValidHostname(trimmed)) return 'hostname'
+
   return 'invalid'
 }
 
 // Expand IPv6 address to full format
 export const expandIpv6 = (ip: string): string => {
-  if (ip.includes('::')) {
-    const parts = ip.split('::')
-    const left = parts[0] ? parts[0].split(':') : []
-    const right = parts[1] ? parts[1].split(':') : []
-    const missing = 8 - left.length - right.length
-    const middle = Array(missing).fill('0000')
-    const full = [...left, ...middle, ...right]
-    return full.map(p => p.padStart(4, '0')).join(':')
+  if (!ip.includes('::')) {
+    return ip
+      .split(':')
+      .map(part => part.padStart(4, '0'))
+      .join(':')
   }
-  return ip
-    .split(':')
-    .map(p => p.padStart(4, '0'))
+
+  const [leftPart = '', rightPart = ''] = ip.split('::')
+  const left = leftPart ? leftPart.split(':') : []
+  const right = rightPart ? rightPart.split(':') : []
+  const missingCount = 8 - left.length - right.length
+
+  return [...left, ...Array<string>(missingCount).fill('0000'), ...right]
+    .map(part => part.padStart(4, '0'))
     .join(':')
 }
 
 // Convert IP to reverse DNS format for PTR lookup
 export const ipToReverseDns = (ip: string): string => {
   if (isValidIpv4(ip)) {
-    return ip.split('.').reverse().join('.') + '.in-addr.arpa'
-  } else if (isValidIpv6(ip)) {
-    const expanded = expandIpv6(ip)
-    return expanded.replace(/:/g, '').split('').reverse().join('.') + '.ip6.arpa'
+    return `${ip.split('.').reverse().join('.')}.in-addr.arpa`
   }
+
+  if (isValidIpv6(ip)) {
+    return `${expandIpv6(ip).replace(/:/g, '').split('').reverse().join('.')}.ip6.arpa`
+  }
+
   return ip
 }
 
 // Build GEO table data from GeoInfo
-export const buildGeoTableData = (geo: GeoInfo): { label: string; value: string }[] => {
-  const data: { label: string; value: string }[] = []
+export const buildGeoTableData = (geo: GeoInfo): TableDataRow[] => {
+  const entries: { condition: boolean; label: string; value: string }[] = [
+    { condition: !!geo.ip, label: 'IP Address', value: geo.ip },
+    { condition: !!geo.hostname, label: 'Hostname', value: geo.hostname ?? '' },
+    {
+      condition: !!(geo.countryName ?? geo.countryCode),
+      label: 'Country',
+      value: geo.countryName ?? geo.countryCode ?? '',
+    },
+    { condition: !!geo.region, label: 'Region', value: geo.region ?? '' },
+    { condition: !!geo.city, label: 'City', value: geo.city ?? '' },
+    { condition: !!geo.postal, label: 'Postal Code', value: geo.postal ?? '' },
+    {
+      condition: geo.latitude != null && geo.longitude != null,
+      label: 'Coordinates',
+      value: `${geo.latitude ?? ''}, ${geo.longitude ?? ''}`,
+    },
+    { condition: !!geo.timezone, label: 'Timezone', value: geo.timezone ?? '' },
+    { condition: !!geo.asn, label: 'ASN', value: geo.asn ?? '' },
+    { condition: !!geo.org, label: 'Organization', value: geo.org ?? '' },
+    { condition: !!geo.network, label: 'Network', value: geo.network ?? '' },
+  ]
 
-  if (geo.ip) data.push({ label: 'IP Address', value: geo.ip })
-  if (geo.hostname) data.push({ label: 'Hostname', value: geo.hostname })
-  if (geo.countryName || geo.countryCode) {
-    data.push({ label: 'Country', value: geo.countryName ?? geo.countryCode ?? '' })
-  }
-  if (geo.region) data.push({ label: 'Region', value: geo.region })
-  if (geo.city) data.push({ label: 'City', value: geo.city })
-  if (geo.postal) data.push({ label: 'Postal Code', value: geo.postal })
-  if (geo.latitude != null && geo.longitude != null) {
-    data.push({ label: 'Coordinates', value: `${geo.latitude}, ${geo.longitude}` })
-  }
-  if (geo.timezone) data.push({ label: 'Timezone', value: geo.timezone })
-  if (geo.asn) data.push({ label: 'ASN', value: geo.asn })
-  if (geo.org) data.push({ label: 'Organization', value: geo.org })
-  if (geo.network) data.push({ label: 'Network', value: geo.network })
-
-  return data
+  return entries.filter(entry => entry.condition).map(({ label, value }) => ({ label, value }))
 }
 
 // Build RDAP basic info from RdapInfo
-export const buildRdapBasicInfo = (rdap: RdapInfo): { label: string; value: string }[] => {
-  const data: { label: string; value: string }[] = []
-
-  if (rdap.handle) data.push({ label: 'Handle', value: rdap.handle })
-  if (rdap.name) data.push({ label: 'Network Name', value: rdap.name })
-  if (rdap.type) data.push({ label: 'Type', value: rdap.type })
-  if (rdap.startAddress && rdap.endAddress) {
-    data.push({ label: 'IP Range', value: `${rdap.startAddress} - ${rdap.endAddress}` })
-  }
-  if (rdap.ipVersion) data.push({ label: 'IP Version', value: rdap.ipVersion })
-  if (rdap.country) data.push({ label: 'Country', value: rdap.country })
-  if (rdap.parentHandle) data.push({ label: 'Parent Handle', value: rdap.parentHandle })
-  if (rdap.status && rdap.status.length > 0) {
-    data.push({ label: 'Status', value: rdap.status.join(', ') })
-  }
-
+export const buildRdapBasicInfo = (rdap: RdapInfo): TableDataRow[] => {
   const registrationEvent = rdap.events?.find(e => e.eventAction === 'registration')
-  if (registrationEvent?.eventDate) {
-    data.push({
-      label: 'Registered',
-      value: new Date(registrationEvent.eventDate).toLocaleString(),
-    })
-  }
-
   const lastChangedEvent = rdap.events?.find(e => e.eventAction === 'last changed')
-  if (lastChangedEvent?.eventDate) {
-    data.push({
-      label: 'Last Changed',
-      value: new Date(lastChangedEvent.eventDate).toLocaleString(),
-    })
-  }
 
-  return data
+  const entries: { condition: boolean; label: string; value: string }[] = [
+    { condition: !!rdap.handle, label: 'Handle', value: rdap.handle ?? '' },
+    { condition: !!rdap.name, label: 'Network Name', value: rdap.name ?? '' },
+    { condition: !!rdap.type, label: 'Type', value: rdap.type ?? '' },
+    {
+      condition: !!(rdap.startAddress && rdap.endAddress),
+      label: 'IP Range',
+      value: `${rdap.startAddress ?? ''} - ${rdap.endAddress ?? ''}`,
+    },
+    { condition: !!rdap.ipVersion, label: 'IP Version', value: rdap.ipVersion ?? '' },
+    { condition: !!rdap.country, label: 'Country', value: rdap.country ?? '' },
+    { condition: !!rdap.parentHandle, label: 'Parent Handle', value: rdap.parentHandle ?? '' },
+    {
+      condition: !!(rdap.status && rdap.status.length > 0),
+      label: 'Status',
+      value: rdap.status?.join(', ') ?? '',
+    },
+    {
+      condition: !!registrationEvent?.eventDate,
+      label: 'Registered',
+      value: registrationEvent?.eventDate
+        ? new Date(registrationEvent.eventDate).toLocaleString()
+        : '',
+    },
+    {
+      condition: !!lastChangedEvent?.eventDate,
+      label: 'Last Changed',
+      value: lastChangedEvent?.eventDate
+        ? new Date(lastChangedEvent.eventDate).toLocaleString()
+        : '',
+    },
+  ]
+
+  return entries.filter(entry => entry.condition).map(({ label, value }) => ({ label, value }))
 }
 
 // Composable
@@ -201,41 +221,37 @@ export const useIpLookup = () => {
 
   const rdapBasicInfo = computed(() => (rdapData.value ? buildRdapBasicInfo(rdapData.value) : []))
 
-  const dnsRecordsData = computed(() => {
-    if (!dnsData.value?.answer) return []
-    return dnsData.value.answer.map(record => ({
-      name: record.name,
-      type: DNS_TYPE_MAP[record.type] ?? record.type.toString(),
-      ttl: record.ttl,
-      data: record.data,
-    }))
-  })
+  const dnsRecordsData = computed(
+    () =>
+      dnsData.value?.answer?.map(record => ({
+        name: record.name,
+        type: DNS_TYPE_MAP[record.type] ?? record.type.toString(),
+        ttl: record.ttl,
+        data: record.data,
+      })) ?? [],
+  )
 
-  const ptrHostname = computed(() => {
-    if (!ptrData.value?.answer) return null
-    const ptrRecord = ptrData.value.answer.find(r => r.type === 12)
-    return ptrRecord?.data ?? null
-  })
+  const ptrHostname = computed(() => ptrData.value?.answer?.find(r => r.type === 12)?.data ?? null)
 
   const hasResults = computed(() => !!(geoData.value ?? rdapData.value ?? dnsData.value))
 
   // API calls
   const resolveHostnameToIps = async (hostname: string): Promise<ResolvedIps> => {
-    const result: ResolvedIps = { ipv4: [], ipv6: [] }
-
     const [ipv4Result, ipv6Result] = await Promise.allSettled([
       resolveDns(hostname, 'A'),
       resolveDns(hostname, 'AAAA'),
     ])
 
-    if (ipv4Result.status === 'fulfilled' && ipv4Result.value.answer) {
-      result.ipv4 = ipv4Result.value.answer.filter(r => r.type === 1).map(r => r.data)
+    return {
+      ipv4:
+        ipv4Result.status === 'fulfilled'
+          ? (ipv4Result.value.answer?.filter(r => r.type === 1).map(r => r.data) ?? [])
+          : [],
+      ipv6:
+        ipv6Result.status === 'fulfilled'
+          ? (ipv6Result.value.answer?.filter(r => r.type === 28).map(r => r.data) ?? [])
+          : [],
     }
-    if (ipv6Result.status === 'fulfilled' && ipv6Result.value.answer) {
-      result.ipv6 = ipv6Result.value.answer.filter(r => r.type === 28).map(r => r.data)
-    }
-
-    return result
   }
 
   const fetchPtrRecord = async (ip: string): Promise<void> => {
@@ -255,10 +271,9 @@ export const useIpLookup = () => {
     dnsError.value = ''
 
     try {
-      const queryHost =
-        selectedDnsType.value === 'PTR' && (isValidIpv4(trimmed) || isValidIpv6(trimmed))
-          ? ipToReverseDns(trimmed)
-          : trimmed
+      const isPtrLookup = selectedDnsType.value === 'PTR'
+      const isIpAddress = isValidIpv4(trimmed) || isValidIpv6(trimmed)
+      const queryHost = isPtrLookup && isIpAddress ? ipToReverseDns(trimmed) : trimmed
 
       dnsData.value = await resolveDns(queryHost, selectedDnsType.value)
     } catch (e) {
@@ -273,6 +288,7 @@ export const useIpLookup = () => {
     const trimmed = input.value.trim()
     if (!trimmed) return
 
+    // Reset state
     error.value = ''
     geoData.value = null
     rdapData.value = null
@@ -283,24 +299,22 @@ export const useIpLookup = () => {
     isLoading.value = true
 
     try {
-      const ipToLookup = await (async () => {
-        if (inputType.value === 'hostname') {
-          const ips = await resolveHostnameToIps(trimmed)
-          resolvedIps.value = ips
-          isDnsResolved.value = true
-
-          const firstIpv4 = ips.ipv4[0]
-          const firstIpv6 = ips.ipv6[0]
-          const resolvedIp = firstIpv4 ?? firstIpv6
-
-          if (!resolvedIp) {
-            throw new Error('No IP address found for hostname')
-          }
-
-          dnsData.value = await resolveDns(trimmed, selectedDnsType.value)
-          return resolvedIp
+      const ipToLookup = await (async (): Promise<string> => {
+        if (inputType.value !== 'hostname') {
+          return trimmed
         }
-        return trimmed
+
+        const ips = await resolveHostnameToIps(trimmed)
+        resolvedIps.value = ips
+        isDnsResolved.value = true
+
+        const resolvedIp = ips.ipv4[0] ?? ips.ipv6[0]
+        if (!resolvedIp) {
+          throw new Error('No IP address found for hostname')
+        }
+
+        dnsData.value = await resolveDns(trimmed, selectedDnsType.value)
+        return resolvedIp
       })()
 
       const [geoResult, rdapResult] = await Promise.allSettled([
@@ -308,7 +322,8 @@ export const useIpLookup = () => {
         getRdapInfo(ipToLookup),
       ])
 
-      if (inputType.value === 'ipv4' || inputType.value === 'ipv6') {
+      const isIpInput = inputType.value === 'ipv4' || inputType.value === 'ipv6'
+      if (isIpInput) {
         await fetchPtrRecord(ipToLookup)
       }
 
@@ -319,7 +334,8 @@ export const useIpLookup = () => {
         rdapData.value = rdapResult.value
       }
 
-      if (geoResult.status === 'rejected' && rdapResult.status === 'rejected') {
+      const bothFailed = geoResult.status === 'rejected' && rdapResult.status === 'rejected'
+      if (bothFailed) {
         throw new Error('Failed to fetch IP information')
       }
     } catch (e) {

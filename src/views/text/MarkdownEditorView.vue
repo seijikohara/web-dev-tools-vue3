@@ -157,11 +157,14 @@ const generateTocMarkdown = () => {
     return
   }
 
-  const tocLines = ['## Table of Contents', '']
-  tableOfContents.value.forEach(item => {
-    const indent = '  '.repeat(item.level - 1)
-    tocLines.push(`${indent}- [${item.text}](#${item.id})`)
-  })
+  const tocLines = [
+    '## Table of Contents',
+    '',
+    ...tableOfContents.value.map(item => {
+      const indent = '  '.repeat(item.level - 1)
+      return `${indent}- [${item.text}](#${item.id})`
+    }),
+  ]
 
   const tocMarkdown = tocLines.join('\n') + '\n\n'
   state.markdown = tocMarkdown + state.markdown

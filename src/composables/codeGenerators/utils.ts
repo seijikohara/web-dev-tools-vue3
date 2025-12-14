@@ -29,33 +29,40 @@ export const toUpperSnakeCase = (str: string): string => toSnakeCase(str).toUppe
 
 // Type inference from JSON value
 export const inferType = (value: JsonValue, name: string): TypeInfo => {
+  // Early return for null
   if (value === null) {
     return { name: 'null', isArray: false, isObject: false, isPrimitive: true }
   }
 
+  // Early return for arrays
   if (Array.isArray(value)) {
-    const [firstItem] = value
+    const firstItem = value[0]
+    const arrayItemType =
+      value.length > 0 && firstItem !== undefined
+        ? inferType(firstItem, `${name}Item`)
+        : ({ name: 'any', isArray: false, isObject: false, isPrimitive: true } as const)
+
     return {
-      name: name,
+      name,
       isArray: true,
       isObject: false,
       isPrimitive: false,
-      arrayItemType:
-        value.length > 0 && firstItem !== undefined
-          ? inferType(firstItem, `${name}Item`)
-          : { name: 'any', isArray: false, isObject: false, isPrimitive: true },
+      arrayItemType,
     }
   }
 
+  // Early return for objects
   if (typeof value === 'object') {
+    const children = Object.fromEntries(
+      Object.entries(value).map(([key, val]) => [key, inferType(val, toPascalCase(key))]),
+    )
+
     return {
-      name: name,
+      name,
       isArray: false,
       isObject: true,
       isPrimitive: false,
-      children: Object.fromEntries(
-        Object.entries(value).map(([key, val]) => [key, inferType(val, toPascalCase(key))]),
-      ),
+      children,
     }
   }
 
@@ -75,15 +82,22 @@ export const indent = (level: number, size = 4, char = ' '): string => char.repe
 
 // Collect nested types from a single TypeInfo's children
 const collectChildTypes = (info: TypeInfo): TypeInfo[] => {
+  // Early return for non-objects
   if (!info.isObject || !info.children) return []
 
   return Object.values(info.children).flatMap(childType => {
+    // Object type with nested children
     if (childType.isObject) {
       return [...collectChildTypes(childType), childType]
     }
+
+    // Array with object items
     if (childType.isArray && childType.arrayItemType?.isObject) {
-      return [...collectChildTypes(childType.arrayItemType), childType.arrayItemType]
+      const itemType = childType.arrayItemType
+      return [...collectChildTypes(itemType), itemType]
     }
+
+    // Primitive types
     return []
   })
 }
@@ -92,14 +106,25 @@ const collectChildTypes = (info: TypeInfo): TypeInfo[] => {
 export const collectNestedTypes = (typeInfo: TypeInfo): TypeInfo[] => collectChildTypes(typeInfo)
 
 // Remove duplicates from array by key extractor (keeps first occurrence)
-const uniqueBy = <T>(items: T[], keyFn: (item: T) => string): T[] =>
-  items.reduce<{ seen: Set<string>; result: T[] }>(
+const uniqueBy = <T>(items: T[], keyFn: (item: T) => string): T[] => {
+  const { result } = items.reduce<{ seen: Set<string>; result: T[] }>(
     (acc, item) => {
       const key = keyFn(item)
-      return acc.seen.has(key) ? acc : { seen: acc.seen.add(key), result: [...acc.result, item] }
+
+      // Early return if already seen
+      if (acc.seen.has(key)) return acc
+
+      // Add to set and result
+      return {
+        seen: acc.seen.add(key),
+        result: [...acc.result, item],
+      }
     },
     { seen: new Set(), result: [] },
-  ).result
+  )
+
+  return result
+}
 
 // Generate code for a type and all its nested types
 export const generateWithNestedTypes = <T>(

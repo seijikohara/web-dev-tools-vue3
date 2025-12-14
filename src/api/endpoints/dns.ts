@@ -58,14 +58,19 @@ export interface DnsResolution {
 }
 
 /**
+ * Default DNS record type
+ */
+const DEFAULT_DNS_TYPE = 'A' as const satisfies DnsRecordType
+
+/**
  * Resolve DNS records for a hostname using backend API
  */
 export const resolveDns = async (
   hostname: string,
-  type: DnsRecordType = 'A',
-): Promise<DnsResolution> => {
-  const { data } = await apiClient.get<DnsResolution>(`dns/resolve/${hostname}`, {
-    params: { type },
-  })
-  return data
-}
+  type: DnsRecordType = DEFAULT_DNS_TYPE,
+): Promise<DnsResolution> =>
+  apiClient
+    .get<DnsResolution>(`dns/resolve/${hostname}`, {
+      params: { type },
+    })
+    .then(({ data }) => data)

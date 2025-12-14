@@ -76,9 +76,15 @@ test.describe('Sidebar Navigation', () => {
       const sidebar = page.locator('.layout-sidebar')
       // Check that at least some category headers are visible
       await Promise.all([
-        expect.soft(sidebar.locator('.category-header').filter({ hasText: 'Formatters' })).toBeVisible(),
-        expect.soft(sidebar.locator('.category-header').filter({ hasText: 'Encoders' })).toBeVisible(),
-        expect.soft(sidebar.locator('.category-header').filter({ hasText: 'Generators' })).toBeVisible(),
+        expect
+          .soft(sidebar.locator('.category-header').filter({ hasText: 'Formatters' }))
+          .toBeVisible(),
+        expect
+          .soft(sidebar.locator('.category-header').filter({ hasText: 'Encoders' }))
+          .toBeVisible(),
+        expect
+          .soft(sidebar.locator('.category-header').filter({ hasText: 'Generators' }))
+          .toBeVisible(),
       ])
     })
   })
@@ -127,7 +133,10 @@ test.describe('Sidebar Navigation', () => {
     }
 
     await test.step('Navigate to JSON Formatter', async () => {
-      await page.locator('.layout-sidebar').getByRole('menuitem', { name: 'JSON Formatter' }).click()
+      await page
+        .locator('.layout-sidebar')
+        .getByRole('menuitem', { name: 'JSON Formatter' })
+        .click()
       await expect.soft(page).toHaveURL(/\/json-formatter/)
     })
   })
@@ -150,7 +159,10 @@ test.describe('Sidebar Navigation', () => {
     })
   })
 
-  test('should close sidebar overlay on mobile when clicking outside', async ({ page, isMobile }) => {
+  test('should close sidebar overlay on mobile when clicking outside', async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(!isMobile, 'This test is only for mobile')
 
     await test.step('Navigate to homepage', async () => {
@@ -192,7 +204,10 @@ test.describe('Sidebar Navigation', () => {
       await page.locator('.menu-button').click()
       await expect(page.locator('.layout-sidebar.active')).toBeVisible()
 
-      await page.locator('.layout-sidebar').getByRole('menuitem', { name: 'JSON Formatter' }).click()
+      await page
+        .locator('.layout-sidebar')
+        .getByRole('menuitem', { name: 'JSON Formatter' })
+        .click()
     })
 
     await test.step('Verify sidebar is closed after navigation', async () => {

@@ -609,38 +609,40 @@ const compareXmlDiff = computed((): DiffItem[] => {
 })
 
 const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
-  const diffs: DiffItem[] = []
-
+  // Type mismatch - early return
   if (typeof obj1 !== typeof obj2) {
-    diffs.push({
+    return [{
       path,
       type: 'changed',
       oldValue: JSON.stringify(obj1),
       newValue: JSON.stringify(obj2),
-    })
-    return diffs
+    }]
   }
 
+  // Array comparison
   if (Array.isArray(obj1) && Array.isArray(obj2)) {
     const maxLen = Math.max(obj1.length, obj2.length)
-    Array.from({ length: maxLen }, (_, i) => i).forEach(i => {
+    return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
       if (i >= obj1.length) {
-        diffs.push({
+        return [{
           path: `${path}[${i}]`,
-          type: 'added',
+          type: 'added' as const,
           newValue: JSON.stringify(obj2[i]),
-        })
-      } else if (i >= obj2.length) {
-        diffs.push({
-          path: `${path}[${i}]`,
-          type: 'removed',
-          oldValue: JSON.stringify(obj1[i]),
-        })
-      } else {
-        diffs.push(...findDifferences(obj1[i], obj2[i], `${path}[${i}]`))
+        }]
       }
+      if (i >= obj2.length) {
+        return [{
+          path: `${path}[${i}]`,
+          type: 'removed' as const,
+          oldValue: JSON.stringify(obj1[i]),
+        }]
+      }
+      return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
     })
-  } else if (
+  }
+
+  // Object comparison
+  if (
     obj1 !== null &&
     obj2 !== null &&
     typeof obj1 === 'object' &&
@@ -650,40 +652,41 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
     const keys2 = Object.keys(obj2)
     const allKeys = [...new Set([...keys1, ...keys2])]
 
-    allKeys.forEach(key => {
+    return allKeys.flatMap(key => {
       const newPath = `${path}.${key}`
       if (!(key in obj1)) {
-        diffs.push({
+        return [{
           path: newPath,
-          type: 'added',
+          type: 'added' as const,
           newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
-        })
-      } else if (!(key in obj2)) {
-        diffs.push({
-          path: newPath,
-          type: 'removed',
-          oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
-        })
-      } else {
-        diffs.push(
-          ...findDifferences(
-            (obj1 as Record<string, unknown>)[key],
-            (obj2 as Record<string, unknown>)[key],
-            newPath,
-          ),
-        )
+        }]
       }
+      if (!(key in obj2)) {
+        return [{
+          path: newPath,
+          type: 'removed' as const,
+          oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+        }]
+      }
+      return findDifferences(
+        (obj1 as Record<string, unknown>)[key],
+        (obj2 as Record<string, unknown>)[key],
+        newPath,
+      )
     })
-  } else if (obj1 !== obj2) {
-    diffs.push({
+  }
+
+  // Primitive comparison
+  if (obj1 !== obj2) {
+    return [{
       path,
       type: 'changed',
       oldValue: JSON.stringify(obj1),
       newValue: JSON.stringify(obj2),
-    })
+    }]
   }
 
-  return diffs
+  return []
 }
 
 // Load current XML to compare
@@ -1205,7 +1208,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-file-import"></i>
                   <span>Input</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="xml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <CodeEditor
+                  v-model="state.input"
+                  mode="xml"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1360,7 +1367,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-file"></i>
                   <span>Source XML</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="xml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <CodeEditor
+                  v-model="state.input"
+                  mode="xml"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
+                />
               </div>
 
               <div class="editor-panel">
@@ -1405,7 +1416,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-file"></i>
                   <span>XML 1</span>
                 </div>
-                <CodeEditor v-model="compareXml1" mode="xml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <CodeEditor
+                  v-model="compareXml1"
+                  mode="xml"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1424,7 +1439,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-file"></i>
                   <span>XML 2</span>
                 </div>
-                <CodeEditor v-model="compareXml2" mode="xml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <CodeEditor
+                  v-model="compareXml2"
+                  mode="xml"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1514,7 +1533,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-file-edit"></i>
                   <span>XML Input</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="xml" height="clamp(300px, calc(100vh - 520px), 600px)" />
+                <CodeEditor
+                  v-model="state.input"
+                  mode="xml"
+                  height="clamp(300px, calc(100vh - 520px), 600px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1620,7 +1643,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-file-edit"></i>
                   <span>XML Data</span>
                 </div>
-                <CodeEditor v-model="state.input" mode="xml" height="clamp(250px, calc(100vh - 580px), 500px)" />
+                <CodeEditor
+                  v-model="state.input"
+                  mode="xml"
+                  height="clamp(250px, calc(100vh - 580px), 500px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button
@@ -1639,7 +1666,11 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   <i class="pi pi-cog"></i>
                   <span>Schema Rules (JSON)</span>
                 </div>
-                <CodeEditor v-model="schemaInput" mode="json" height="clamp(250px, calc(100vh - 580px), 500px)" />
+                <CodeEditor
+                  v-model="schemaInput"
+                  mode="json"
+                  height="clamp(250px, calc(100vh - 580px), 500px)"
+                />
                 <Toolbar class="editor-toolbar">
                   <template #start>
                     <Button

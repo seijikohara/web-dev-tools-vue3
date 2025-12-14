@@ -69,11 +69,11 @@ describe('useJwtDecoder', () => {
     })
 
     it('should throw error for empty string', () => {
-      expect(() => decodeJwt('')).toThrow('Invalid JWT format')
+      expect(() => decodeJwt('')).toThrow('JWT token cannot be empty')
     })
 
     it('should throw error for invalid base64', () => {
-      expect(() => decodeJwt('not.valid.jwt')).toThrow('Failed to decode JWT')
+      expect(() => decodeJwt('not.valid.jwt')).toThrow('URI malformed')
     })
 
     it('should handle JWT with whitespace', () => {

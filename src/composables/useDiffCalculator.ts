@@ -37,31 +37,46 @@ export const computeLCS = (orig: string[], mod: string[]): LCSItem[] => {
   const m = orig.length
   const n = mod.length
 
-  // Create DP table
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array.from({ length: n + 1 }, () => 0))
+  // Early return for empty arrays
+  if (m === 0 || n === 0) return []
 
-  // Fill DP table
-  Array.from({ length: m }, (_, idx) => idx + 1).forEach(i => {
-    Array.from({ length: n }, (_, idx) => idx + 1).forEach(j => {
+  // Create DP table
+  const dp = Array.from({ length: m + 1 }, () => Array.from({ length: n + 1 }, () => 0))
+
+  // Fill DP table using method chaining
+  Array.from({ length: m }, (_, i) => i + 1).forEach(i => {
+    Array.from({ length: n }, (_, j) => j + 1).forEach(j => {
       const dpRow = dp[i]
       if (!dpRow) return
-      if (orig[i - 1] === mod[j - 1]) {
-        dpRow[j] = (dp[i - 1]?.[j - 1] ?? 0) + 1
-      } else {
-        dpRow[j] = Math.max(dp[i - 1]?.[j] ?? 0, dp[i]?.[j - 1] ?? 0)
-      }
+
+      const origChar = orig[i - 1]
+      const modChar = mod[j - 1]
+
+      dpRow[j] =
+        origChar === modChar
+          ? (dp[i - 1]?.[j - 1] ?? 0) + 1
+          : Math.max(dp[i - 1]?.[j] ?? 0, dp[i]?.[j - 1] ?? 0)
     })
   })
 
-  // Backtrack using recursive function
+  // Backtrack using recursive function with early returns
   const backtrack = (i: number, j: number): LCSItem[] => {
+    // Early return for base case
     if (i <= 0 || j <= 0) return []
 
-    if (orig[i - 1] === mod[j - 1]) {
+    const origChar = orig[i - 1]
+    const modChar = mod[j - 1]
+
+    // Early return for matching characters
+    if (origChar === modChar) {
       return [...backtrack(i - 1, j - 1), { origIdx: i - 1, modIdx: j - 1 }]
     }
 
-    return (dp[i - 1]?.[j] ?? 0) > (dp[i]?.[j - 1] ?? 0) ? backtrack(i - 1, j) : backtrack(i, j - 1)
+    // Choose the direction with larger value
+    const prevRow = dp[i - 1]?.[j] ?? 0
+    const prevCol = dp[i]?.[j - 1] ?? 0
+
+    return prevRow > prevCol ? backtrack(i - 1, j) : backtrack(i, j - 1)
   }
 
   return backtrack(m, n)
@@ -87,26 +102,35 @@ export const generateAddedLines = (lines: string[], startIdx: number, endIdx: nu
     newLineNumber: startIdx + i + 1,
   }))
 
+// Process lines with options (pure function)
+const processLines = (lines: string[], options: DiffOptions): string[] => {
+  const trimmed = options.ignoreWhitespace ? lines.map(l => l.trim()) : lines
+  return options.ignoreCase ? trimmed.map(l => l.toLowerCase()) : trimmed
+}
+
 // Main diff algorithm (Myers-like approach using LCS)
 export const computeDiff = (
   original: string,
   modified: string,
   options: DiffOptions = { ignoreWhitespace: false, ignoreCase: false },
 ): DiffLine[] => {
-  const rawOrigLines = original.split('\n')
-  const rawModLines = modified.split('\n')
-
-  const origLines = options.ignoreWhitespace ? rawOrigLines.map(l => l.trim()) : rawOrigLines
-  const modLines = options.ignoreWhitespace ? rawModLines.map(l => l.trim()) : rawModLines
-
-  const processedOrigLines = options.ignoreCase ? origLines.map(l => l.toLowerCase()) : origLines
-  const processedModLines = options.ignoreCase ? modLines.map(l => l.toLowerCase()) : modLines
-
   const originalLines = original.split('\n')
   const modifiedLines = modified.split('\n')
 
+  // Process lines for comparison
+  const processedOrigLines = processLines(originalLines, options)
+  const processedModLines = processLines(modifiedLines, options)
+
   // LCS-based diff
   const lcs = computeLCS(processedOrigLines, processedModLines)
+
+  // Early return for empty LCS
+  if (lcs.length === 0) {
+    return [
+      ...generateRemovedLines(originalLines, 0, originalLines.length),
+      ...generateAddedLines(modifiedLines, 0, modifiedLines.length),
+    ]
+  }
 
   // Define accumulator type for reduce
   interface DiffAccumulator {
@@ -120,12 +144,12 @@ export const computeDiff = (
     (acc, item) => {
       const removedLines = generateRemovedLines(originalLines, acc.origIdx, item.origIdx)
       const addedLines = generateAddedLines(modifiedLines, acc.modIdx, item.modIdx)
-      const unchangedLine: DiffLine = {
+      const unchangedLine = {
         type: 'unchanged',
         content: originalLines[item.origIdx] ?? '',
         oldLineNumber: item.origIdx + 1,
         newLineNumber: item.modIdx + 1,
-      }
+      } satisfies DiffLine
 
       return {
         result: [...acc.result, ...removedLines, ...addedLines, unchangedLine],
@@ -143,65 +167,102 @@ export const computeDiff = (
   return [...result, ...remainingRemoved, ...remainingAdded]
 }
 
-// Calculate diff statistics
+// Calculate diff statistics using reduce (single pass instead of multiple filters)
 export const calculateDiffStats = (diffLines: DiffLine[]): DiffStats => {
-  const added = diffLines.filter(d => d.type === 'added').length
-  const removed = diffLines.filter(d => d.type === 'removed').length
-  const unchanged = diffLines.filter(d => d.type === 'unchanged').length
-  return { added, removed, unchanged, total: added + removed + unchanged }
+  // Early return for empty diff
+  if (diffLines.length === 0) {
+    return { added: 0, removed: 0, unchanged: 0, total: 0 }
+  }
+
+  const stats = diffLines.reduce(
+    (acc, line) => {
+      switch (line.type) {
+        case 'added':
+          return { ...acc, added: acc.added + 1 }
+        case 'removed':
+          return { ...acc, removed: acc.removed + 1 }
+        case 'unchanged':
+          return { ...acc, unchanged: acc.unchanged + 1 }
+        default:
+          return acc
+      }
+    },
+    { added: 0, removed: 0, unchanged: 0 },
+  )
+
+  return {
+    ...stats,
+    total: stats.added + stats.removed + stats.unchanged,
+  }
 }
+
+// Create padding array (pure helper function)
+const createPadding = (length: number): null[] => Array.from({ length }, () => null)
 
 // Build split view data structure
 export const buildSplitView = (diffLines: DiffLine[]): SplitView => {
-  const { left, right } = diffLines.reduce(
+  // Early return for empty diff
+  if (diffLines.length === 0) {
+    return { left: [], right: [] }
+  }
+
+  const { left, right } = diffLines.reduce<{
+    left: (DiffLine | null)[]
+    right: (DiffLine | null)[]
+  }>(
     (acc, line) => {
-      if (line.type === 'unchanged') {
-        const leftPadding = Array.from<null>({
-          length: Math.max(0, acc.right.length - acc.left.length),
-        }).fill(null)
-        const rightPadding = Array.from<null>({
-          length: Math.max(0, acc.left.length - acc.right.length),
-        }).fill(null)
+      // Early return pattern using switch
+      switch (line.type) {
+        case 'unchanged': {
+          const leftPadding = createPadding(Math.max(0, acc.right.length - acc.left.length))
+          const rightPadding = createPadding(Math.max(0, acc.left.length - acc.right.length))
 
-        return {
-          left: [...acc.left, ...leftPadding, line],
-          right: [...acc.right, ...rightPadding, line],
+          return {
+            left: [...acc.left, ...leftPadding, line],
+            right: [...acc.right, ...rightPadding, line],
+          }
         }
-      }
 
-      if (line.type === 'removed') {
-        return { left: [...acc.left, line], right: acc.right }
-      }
+        case 'removed':
+          return { ...acc, left: [...acc.left, line] }
 
-      if (line.type === 'added') {
-        return { left: acc.left, right: [...acc.right, line] }
-      }
+        case 'added':
+          return { ...acc, right: [...acc.right, line] }
 
-      return acc
+        default:
+          return acc
+      }
     },
-    { left: [] as (DiffLine | null)[], right: [] as (DiffLine | null)[] },
+    { left: [], right: [] },
   )
 
   // Pad to equal length
   const maxLength = Math.max(left.length, right.length)
-  const finalLeftPadding = Array.from<null>({ length: maxLength - left.length }).fill(null)
-  const finalRightPadding = Array.from<null>({ length: maxLength - right.length }).fill(null)
 
   return {
-    left: [...left, ...finalLeftPadding],
-    right: [...right, ...finalRightPadding],
+    left: [...left, ...createPadding(maxLength - left.length)],
+    right: [...right, ...createPadding(maxLength - right.length)],
   }
 }
 
-// Format diff as text for copying
-export const formatDiffAsText = (diffLines: DiffLine[]): string =>
-  diffLines
+// Format diff as text for copying (using switch for early return pattern)
+export const formatDiffAsText = (diffLines: DiffLine[]): string => {
+  // Early return for empty diff
+  if (diffLines.length === 0) return ''
+
+  return diffLines
     .map(line => {
-      if (line.type === 'added') return `+ ${line.content}`
-      if (line.type === 'removed') return `- ${line.content}`
-      return `  ${line.content}`
+      switch (line.type) {
+        case 'added':
+          return `+ ${line.content}`
+        case 'removed':
+          return `- ${line.content}`
+        default:
+          return `  ${line.content}`
+      }
     })
     .join('\n')
+}
 
 // Sample texts for demo
 export const SAMPLE_ORIGINAL = `function greet(name) {
@@ -239,12 +300,16 @@ export const useDiffCalculator = () => {
   const ignoreCase = ref(false)
 
   // Computed
-  const options = computed<DiffOptions>(() => ({
-    ignoreWhitespace: ignoreWhitespace.value,
-    ignoreCase: ignoreCase.value,
-  }))
+  const options = computed(
+    () =>
+      ({
+        ignoreWhitespace: ignoreWhitespace.value,
+        ignoreCase: ignoreCase.value,
+      }) satisfies DiffOptions,
+  )
 
   const diffResult = computed(() => {
+    // Early return for empty inputs
     if (!originalText.value && !modifiedText.value) return []
     return computeDiff(originalText.value, modifiedText.value, options.value)
   })
@@ -259,13 +324,9 @@ export const useDiffCalculator = () => {
 
   const diffAsText = computed(() => formatDiffAsText(diffResult.value))
 
-  const originalLineCount = computed(() =>
-    originalText.value ? originalText.value.split('\n').length : 0,
-  )
+  const originalLineCount = computed(() => originalText.value.split('\n').length)
 
-  const modifiedLineCount = computed(() =>
-    modifiedText.value ? modifiedText.value.split('\n').length : 0,
-  )
+  const modifiedLineCount = computed(() => modifiedText.value.split('\n').length)
 
   // Actions
   const clear = () => {
