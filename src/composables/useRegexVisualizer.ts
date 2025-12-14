@@ -27,7 +27,7 @@ const CONFIG = {
   STROKE_WIDTH: 2,
   FONT_SIZE: 14,
   FONT_FAMILY: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-} as const
+} as const satisfies Record<string, number | string>
 
 interface BoundingBox {
   width: number
@@ -37,6 +37,12 @@ interface BoundingBox {
 interface RenderResult {
   svg: string
   box: BoundingBox
+}
+
+interface ColorScheme {
+  fill: string
+  stroke: string
+  text: string
 }
 
 // Color scheme for different node types
@@ -50,68 +56,65 @@ const COLORS = {
   meta: { fill: '#fff9c4', stroke: '#ffc107', text: '#ff6f00' },
   connector: '#666',
   background: '#fafafa',
-}
+} as const satisfies Record<string, ColorScheme | string>
 
+/**
+ * Pure function: Escape HTML special characters
+ */
 const escapeHtml = (str: string): string =>
-  str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+  [
+    ['&', '&amp;'],
+    ['<', '&lt;'],
+    ['>', '&gt;'],
+    ['"', '&quot;'],
+    ["'", '&#039;'],
+  ].reduce((acc, [char, entity]) => {
+    if (!char || !entity) return acc
+    return acc.replace(new RegExp(char, 'g'), entity)
+  }, str)
 
+/**
+ * Pure function: Get character label for visualization
+ */
 const getCharLabel = (node: Char): string => {
   if (node.kind === 'simple') {
-    if (node.value === ' ') return '␣'
-    return node.value
+    return node.value === ' ' ? '␣' : node.value
   }
-  // Meta characters
-  switch (node.value) {
-    case '\\d':
-      return '[0-9]'
-    case '\\D':
-      return '[^0-9]'
-    case '\\w':
-      return '[a-zA-Z0-9_]'
-    case '\\W':
-      return '[^a-zA-Z0-9_]'
-    case '\\s':
-      return 'whitespace'
-    case '\\S':
-      return 'non-whitespace'
-    case '.':
-      return 'any char'
-    case '\\n':
-      return 'newline'
-    case '\\r':
-      return 'carriage return'
-    case '\\t':
-      return 'tab'
-    default:
-      return node.value
+
+  const metaCharLabels: Record<string, string> = {
+    '\\d': '[0-9]',
+    '\\D': '[^0-9]',
+    '\\w': '[a-zA-Z0-9_]',
+    '\\W': '[^a-zA-Z0-9_]',
+    '\\s': 'whitespace',
+    '\\S': 'non-whitespace',
+    '.': 'any char',
+    '\\n': 'newline',
+    '\\r': 'carriage return',
+    '\\t': 'tab',
   }
+
+  return metaCharLabels[node.value] ?? node.value
 }
 
+/**
+ * Pure function: Get quantifier label for visualization
+ */
 const getQuantifierLabel = (q: Quantifier): string => {
   if (q.kind === 'Range') {
     if (q.to === undefined) {
       return q.from === 0 ? '0+' : `${q.from}+`
     }
-    if (q.from === q.to) {
-      return `exactly ${q.from}`
-    }
-    return `${q.from}-${q.to}`
+    return q.from === q.to ? `exactly ${q.from}` : `${q.from}-${q.to}`
   }
-  switch (q.kind) {
-    case '*':
-      return '0+'
-    case '+':
-      return '1+'
-    case '?':
-      return '0-1'
-    default:
-      return ''
+
+  const quantifierLabels: Record<string, string> = {
+    '*': '0+',
+    '+': '1+',
+    '?': '0-1',
   }
+
+  return quantifierLabels[q.kind] ?? ''
 }
 
 const renderBox = (
@@ -176,6 +179,9 @@ const renderCharacterClass = (node: CharacterClass, x: number, y: number): Rende
   return renderBox(content, COLORS.charClass, x, y)
 }
 
+/**
+ * Pure function: Get assertion label for visualization
+ */
 const getAssertionLabel = (node: Assertion): string => {
   if (node.kind === 'Lookahead' || node.kind === 'Lookbehind') {
     const prefix = node.kind === 'Lookahead' ? '?=' : '?<='
@@ -183,18 +189,14 @@ const getAssertionLabel = (node: Assertion): string => {
     return `(${node.negative ? negPrefix : prefix}...)`
   }
 
-  switch (node.kind) {
-    case '^':
-      return 'start'
-    case '$':
-      return 'end'
-    case '\\b':
-      return 'word boundary'
-    case '\\B':
-      return 'non-word boundary'
-    default:
-      return node.kind
+  const assertionLabels: Record<string, string> = {
+    '^': 'start',
+    $: 'end',
+    '\\b': 'word boundary',
+    '\\B': 'non-word boundary',
   }
+
+  return assertionLabels[node.kind] ?? node.kind
 }
 
 const renderAssertion = (node: Assertion, x: number, y: number): RenderResult => {
@@ -239,23 +241,39 @@ const renderAlternative = (node: Alternative, x: number, y: number): RenderResul
     return { svg: '', box: { width: 0, height: 0 } }
   }
 
-  const { svgParts, currentX, maxHeight } = node.expressions.reduce(
+  const { svgParts, currentX, maxHeight } = node.expressions.reduce<{
+    svgParts: readonly string[]
+    currentX: number
+    maxHeight: number
+  }>(
     (acc, expr, i) => {
       const result = renderExpression(expr, acc.currentX, y)
-      acc.svgParts.push(result.svg)
-      acc.maxHeight = Math.max(acc.maxHeight, result.box.height)
+      const newSvgParts =
+        i < node.expressions.length - 1 && result.box.width > 0
+          ? [
+              ...acc.svgParts,
+              result.svg,
+              renderConnector(
+                acc.currentX + result.box.width,
+                y,
+                acc.currentX + result.box.width + CONFIG.CONNECTOR_LENGTH,
+                y,
+              ),
+            ]
+          : [...acc.svgParts, result.svg]
 
-      if (i < node.expressions.length - 1 && result.box.width > 0) {
-        const nextX = acc.currentX + result.box.width + CONFIG.CONNECTOR_LENGTH
-        acc.svgParts.push(renderConnector(acc.currentX + result.box.width, y, nextX, y))
-        acc.currentX = nextX
-      } else {
-        acc.currentX += result.box.width
+      const newCurrentX =
+        i < node.expressions.length - 1 && result.box.width > 0
+          ? acc.currentX + result.box.width + CONFIG.CONNECTOR_LENGTH
+          : acc.currentX + result.box.width
+
+      return {
+        svgParts: newSvgParts,
+        currentX: newCurrentX,
+        maxHeight: Math.max(acc.maxHeight, result.box.height),
       }
-
-      return acc
     },
-    { svgParts: [] as string[], currentX: x, maxHeight: 0 },
+    { svgParts: [] as readonly string[], currentX: x, maxHeight: 0 },
   )
 
   return {
@@ -298,7 +316,7 @@ const renderDisjunction = (node: Disjunction, x: number, y: number): RenderResul
           fill="none" stroke="${COLORS.connector}" stroke-width="${CONFIG.STROKE_WIDTH}" />
   `
 
-  const svg = paths + leftResult.svg + rightResult.svg
+  const svg = `${paths}${leftResult.svg}${rightResult.svg}`
 
   return {
     svg,

@@ -3,7 +3,6 @@ import { useClipboardToast } from '@/composables/useClipboardToast'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
-import Panel from 'primevue/panel'
 import Tag from 'primevue/tag'
 import Toolbar from 'primevue/toolbar'
 import DataTable from 'primevue/datatable'

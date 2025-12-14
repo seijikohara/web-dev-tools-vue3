@@ -178,7 +178,7 @@ export interface CodeGenerator<T extends BaseGeneratorOptions> {
 }
 
 // Language option definitions for UI
-export const LANGUAGE_INFO: Record<TargetLanguage, LanguageInfo> = {
+export const LANGUAGE_INFO = {
   typescript: {
     value: 'typescript',
     label: 'TypeScript',
@@ -249,7 +249,7 @@ export const LANGUAGE_INFO: Record<TargetLanguage, LanguageInfo> = {
     icon: 'pi pi-code',
     editorMode: 'php',
   },
-}
+} as const satisfies Record<TargetLanguage, LanguageInfo>
 
 export const LANGUAGE_OPTIONS = Object.values(LANGUAGE_INFO)
 
@@ -257,4 +257,4 @@ export const LANGUAGE_OPTIONS = Object.values(LANGUAGE_INFO)
 export const PYTHON_STYLE_OPTIONS = [
   { value: 'dataclass', label: 'dataclass', description: '@dataclass decorator' },
   { value: 'typeddict', label: 'TypedDict', description: 'TypedDict class' },
-] as const
+] as const satisfies readonly { value: PythonStyle; label: string; description: string }[]

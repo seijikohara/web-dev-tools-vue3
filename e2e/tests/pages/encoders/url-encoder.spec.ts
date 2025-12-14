@@ -36,7 +36,9 @@ test.describe('URL Encoder', () => {
 
       await test.step('Verify encoding options are visible', async () => {
         await Promise.all([
-          expect.soft(page.locator('.p-panel-header').filter({ hasText: 'Encoding Options' })).toBeVisible(),
+          expect
+            .soft(page.locator('.p-panel-header').filter({ hasText: 'Encoding Options' }))
+            .toBeVisible(),
           expect.soft(page.locator('.p-selectbutton')).toBeVisible(),
         ])
       })
@@ -246,7 +248,9 @@ test.describe('URL Encoder', () => {
 
       await test.step('Verify builder UI is visible', async () => {
         await Promise.all([
-          expect.soft(page.locator('.p-panel-header').filter({ hasText: 'URL Builder' })).toBeVisible(),
+          expect
+            .soft(page.locator('.p-panel-header').filter({ hasText: 'URL Builder' }))
+            .toBeVisible(),
           expect.soft(page.getByText('Base URL')).toBeVisible(),
           expect.soft(page.getByPlaceholder('https://example.com/api/endpoint')).toBeVisible(),
           expect.soft(page.getByRole('button', { name: 'Add Parameter' })).toBeVisible(),
@@ -264,7 +268,9 @@ test.describe('URL Encoder', () => {
       })
 
       await test.step('Enter base URL', async () => {
-        await page.getByPlaceholder('https://example.com/api/endpoint').fill('https://api.example.com/users')
+        await page
+          .getByPlaceholder('https://example.com/api/endpoint')
+          .fill('https://api.example.com/users')
       })
 
       await test.step('Fill parameter key and value', async () => {
@@ -348,7 +354,11 @@ test.describe('URL Encoder', () => {
 
       await test.step('Verify reference table is visible', async () => {
         await Promise.all([
-          expect.soft(page.locator('.p-panel-header').filter({ hasText: 'Common URL Encoding Characters' })).toBeVisible(),
+          expect
+            .soft(
+              page.locator('.p-panel-header').filter({ hasText: 'Common URL Encoding Characters' }),
+            )
+            .toBeVisible(),
           expect.soft(page.locator('.p-datatable')).toBeVisible(),
         ])
       })

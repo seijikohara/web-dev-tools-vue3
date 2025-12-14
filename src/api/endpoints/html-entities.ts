@@ -58,9 +58,9 @@ export const searchHtmlEntities = async (
   name: string,
   page: number,
   size: number,
-): Promise<HtmlEntities> => {
-  const { data } = await apiClient.get<HtmlEntities>('html-entities', {
-    params: { name, page, size },
-  })
-  return data
-}
+): Promise<HtmlEntities> =>
+  apiClient
+    .get<HtmlEntities>('html-entities', {
+      params: { name, page, size },
+    })
+    .then(({ data }) => data)

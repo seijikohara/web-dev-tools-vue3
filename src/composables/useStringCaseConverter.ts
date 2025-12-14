@@ -1,8 +1,18 @@
 import { ref, computed } from 'vue'
 
+// Pure helper functions
+const capitalizeWord = (word: string): string =>
+  `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`
+
+const isEvenIndex = (index: number): boolean => index % 2 === 0
+
+const isUpperCase = (char: string): boolean => char === char.toUpperCase()
+
 // Helper: Split string into words
-export const splitIntoWords = (str: string): string[] =>
-  str
+export const splitIntoWords = (str: string): string[] => {
+  if (!str) return []
+
+  return str
     .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase -> camel Case
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // XMLParser -> XML Parser
     .replace(/[-_./\\]+/g, ' ') // Replace separators with space
@@ -10,111 +20,149 @@ export const splitIntoWords = (str: string): string[] =>
     .trim()
     .split(' ')
     .filter(Boolean)
+}
+
+// Word transformation functions (pure)
+const transformWordsAndJoin = (
+  words: readonly string[],
+  transform: (word: string, index: number) => string,
+  separator: string,
+): string => words.map(transform).join(separator)
 
 // Case conversion functions
-export const toCamelCase = (str: string): string =>
-  splitIntoWords(str)
-    .map((word, index) =>
-      index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-    )
-    .join('')
+export const toCamelCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
 
-export const toPascalCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('')
+  return transformWordsAndJoin(
+    words,
+    (word, index) => (index === 0 ? word.toLowerCase() : capitalizeWord(word)),
+    '',
+  )
+}
 
-export const toSnakeCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toLowerCase())
-    .join('_')
+export const toPascalCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
 
-export const toScreamingSnakeCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toUpperCase())
-    .join('_')
+  return transformWordsAndJoin(words, capitalizeWord, '')
+}
 
-export const toKebabCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toLowerCase())
-    .join('-')
+export const toSnakeCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
 
-export const toScreamingKebabCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toUpperCase())
-    .join('-')
+  return transformWordsAndJoin(words, word => word.toLowerCase(), '_')
+}
 
-export const toTrainCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('-')
+export const toScreamingSnakeCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
 
-export const toDotCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toLowerCase())
-    .join('.')
+  return transformWordsAndJoin(words, word => word.toUpperCase(), '_')
+}
 
-export const toPathCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toLowerCase())
-    .join('/')
+export const toKebabCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
 
-export const toTitleCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
+  return transformWordsAndJoin(words, word => word.toLowerCase(), '-')
+}
 
-export const toSentenceCase = (str: string): string =>
-  splitIntoWords(str)
-    .map((word, index) =>
-      index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase(),
-    )
-    .join(' ')
+export const toScreamingKebabCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(words, word => word.toUpperCase(), '-')
+}
+
+export const toTrainCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(words, capitalizeWord, '-')
+}
+
+export const toDotCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(words, word => word.toLowerCase(), '.')
+}
+
+export const toPathCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(words, word => word.toLowerCase(), '/')
+}
+
+export const toTitleCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(words, capitalizeWord, ' ')
+}
+
+export const toSentenceCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(
+    words,
+    (word, index) => (index === 0 ? capitalizeWord(word) : word.toLowerCase()),
+    ' ',
+  )
+}
 
 export const toUpperCase = (str: string): string => str.toUpperCase()
 
 export const toLowerCase = (str: string): string => str.toLowerCase()
 
-export const toFlatCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toLowerCase())
-    .join('')
+export const toFlatCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
 
-export const toUpperFlatCase = (str: string): string =>
-  splitIntoWords(str)
-    .map(word => word.toUpperCase())
-    .join('')
+  return transformWordsAndJoin(words, word => word.toLowerCase(), '')
+}
+
+export const toUpperFlatCase = (str: string): string => {
+  const words = splitIntoWords(str)
+  if (words.length === 0) return ''
+
+  return transformWordsAndJoin(words, word => word.toUpperCase(), '')
+}
 
 export const toAlternatingCase = (str: string): string =>
   Array.from(str)
-    .map((char, index) => (index % 2 === 0 ? char.toLowerCase() : char.toUpperCase()))
+    .map((char, index) => (isEvenIndex(index) ? char.toLowerCase() : char.toUpperCase()))
     .join('')
 
 export const toInverseCase = (str: string): string =>
   Array.from(str)
-    .map(char => (char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase()))
+    .map(char => (isUpperCase(char) ? char.toLowerCase() : char.toUpperCase()))
     .join('')
 
 // Types
 export interface CaseDefinition {
-  name: string
-  key: string
-  converter: (str: string) => string
-  example: string
-  description: string
+  readonly name: string
+  readonly key: string
+  readonly converter: (str: string) => string
+  readonly example: string
+  readonly description: string
 }
 
 export interface ConversionResult extends CaseDefinition {
-  result: string
+  readonly result: string
 }
 
 export interface TextStats {
-  chars: number
-  words: number
+  readonly chars: number
+  readonly words: number
 }
 
 // Case definitions
-export const CASE_DEFINITIONS: CaseDefinition[] = [
+export const CASE_DEFINITIONS = [
   {
     name: 'camelCase',
     key: 'camel',
@@ -234,12 +282,29 @@ export const CASE_DEFINITIONS: CaseDefinition[] = [
     example: 'iNVERSE',
     description: 'Swap case of each character',
   },
-]
+] as const satisfies readonly CaseDefinition[]
 
 // Convert a string to a specific case by key
 export const convertCase = (str: string, caseKey: string): string | null => {
+  if (!str || !caseKey) return null
+
   const definition = CASE_DEFINITIONS.find(def => def.key === caseKey)
-  return definition ? definition.converter(str) : null
+  return definition?.converter(str) ?? null
+}
+
+// Pure helper for creating conversion result
+const createConversionResult = (def: CaseDefinition, input: string): ConversionResult => ({
+  ...def,
+  result: def.converter(input),
+})
+
+// Pure helper for calculating text stats
+const calculateTextStats = (text: string): TextStats => {
+  const words = splitIntoWords(text)
+  return {
+    chars: text.length,
+    words: words.length,
+  }
 }
 
 // Composable
@@ -248,22 +313,16 @@ export const useStringCaseConverter = () => {
   const inputText = ref('')
 
   // Computed
-  const conversions = computed<ConversionResult[]>(() => {
-    if (!inputText.value.trim()) return []
+  const conversions = computed<readonly ConversionResult[]>(() => {
+    const trimmedInput = inputText.value.trim()
+    if (!trimmedInput) return []
 
-    return CASE_DEFINITIONS.map(def => ({
-      ...def,
-      result: def.converter(inputText.value),
-    }))
+    return CASE_DEFINITIONS.map(def => createConversionResult(def, inputText.value))
   })
 
   const inputStats = computed<TextStats | null>(() => {
     if (!inputText.value) return null
-    const words = splitIntoWords(inputText.value)
-    return {
-      chars: inputText.value.length,
-      words: words.length,
-    }
+    return calculateTextStats(inputText.value)
   })
 
   const hasInput = computed(() => inputText.value.length > 0)
@@ -271,16 +330,18 @@ export const useStringCaseConverter = () => {
   const hasResults = computed(() => conversions.value.length > 0)
 
   // Actions
-  const loadSample = () => {
+  const loadSample = (): void => {
     inputText.value = 'hello world example'
   }
 
-  const clear = () => {
+  const clear = (): void => {
     inputText.value = ''
   }
 
-  const getConversionByKey = (key: string): ConversionResult | undefined =>
-    conversions.value.find(c => c.key === key)
+  const getConversionByKey = (key: string): ConversionResult | undefined => {
+    if (!key) return undefined
+    return conversions.value.find(c => c.key === key)
+  }
 
   return {
     // State

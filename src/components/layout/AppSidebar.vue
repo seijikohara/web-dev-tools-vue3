@@ -40,13 +40,11 @@ const menuItems = computed<MenuItem[]>(() =>
 )
 
 const groupedMenuItems = computed<CategoryGroup[]>(() => {
-  const groups = new Map<MenuCategory, MenuItem[]>()
-
-  menuItems.value.forEach(item => {
-    const existing = groups.get(item.category) ?? []
-    existing.push(item)
-    groups.set(item.category, existing)
-  })
+  const groups = menuItems.value.reduce((acc, item) => {
+    const existing = acc.get(item.category) ?? []
+    acc.set(item.category, [...existing, item])
+    return acc
+  }, new Map<MenuCategory, MenuItem[]>())
 
   return Array.from(groups.entries())
     .map(([category, items]) => ({

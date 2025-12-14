@@ -116,28 +116,20 @@ export function getDefaultOptions(language: 'swift'): SwiftOptions
 export function getDefaultOptions(language: 'php'): PhpOptions
 export function getDefaultOptions(language: TargetLanguage): AllLanguageOptions
 export function getDefaultOptions(language: TargetLanguage): AllLanguageOptions {
-  switch (language) {
-    case 'typescript':
-      return { ...defaultTypeScriptOptions }
-    case 'javascript':
-      return { ...defaultJavaScriptOptions }
-    case 'go':
-      return { ...defaultGoOptions }
-    case 'python':
-      return { ...defaultPythonOptions }
-    case 'rust':
-      return { ...defaultRustOptions }
-    case 'java':
-      return { ...defaultJavaOptions }
-    case 'csharp':
-      return { ...defaultCSharpOptions }
-    case 'kotlin':
-      return { ...defaultKotlinOptions }
-    case 'swift':
-      return { ...defaultSwiftOptions }
-    case 'php':
-      return { ...defaultPhpOptions }
-  }
+  const optionsMap = {
+    typescript: defaultTypeScriptOptions,
+    javascript: defaultJavaScriptOptions,
+    go: defaultGoOptions,
+    python: defaultPythonOptions,
+    rust: defaultRustOptions,
+    java: defaultJavaOptions,
+    csharp: defaultCSharpOptions,
+    kotlin: defaultKotlinOptions,
+    swift: defaultSwiftOptions,
+    php: defaultPhpOptions,
+  } as const satisfies Record<TargetLanguage, AllLanguageOptions>
+
+  return { ...optionsMap[language] }
 }
 
 /**
@@ -171,28 +163,20 @@ export function generateCode(
   language: TargetLanguage,
   options: AllLanguageOptions,
 ): string {
-  switch (language) {
-    case 'typescript':
-      return typeScriptGenerator.generate(data, options as TypeScriptOptions)
-    case 'javascript':
-      return javaScriptGenerator.generate(data, options as JavaScriptOptions)
-    case 'go':
-      return goGenerator.generate(data, options as GoOptions)
-    case 'python':
-      return pythonGenerator.generate(data, options as PythonOptions)
-    case 'rust':
-      return rustGenerator.generate(data, options as RustOptions)
-    case 'java':
-      return javaGenerator.generate(data, options as JavaOptions)
-    case 'csharp':
-      return csharpGenerator.generate(data, options as CSharpOptions)
-    case 'kotlin':
-      return kotlinGenerator.generate(data, options as KotlinOptions)
-    case 'swift':
-      return swiftGenerator.generate(data, options as SwiftOptions)
-    case 'php':
-      return phpGenerator.generate(data, options as PhpOptions)
-  }
+  const generatorMap = {
+    typescript: typeScriptGenerator,
+    javascript: javaScriptGenerator,
+    go: goGenerator,
+    python: pythonGenerator,
+    rust: rustGenerator,
+    java: javaGenerator,
+    csharp: csharpGenerator,
+    kotlin: kotlinGenerator,
+    swift: swiftGenerator,
+    php: phpGenerator,
+  } as const
+
+  return generatorMap[language].generate(data, options as never)
 }
 
 /**
@@ -205,6 +189,7 @@ export const generateCodeFromConfig = (data: unknown, config: LanguageConfig): s
 
 // Download code as file
 export const downloadCodeAsFile = (code: string, rootName: string, extension: string): void => {
+  // Early return if no code
   if (!code) return
 
   const blob = new Blob([code], { type: 'text/plain' })

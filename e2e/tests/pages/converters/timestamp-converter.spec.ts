@@ -64,10 +64,18 @@ test.describe('Timestamp Converter', () => {
       await test.step('Verify date conversion results', async () => {
         await expect(page.locator('.result-section')).toBeVisible()
         await Promise.all([
-          expect.soft(page.locator('.result-section .p-tag').filter({ hasText: 'Local' }).first()).toBeVisible(),
-          expect.soft(page.locator('.result-section .p-tag').filter({ hasText: 'UTC' }).first()).toBeVisible(),
-          expect.soft(page.locator('.result-section .p-tag').filter({ hasText: 'ISO 8601' }).first()).toBeVisible(),
-          expect.soft(page.locator('.result-section .p-tag').filter({ hasText: 'Relative' }).first()).toBeVisible(),
+          expect
+            .soft(page.locator('.result-section .p-tag').filter({ hasText: 'Local' }).first())
+            .toBeVisible(),
+          expect
+            .soft(page.locator('.result-section .p-tag').filter({ hasText: 'UTC' }).first())
+            .toBeVisible(),
+          expect
+            .soft(page.locator('.result-section .p-tag').filter({ hasText: 'ISO 8601' }).first())
+            .toBeVisible(),
+          expect
+            .soft(page.locator('.result-section .p-tag').filter({ hasText: 'Relative' }).first())
+            .toBeVisible(),
         ])
         await expect(page.getByText('2023-11-14').first()).toBeVisible()
       })
@@ -130,9 +138,15 @@ test.describe('Timestamp Converter', () => {
       await test.step('Verify timestamp conversion results', async () => {
         await expect(page.locator('.result-section')).toBeVisible()
         await Promise.all([
-          expect.soft(page.locator('.result-section').getByText('Seconds', { exact: true })).toBeVisible(),
-          expect.soft(page.locator('.result-section').getByText('Milliseconds', { exact: true })).toBeVisible(),
-          expect.soft(page.locator('.result-section').getByText('ISO 8601', { exact: true })).toBeVisible(),
+          expect
+            .soft(page.locator('.result-section').getByText('Seconds', { exact: true }))
+            .toBeVisible(),
+          expect
+            .soft(page.locator('.result-section').getByText('Milliseconds', { exact: true }))
+            .toBeVisible(),
+          expect
+            .soft(page.locator('.result-section').getByText('ISO 8601', { exact: true }))
+            .toBeVisible(),
         ])
       })
     })

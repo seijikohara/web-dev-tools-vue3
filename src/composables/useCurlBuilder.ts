@@ -142,6 +142,51 @@ export const buildUrlWithParams = (baseUrl: string, params: QueryParam[]): strin
   return baseUrl.includes('?') ? `${baseUrl}&${queryString}` : `${baseUrl}?${queryString}`
 }
 
+// Build option flags from CurlOptions
+const buildOptionFlags = (options: CurlOptions): string[] =>
+  [
+    { condition: options.followRedirects, flag: '-L' },
+    { condition: options.insecure, flag: '-k' },
+    { condition: options.verbose, flag: '-v' },
+    { condition: options.silent, flag: '-s' },
+    { condition: options.compressed, flag: '--compressed' },
+    { condition: options.timeout > 0, flag: `--connect-timeout ${options.timeout}` },
+    { condition: options.maxTime > 0, flag: `-m ${options.maxTime}` },
+    { condition: !!options.output, flag: `-o ${escapeShell(options.output)}` },
+    { condition: !!options.proxy, flag: `-x ${escapeShell(options.proxy)}` },
+    { condition: !!options.userAgent, flag: `-A ${escapeShell(options.userAgent)}` },
+    { condition: !!options.basicAuth, flag: `-u ${escapeShell(options.basicAuth)}` },
+  ]
+    .filter(({ condition }) => condition)
+    .map(({ flag }) => flag)
+
+// Build header flags
+const buildHeaderFlags = (headers: Header[]): string[] =>
+  headers.filter(h => h.enabled && h.key).map(h => `-H ${escapeShell(`${h.key}: ${h.value}`)}`)
+
+// Get Content-Type header if needed
+const getContentTypeHeader = (
+  bodyType: BodyType,
+  body: string,
+  headers: Header[],
+): string | null => {
+  if (!body) return null
+
+  const hasContentType = headers
+    .filter(h => h.enabled && h.key)
+    .some(h => h.key.toLowerCase() === 'content-type')
+
+  if (hasContentType) return null
+
+  const contentTypeMap = {
+    json: 'application/json',
+    form: 'application/x-www-form-urlencoded',
+  } as const
+
+  const contentType = (contentTypeMap as Record<string, string>)[bodyType]
+  return contentType !== undefined ? `-H 'Content-Type: ${contentType}'` : null
+}
+
 export const generateCurlCommand = (
   method: HttpMethod,
   url: string,
@@ -150,80 +195,20 @@ export const generateCurlCommand = (
   body: string,
   bodyType: BodyType,
   options: CurlOptions,
-): string => {
-  const parts: string[] = ['curl']
-
-  // Method
-  if (method !== 'GET') {
-    parts.push(`-X ${method}`)
-  }
-
-  // Options
-  if (options.followRedirects) {
-    parts.push('-L')
-  }
-  if (options.insecure) {
-    parts.push('-k')
-  }
-  if (options.verbose) {
-    parts.push('-v')
-  }
-  if (options.silent) {
-    parts.push('-s')
-  }
-  if (options.compressed) {
-    parts.push('--compressed')
-  }
-  if (options.timeout > 0) {
-    parts.push(`--connect-timeout ${options.timeout}`)
-  }
-  if (options.maxTime > 0) {
-    parts.push(`-m ${options.maxTime}`)
-  }
-  if (options.output) {
-    parts.push(`-o ${escapeShell(options.output)}`)
-  }
-  if (options.proxy) {
-    parts.push(`-x ${escapeShell(options.proxy)}`)
-  }
-  if (options.userAgent) {
-    parts.push(`-A ${escapeShell(options.userAgent)}`)
-  }
-  if (options.basicAuth) {
-    parts.push(`-u ${escapeShell(options.basicAuth)}`)
-  }
-
-  // Headers
-  const enabledHeaders = headers.filter(h => h.enabled && h.key)
-  enabledHeaders.forEach(header => {
-    parts.push(`-H ${escapeShell(`${header.key}: ${header.value}`)}`)
-  })
-
-  // Content-Type header for body types
-  if (bodyType === 'json' && body) {
-    const hasContentType = enabledHeaders.some(h => h.key.toLowerCase() === 'content-type')
-    if (!hasContentType) {
-      parts.push(`-H 'Content-Type: application/json'`)
-    }
-  } else if (bodyType === 'form' && body) {
-    const hasContentType = enabledHeaders.some(h => h.key.toLowerCase() === 'content-type')
-    if (!hasContentType) {
-      parts.push(`-H 'Content-Type: application/x-www-form-urlencoded'`)
-    }
-  }
-
-  // Body
-  if (body && bodyType !== 'none') {
-    parts.push(`-d ${escapeShell(body)}`)
-  }
-
-  // URL
-  if (url) {
-    parts.push(escapeShell(buildUrlWithParams(url, queryParams)))
-  }
-
-  return parts.join(' \\\n  ')
-}
+): string =>
+  [
+    'curl',
+    ...(method !== 'GET' ? [`-X ${method}`] : []),
+    ...buildOptionFlags(options),
+    ...buildHeaderFlags(headers),
+    ...(() => {
+      const contentTypeHeader = getContentTypeHeader(bodyType, body, headers)
+      return contentTypeHeader ? [contentTypeHeader] : []
+    })(),
+    ...(body && bodyType !== 'none' ? [`-d ${escapeShell(body)}`] : []),
+    ...(url ? [escapeShell(buildUrlWithParams(url, queryParams))] : []),
+  ].join(` \\
+  `)
 
 export const parseCurlString = (input: string): ParseResult => {
   const tokens = input.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? []

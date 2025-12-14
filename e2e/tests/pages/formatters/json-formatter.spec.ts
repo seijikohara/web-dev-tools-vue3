@@ -52,7 +52,9 @@ test.describe('JSON Formatter', () => {
       await test.step('Verify options panel is visible', async () => {
         await Promise.all([
           // Check for panel with "Options" text in header
-          expect.soft(page.locator('.panel-header').filter({ hasText: 'Options' }).first()).toBeVisible(),
+          expect
+            .soft(page.locator('.panel-header').filter({ hasText: 'Options' }).first())
+            .toBeVisible(),
           expect.soft(page.getByText('Indentation').first()).toBeVisible(),
           expect.soft(page.getByText('Indent Size').first()).toBeVisible(),
         ])

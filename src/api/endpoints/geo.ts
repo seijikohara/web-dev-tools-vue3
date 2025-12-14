@@ -143,15 +143,11 @@ export interface RdapInfo {
 /**
  * Fetch geo location information for IP address
  */
-export const getGeoInfo = async (ipAddress: string): Promise<GeoInfo> => {
-  const { data } = await apiClient.get<GeoInfo>(`geo/${ipAddress}`)
-  return data
-}
+export const getGeoInfo = async (ipAddress: string): Promise<GeoInfo> =>
+  apiClient.get<GeoInfo>(`geo/${ipAddress}`).then(({ data }) => data)
 
 /**
  * Fetch RDAP information for IP address
  */
-export const getRdapInfo = async (ipAddress: string): Promise<RdapInfo> => {
-  const { data } = await apiClient.get<RdapInfo>(`rdap/${ipAddress}`)
-  return data
-}
+export const getRdapInfo = async (ipAddress: string): Promise<RdapInfo> =>
+  apiClient.get<RdapInfo>(`rdap/${ipAddress}`).then(({ data }) => data)

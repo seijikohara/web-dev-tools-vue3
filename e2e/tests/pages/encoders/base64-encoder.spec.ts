@@ -56,7 +56,9 @@ test.describe('Base64 Encoder', () => {
 
       await test.step('Verify options panel is visible', async () => {
         await Promise.all([
-          expect.soft(page.locator('.p-panel-header').filter({ hasText: 'Encoding Options' })).toBeVisible(),
+          expect
+            .soft(page.locator('.p-panel-header').filter({ hasText: 'Encoding Options' }))
+            .toBeVisible(),
           expect.soft(page.locator('.p-selectbutton').filter({ hasText: 'Encode' })).toBeVisible(),
           expect.soft(page.locator('.p-selectbutton').filter({ hasText: 'Decode' })).toBeVisible(),
         ])

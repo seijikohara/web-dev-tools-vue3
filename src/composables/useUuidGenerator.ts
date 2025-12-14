@@ -21,8 +21,8 @@ export interface UuidFormatOptions {
 }
 
 // Constants
-export const NIL_UUID = '00000000-0000-0000-0000-000000000000'
-export const MAX_UUID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+export const NIL_UUID = '00000000-0000-0000-0000-000000000000' as const
+export const MAX_UUID = 'ffffffff-ffff-ffff-ffff-ffffffffffff' as const
 
 export const UUID_VERSION_OPTIONS: UuidVersionOption[] = [
   {
@@ -48,75 +48,97 @@ export const UUID_VERSION_OPTIONS: UuidVersionOption[] = [
 ]
 
 // UUID Generation functions (pure functions)
-export const generateUUIDv4 = (): string =>
-  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = (Math.random() * 16) | 0
-    const v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+const getRandomHex = (): number => (Math.random() * 16) | 0
 
-export const generateUUIDv7 = (): string => {
-  const timestamp = Date.now()
-  const timestampHex = timestamp.toString(16).padStart(12, '0')
-
-  const randomPart1 = Math.random().toString(16).slice(2, 6).padEnd(4, '0')
-  const randomPart2 = Math.random().toString(16).slice(2, 6).padEnd(4, '0')
-  const randomPart3 = Math.random().toString(16).slice(2, 14).padEnd(12, '0')
-
-  const variantByte = ((parseInt(randomPart2[0] ?? '0', 16) & 0x3) | 0x8).toString(16)
-
-  return (
-    `${timestampHex.slice(0, 8)}-${timestampHex.slice(8, 12)}-7${randomPart1.slice(0, 3)}-` +
-    `${variantByte}${randomPart2.slice(1, 4)}-${randomPart3}`
-  )
+const getUuidV4Character = (char: string): string => {
+  const random = getRandomHex()
+  const value = char === 'x' ? random : (random & 0x3) | 0x8
+  return value.toString(16)
 }
 
-export const generateUUIDv1 = (): string => {
-  const now = Date.now()
-  // UUID epoch is October 15, 1582
-  const uuidEpoch = 122192928000000000n
-  const timestamp = BigInt(now) * 10000n + uuidEpoch
+export const generateUUIDv4 = (): string =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, getUuidV4Character)
 
-  const timeLow = (timestamp & 0xffffffffn).toString(16).padStart(8, '0')
-  const timeMid = ((timestamp >> 32n) & 0xffffn).toString(16).padStart(4, '0')
-  const timeHiAndVersion = (((timestamp >> 48n) & 0x0fffn) | 0x1000n).toString(16).padStart(4, '0')
+const getRandomHexPart = (length: number): string =>
+  Math.random()
+    .toString(16)
+    .slice(2, 2 + length)
+    .padEnd(length, '0')
 
-  // Random clock sequence with variant bits
-  const clockSeq = ((Math.random() * 0x3fff) | 0x8000) >>> 0
-  const clockSeqHex = clockSeq.toString(16).padStart(4, '0')
+const createVariantByte = (firstChar: string): string => {
+  const parsed = parseInt(firstChar, 16)
+  return ((parsed & 0x3) | 0x8).toString(16)
+}
 
-  // Random node (simulated MAC address)
-  const node = Array.from({ length: 6 }, () =>
+export const generateUUIDv7 = (): string => {
+  const timestampHex = Date.now().toString(16).padStart(12, '0')
+  const randomPart1 = getRandomHexPart(4)
+  const randomPart2 = getRandomHexPart(4)
+  const randomPart3 = getRandomHexPart(12)
+
+  const variantByte = createVariantByte(randomPart2[0] ?? '0')
+
+  return [
+    timestampHex.slice(0, 8),
+    timestampHex.slice(8, 12),
+    `7${randomPart1.slice(0, 3)}`,
+    `${variantByte}${randomPart2.slice(1, 4)}`,
+    randomPart3,
+  ].join('-')
+}
+
+const UUID_EPOCH = 122192928000000000n
+const CLOCK_SEQ_MASK = 0x3fff
+const VARIANT_BITS = 0x8000
+
+const getUuidV1Timestamp = (now: number): bigint => BigInt(now) * 10000n + UUID_EPOCH
+
+const createClockSequence = (): string =>
+  (((Math.random() * CLOCK_SEQ_MASK) | VARIANT_BITS) >>> 0).toString(16).padStart(4, '0')
+
+const createNodeId = (): string =>
+  Array.from({ length: 6 }, () =>
     Math.floor(Math.random() * 256)
       .toString(16)
       .padStart(2, '0'),
   ).join('')
 
-  return `${timeLow}-${timeMid}-${timeHiAndVersion}-${clockSeqHex}-${node}`
+export const generateUUIDv1 = (): string => {
+  const timestamp = getUuidV1Timestamp(Date.now())
+
+  const timeLow = (timestamp & 0xffffffffn).toString(16).padStart(8, '0')
+  const timeMid = ((timestamp >> 32n) & 0xffffn).toString(16).padStart(4, '0')
+  const timeHiAndVersion = (((timestamp >> 48n) & 0x0fffn) | 0x1000n).toString(16).padStart(4, '0')
+  const clockSeqHex = createClockSequence()
+  const node = createNodeId()
+
+  return [timeLow, timeMid, timeHiAndVersion, clockSeqHex, node].join('-')
 }
+
+// UUID version generators map
+const uuidGenerators = {
+  v1: generateUUIDv1,
+  v4: generateUUIDv4,
+  v7: generateUUIDv7,
+  nil: () => NIL_UUID,
+  max: () => MAX_UUID,
+} satisfies Record<UuidVersion, () => string>
 
 // Generate a single UUID based on version
 export const generateUuidByVersion = (version: UuidVersion): string => {
-  switch (version) {
-    case 'v1':
-      return generateUUIDv1()
-    case 'v4':
-      return generateUUIDv4()
-    case 'v7':
-      return generateUUIDv7()
-    case 'nil':
-      return NIL_UUID
-    case 'max':
-      return MAX_UUID
-    default:
-      return generateUUIDv7()
-  }
+  const generator = uuidGenerators[version]
+  return generator()
 }
 
 // Format UUID based on options
+const applyCasing = (uuid: string, uppercase: boolean): string =>
+  uppercase ? uuid.toUpperCase() : uuid
+
+const applyBraces = (uuid: string, noBraces: boolean): string => (noBraces ? uuid : `{${uuid}}`)
+
 export const formatUuid = (uuid: string, options: UuidFormatOptions): string => {
-  const cased = options.uppercase ? uuid.toUpperCase() : uuid
-  return options.noBraces ? cased : `{${cased}}`
+  const cased = applyCasing(uuid, options.uppercase)
+  return applyBraces(cased, options.noBraces)
 }
 
 // Composable for UUID generation with state management
@@ -134,16 +156,30 @@ export const useUuidGenerator = () => {
     noBraces: noBraces.value,
   }))
 
-  const uuidsAsText = computed(() => generatedUuids.value.map(item => item.uuid).join('\n'))
+  const uuidsAsText = computed(() => generatedUuids.value.map(({ uuid }) => uuid).join('\n'))
 
   const uuidsCount = computed(() => generatedUuids.value.length)
 
+  // Pure helper functions for generation
+  const createUuidEntry = (
+    id: number,
+    options: UuidFormatOptions,
+    ver: UuidVersion,
+  ): GeneratedUuid => ({
+    id,
+    uuid: formatUuid(generateUuidByVersion(ver), options),
+  })
+
   // Actions
-  const generate = () => {
-    const newUuids = Array.from({ length: count.value }, (_, i) => ({
-      id: generatedUuids.value.length + i + 1,
-      uuid: formatUuid(generateUuidByVersion(version.value), formatOptions.value),
-    }))
+  const generate = (): void => {
+    const currentLength = generatedUuids.value.length
+    const countValue = count.value
+    const options = formatOptions.value
+    const ver = version.value
+
+    const newUuids = Array.from({ length: countValue }, (_, i) =>
+      createUuidEntry(currentLength + i + 1, options, ver),
+    )
 
     generatedUuids.value = [...newUuids, ...generatedUuids.value]
   }
@@ -151,7 +187,7 @@ export const useUuidGenerator = () => {
   const generateSingle = (): string =>
     formatUuid(generateUuidByVersion(version.value), formatOptions.value)
 
-  const clear = () => {
+  const clear = (): void => {
     generatedUuids.value = []
   }
 

@@ -59,7 +59,12 @@ export const mockApiResponses = {
           'vcard',
           [
             ['fn', {}, 'text', 'Google LLC'],
-            ['adr', {}, 'text', ['', '', '1600 Amphitheatre Parkway', 'Mountain View', 'CA', '94043', 'US']],
+            [
+              'adr',
+              {},
+              'text',
+              ['', '', '1600 Amphitheatre Parkway', 'Mountain View', 'CA', '94043', 'US'],
+            ],
           ],
         ],
       },
@@ -74,9 +79,7 @@ export const mockApiResponses = {
     authenticData: false,
     checkingDisabled: false,
     question: [{ name: '8.8.8.8', type: 1 }],
-    answer: [
-      { name: '8.8.8.8.in-addr.arpa', type: 12, ttl: 86400, data: 'dns.google' },
-    ],
+    answer: [{ name: '8.8.8.8.in-addr.arpa', type: 12, ttl: 86400, data: 'dns.google' }],
     authority: null,
     additional: null,
   },
@@ -89,9 +92,7 @@ export const mockApiResponses = {
     authenticData: false,
     checkingDisabled: false,
     question: [{ name: 'google.com', type: 1 }],
-    answer: [
-      { name: 'google.com', type: 1, ttl: 300, data: '142.250.80.46' },
-    ],
+    answer: [{ name: 'google.com', type: 1, ttl: 300, data: '142.250.80.46' }],
     authority: null,
     additional: null,
   },
@@ -104,9 +105,7 @@ export const mockApiResponses = {
     authenticData: false,
     checkingDisabled: false,
     question: [{ name: 'google.com', type: 28 }],
-    answer: [
-      { name: 'google.com', type: 28, ttl: 300, data: '2607:f8b0:4004:800::200e' },
-    ],
+    answer: [{ name: 'google.com', type: 28, ttl: 300, data: '2607:f8b0:4004:800::200e' }],
     authority: null,
     additional: null,
   },

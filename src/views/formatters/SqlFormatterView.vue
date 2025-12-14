@@ -551,7 +551,11 @@ const sqlStats = computed(() => {
             <i class="pi pi-file-import"></i>
             <span>Input</span>
           </div>
-          <CodeEditor v-model="state.input" mode="sql" height="clamp(300px, calc(100vh - 520px), 600px)" />
+          <CodeEditor
+            v-model="state.input"
+            mode="sql"
+            height="clamp(300px, calc(100vh - 520px), 600px)"
+          />
           <Toolbar class="editor-toolbar">
             <template #start>
               <Button

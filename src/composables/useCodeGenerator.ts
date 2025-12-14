@@ -182,151 +182,154 @@ const getDefaultUnifiedOptions = (): CodeGeneratorOptions => ({
   useLombok: false,
 })
 
-// Convert unified options to language-specific options
+/**
+ * Pure function: Create base options common to all languages
+ */
+const createBaseOptions = (options: CodeGeneratorOptions) =>
+  ({
+    rootName: options.rootName,
+    optionalProperties: options.optionalProperties,
+  }) as const
+
+/**
+ * Pure function: Convert unified options to language-specific options
+ */
 const toLanguageOptions = (
   language: TargetLanguage,
   options: CodeGeneratorOptions,
 ): AllLanguageOptions => {
-  const base = { rootName: options.rootName, optionalProperties: options.optionalProperties }
+  const base = createBaseOptions(options)
 
-  switch (language) {
-    case 'typescript':
-      return {
-        ...base,
-        useInterface: options.useInterface,
-        useExport: options.useExport,
-        useReadonly: options.useReadonly,
-        strictNullChecks: options.strictNullChecks,
-      } as TypeScriptOptions
-    case 'javascript':
-      return {
-        ...base,
-        useClass: options.useClass,
-        useJSDoc: options.useJSDoc,
-        useES6: options.useES6,
-        generateFactory: options.generateFactory,
-        generateValidator: options.generateValidator,
-      } as JavaScriptOptions
-    case 'go':
-      return {
-        ...base,
-        usePointers: options.usePointers,
-        omitEmpty: options.omitEmpty,
-        useJsonTag: options.useJsonTag,
-      } as GoOptions
-    case 'python':
-      return {
-        ...base,
-        style: options.pythonStyle,
-        useFrozen: options.useFrozen,
-        useSlots: options.useSlots,
-        useKwOnly: options.useKwOnly,
-        useTotal: options.useTotal,
-      } as PythonOptions
-    case 'rust':
-      return {
-        ...base,
-        deriveSerde: options.deriveSerde,
-        deriveDebug: options.deriveDebug,
-        deriveClone: options.deriveClone,
-        deriveDefault: options.deriveDefault,
-        useBox: options.useBox,
-      } as RustOptions
-    case 'java':
-      return {
-        ...base,
-        packageName: options.packageName,
-        classStyle: options.classStyle,
-        serializationLibrary: options.serializationLibrary,
-        useValidation: options.useValidation,
-        generateBuilder: options.generateBuilder,
-        generateEquals: options.generateEquals,
-        useOptional: options.useOptional,
-      } as JavaOptions
-    case 'csharp':
-      return {
-        ...base,
-        useRecords: options.useRecords,
-        useNullableReferenceTypes: options.useNullableReferenceTypes,
-        useSystemTextJson: options.useSystemTextJson,
-        useNewtonsoft: options.useNewtonsoft,
-        generateDataContract: options.generateDataContract,
-      } as CSharpOptions
-    case 'kotlin':
-      return {
-        ...base,
-        useDataClass: options.useDataClass,
-        serializationLibrary: options.kotlinSerializationLibrary,
-        useDefaultValues: options.useDefaultValues,
-      } as KotlinOptions
-    case 'swift':
-      return {
-        ...base,
-        useStruct: options.useStruct,
-        useCodingKeys: options.useCodingKeys,
-        useOptionalProperties: options.useOptionalProperties,
-      } as SwiftOptions
-    case 'php':
-      return {
-        ...base,
-        useStrictTypes: options.useStrictTypes,
-        useReadonlyProperties: options.useReadonlyProperties,
-        useConstructorPromotion: options.useConstructorPromotion,
-        namespace: options.namespace,
-      } as PhpOptions
+  const languageSpecificOptions: Record<TargetLanguage, AllLanguageOptions> = {
+    typescript: {
+      ...base,
+      useInterface: options.useInterface,
+      useExport: options.useExport,
+      useReadonly: options.useReadonly,
+      strictNullChecks: options.strictNullChecks,
+    } satisfies TypeScriptOptions,
+    javascript: {
+      ...base,
+      useClass: options.useClass,
+      useJSDoc: options.useJSDoc,
+      useES6: options.useES6,
+      generateFactory: options.generateFactory,
+      generateValidator: options.generateValidator,
+    } satisfies JavaScriptOptions,
+    go: {
+      ...base,
+      usePointers: options.usePointers,
+      omitEmpty: options.omitEmpty,
+      useJsonTag: options.useJsonTag,
+    } satisfies GoOptions,
+    python: {
+      ...base,
+      style: options.pythonStyle,
+      useFrozen: options.useFrozen,
+      useSlots: options.useSlots,
+      useKwOnly: options.useKwOnly,
+      useTotal: options.useTotal,
+    } satisfies PythonOptions,
+    rust: {
+      ...base,
+      deriveSerde: options.deriveSerde,
+      deriveDebug: options.deriveDebug,
+      deriveClone: options.deriveClone,
+      deriveDefault: options.deriveDefault,
+      useBox: options.useBox,
+    } satisfies RustOptions,
+    java: {
+      ...base,
+      packageName: options.packageName,
+      classStyle: options.classStyle,
+      serializationLibrary: options.serializationLibrary,
+      useValidation: options.useValidation,
+      generateBuilder: options.generateBuilder,
+      generateEquals: options.generateEquals,
+      useOptional: options.useOptional,
+    } satisfies JavaOptions,
+    csharp: {
+      ...base,
+      useRecords: options.useRecords,
+      useNullableReferenceTypes: options.useNullableReferenceTypes,
+      useSystemTextJson: options.useSystemTextJson,
+      useNewtonsoft: options.useNewtonsoft,
+      generateDataContract: options.generateDataContract,
+    } satisfies CSharpOptions,
+    kotlin: {
+      ...base,
+      useDataClass: options.useDataClass,
+      serializationLibrary: options.kotlinSerializationLibrary,
+      useDefaultValues: options.useDefaultValues,
+    } satisfies KotlinOptions,
+    swift: {
+      ...base,
+      useStruct: options.useStruct,
+      useCodingKeys: options.useCodingKeys,
+      useOptionalProperties: options.useOptionalProperties,
+    } satisfies SwiftOptions,
+    php: {
+      ...base,
+      useStrictTypes: options.useStrictTypes,
+      useReadonlyProperties: options.useReadonlyProperties,
+      useConstructorPromotion: options.useConstructorPromotion,
+      namespace: options.namespace,
+    } satisfies PhpOptions,
+  }
+
+  return languageSpecificOptions[language]
+}
+
+/**
+ * Pure function: Generate code from JSON input with error handling
+ */
+const tryGenerateCode = (
+  jsonInput: string,
+  language: TargetLanguage,
+  options: CodeGeneratorOptions,
+): { code: string; error: string | null } => {
+  if (!jsonInput.trim()) {
+    return { code: '', error: null }
+  }
+
+  try {
+    const parsed = JSON.parse(jsonInput) as unknown
+    const langOptions = toLanguageOptions(language, options)
+    return { code: generateCode(parsed, language, langOptions), error: null }
+  } catch (e) {
+    return { code: '', error: e instanceof Error ? e.message : 'Failed to parse JSON' }
   }
 }
 
-// Composable for code generation
+/**
+ * Composable for code generation
+ */
 export const useCodeGenerator = (jsonInput: Ref<string>) => {
   const language = ref<TargetLanguage>('typescript')
   const options = reactive<CodeGeneratorOptions>(getDefaultUnifiedOptions())
   const error = ref<string | null>(null)
 
-  // Generated code
   const generatedCode = computed(() => {
-    error.value = null
-
-    if (!jsonInput.value.trim()) {
-      return ''
-    }
-
-    try {
-      const parsed = JSON.parse(jsonInput.value) as unknown
-      const langOptions = toLanguageOptions(language.value, options)
-      return generateCode(parsed, language.value, langOptions)
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to parse JSON'
-      return ''
-    }
+    const result = tryGenerateCode(jsonInput.value, language.value, options)
+    error.value = result.error
+    return result.code
   })
 
-  // Selected language info
   const selectedLanguageInfo = computed(() => LANGUAGE_INFO[language.value])
-
-  // Editor mode for syntax highlighting
   const editorMode = computed(() => selectedLanguageInfo.value.editorMode)
 
-  // Reset options to defaults
   const resetOptions = () => {
     Object.assign(options, getDefaultUnifiedOptions())
   }
 
   return {
-    // State
     language,
     options,
     error,
-
-    // Computed
     generatedCode,
     selectedLanguageInfo,
     editorMode,
-
-    // Actions
     resetOptions,
-
-    // Constants
     LANGUAGE_OPTIONS,
   }
 }

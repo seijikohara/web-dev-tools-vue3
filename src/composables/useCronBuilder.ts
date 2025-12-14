@@ -224,71 +224,87 @@ export const useCronBuilder = () => {
     { deep: true, immediate: true },
   )
 
+  // Pure helper functions for human readable description
+  const describeSeconds = (sec: CronField, enabled: boolean): string | null => {
+    if (!enabled) return null
+    const typeMap: Record<string, () => string | null> = {
+      every: () => 'Every second',
+      step: () => `Every ${sec.stepValue} seconds`,
+      specific: () => (sec.values.length > 0 ? `At second ${sec.values.join(', ')}` : null),
+      range: () => `Seconds ${sec.rangeStart}-${sec.rangeEnd}`,
+    }
+    return typeMap[sec.type]?.() ?? null
+  }
+
+  const describeMinutes = (min: CronField, sec: CronField, usesSec: boolean): string | null => {
+    const typeMap: Record<string, () => string | null> = {
+      every: () => (!usesSec || sec.type !== 'every' ? 'Every minute' : null),
+      step: () => `Every ${min.stepValue} minutes`,
+      specific: () => (min.values.length > 0 ? `At minute ${min.values.join(', ')}` : null),
+      range: () => `Minutes ${min.rangeStart}-${min.rangeEnd}`,
+    }
+    return typeMap[min.type]?.() ?? null
+  }
+
+  const describeHours = (hr: CronField): string | null => {
+    const typeMap: Record<string, () => string | null> = {
+      step: () => `every ${hr.stepValue} hours`,
+      specific: () => (hr.values.length > 0 ? `at hour ${hr.values.join(', ')}` : null),
+      range: () => `hours ${hr.rangeStart}-${hr.rangeEnd}`,
+    }
+    return typeMap[hr.type]?.() ?? null
+  }
+
+  const describeDayOfMonth = (dom: CronField): string | null => {
+    const typeMap: Record<string, () => string | null> = {
+      specific: () =>
+        dom.values.length > 0 ? `on day ${dom.values.join(', ')} of the month` : null,
+      range: () => `days ${dom.rangeStart}-${dom.rangeEnd} of the month`,
+      step: () => `every ${dom.stepValue} days`,
+    }
+    return typeMap[dom.type]?.() ?? null
+  }
+
+  const describeMonth = (mon: CronField): string | null => {
+    if (mon.type === 'specific' && mon.values.length > 0) {
+      const monthLabels = mon.values
+        .map((v: number) => MONTH_NAMES.find(m => m.value === v)?.label ?? v.toString())
+        .join(', ')
+      return `in ${monthLabels}`
+    }
+    if (mon.type === 'range') {
+      const startMonth = MONTH_NAMES.find(m => m.value === mon.rangeStart)?.label
+      const endMonth = MONTH_NAMES.find(m => m.value === mon.rangeEnd)?.label
+      return `from ${startMonth} to ${endMonth}`
+    }
+    return null
+  }
+
+  const describeDayOfWeek = (dow: CronField): string | null => {
+    if (dow.type === 'specific' && dow.values.length > 0) {
+      const dayLabels = dow.values
+        .map((v: number) => DAY_NAMES.find(d => d.value === v)?.label ?? v.toString())
+        .join(', ')
+      return `on ${dayLabels}`
+    }
+    if (dow.type === 'range') {
+      const startDay = DAY_NAMES.find(d => d.value === dow.rangeStart)?.label
+      const endDay = DAY_NAMES.find(d => d.value === dow.rangeEnd)?.label
+      return `from ${startDay} to ${endDay}`
+    }
+    return null
+  }
+
   // Human readable description
   const humanReadable = computed(() => {
-    const parts: string[] = []
-
-    if (useSeconds.value) {
-      if (seconds.value.type === 'every') {
-        parts.push('Every second')
-      } else if (seconds.value.type === 'step') {
-        parts.push(`Every ${seconds.value.stepValue} seconds`)
-      } else if (seconds.value.type === 'specific' && seconds.value.values.length > 0) {
-        parts.push(`At second ${seconds.value.values.join(', ')}`)
-      } else if (seconds.value.type === 'range') {
-        parts.push(`Seconds ${seconds.value.rangeStart}-${seconds.value.rangeEnd}`)
-      }
-    }
-
-    if (minutes.value.type === 'every') {
-      if (!useSeconds.value || seconds.value.type !== 'every') {
-        parts.push('Every minute')
-      }
-    } else if (minutes.value.type === 'step') {
-      parts.push(`Every ${minutes.value.stepValue} minutes`)
-    } else if (minutes.value.type === 'specific' && minutes.value.values.length > 0) {
-      parts.push(`At minute ${minutes.value.values.join(', ')}`)
-    } else if (minutes.value.type === 'range') {
-      parts.push(`Minutes ${minutes.value.rangeStart}-${minutes.value.rangeEnd}`)
-    }
-
-    if (hours.value.type === 'step') {
-      parts.push(`every ${hours.value.stepValue} hours`)
-    } else if (hours.value.type === 'specific' && hours.value.values.length > 0) {
-      parts.push(`at hour ${hours.value.values.join(', ')}`)
-    } else if (hours.value.type === 'range') {
-      parts.push(`hours ${hours.value.rangeStart}-${hours.value.rangeEnd}`)
-    }
-
-    if (dayOfMonth.value.type === 'specific' && dayOfMonth.value.values.length > 0) {
-      parts.push(`on day ${dayOfMonth.value.values.join(', ')} of the month`)
-    } else if (dayOfMonth.value.type === 'range') {
-      parts.push(`days ${dayOfMonth.value.rangeStart}-${dayOfMonth.value.rangeEnd} of the month`)
-    } else if (dayOfMonth.value.type === 'step') {
-      parts.push(`every ${dayOfMonth.value.stepValue} days`)
-    }
-
-    if (month.value.type === 'specific' && month.value.values.length > 0) {
-      const monthLabels = month.value.values.map(
-        v => MONTH_NAMES.find(m => m.value === v)?.label ?? v.toString(),
-      )
-      parts.push(`in ${monthLabels.join(', ')}`)
-    } else if (month.value.type === 'range') {
-      const startMonth = MONTH_NAMES.find(m => m.value === month.value.rangeStart)?.label
-      const endMonth = MONTH_NAMES.find(m => m.value === month.value.rangeEnd)?.label
-      parts.push(`from ${startMonth} to ${endMonth}`)
-    }
-
-    if (dayOfWeek.value.type === 'specific' && dayOfWeek.value.values.length > 0) {
-      const dayLabels = dayOfWeek.value.values.map(
-        v => DAY_NAMES.find(d => d.value === v)?.label ?? v.toString(),
-      )
-      parts.push(`on ${dayLabels.join(', ')}`)
-    } else if (dayOfWeek.value.type === 'range') {
-      const startDay = DAY_NAMES.find(d => d.value === dayOfWeek.value.rangeStart)?.label
-      const endDay = DAY_NAMES.find(d => d.value === dayOfWeek.value.rangeEnd)?.label
-      parts.push(`from ${startDay} to ${endDay}`)
-    }
+    const parts = [
+      describeSeconds(seconds.value, useSeconds.value),
+      describeMinutes(minutes.value, seconds.value, useSeconds.value),
+      describeHours(hours.value),
+      describeDayOfMonth(dayOfMonth.value),
+      describeMonth(month.value),
+      describeDayOfWeek(dayOfWeek.value),
+    ].filter((part): part is string => part !== null)
 
     return parts.length > 0 ? parts.join(', ') : 'Every minute'
   })

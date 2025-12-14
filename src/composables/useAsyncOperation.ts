@@ -35,6 +35,16 @@ export interface UseAsyncOperationReturn<T> {
 }
 
 /**
+ * Pure function: Convert unknown error to Error instance
+ */
+const toError = (e: unknown): Error => (e instanceof Error ? e : new Error(String(e)))
+
+/**
+ * Pure function: Extract error message from Error or use fallback
+ */
+const getErrorMessage = (err: Error, fallback?: string): string => fallback ?? err.message
+
+/**
  * Composable for handling async operations with loading and error states
  *
  * @example
@@ -64,9 +74,6 @@ export const useAsyncOperation = <T>(): UseAsyncOperationReturn<T> => {
   const error = ref<string | null>(null)
   const hasExecuted = ref(false)
 
-  /**
-   * Execute an async operation with automatic loading and error handling
-   */
   const execute = async (
     operation: () => Promise<T>,
     options: AsyncOperationOptions = {},
@@ -83,8 +90,8 @@ export const useAsyncOperation = <T>(): UseAsyncOperationReturn<T> => {
       onSuccess?.()
       return result
     } catch (e) {
-      const err = e instanceof Error ? e : new Error(String(e))
-      error.value = errorMessage ?? err.message
+      const err = toError(e)
+      error.value = getErrorMessage(err, errorMessage)
       onError?.(err)
       return null
     } finally {
@@ -93,9 +100,6 @@ export const useAsyncOperation = <T>(): UseAsyncOperationReturn<T> => {
     }
   }
 
-  /**
-   * Reset the state to initial values
-   */
   const reset = () => {
     data.value = null
     isLoading.value = false
@@ -103,9 +107,6 @@ export const useAsyncOperation = <T>(): UseAsyncOperationReturn<T> => {
     hasExecuted.value = false
   }
 
-  /**
-   * Clear the error state
-   */
   const clearError = () => {
     error.value = null
   }
@@ -120,6 +121,33 @@ export const useAsyncOperation = <T>(): UseAsyncOperationReturn<T> => {
     clearError,
   }
 }
+
+/**
+ * Pure function: Check if any operation is loading
+ */
+const checkAnyLoading = (operations: Record<string, UseAsyncOperationReturn<unknown>>): boolean =>
+  Object.values(operations).some(op => op.isLoading.value)
+
+/**
+ * Pure function: Check if any operation has error
+ */
+const checkAnyError = (operations: Record<string, UseAsyncOperationReturn<unknown>>): boolean =>
+  Object.values(operations).some(op => op.error.value !== null)
+
+/**
+ * Pure function: Create proxied operation with state update callbacks
+ */
+const createProxiedOperation = <T>(
+  op: UseAsyncOperationReturn<T>,
+  onStateChange: () => void,
+): UseAsyncOperationReturn<T> => ({
+  ...op,
+  execute: async (...args: Parameters<typeof op.execute>) => {
+    const result = await op.execute(...args)
+    onStateChange()
+    return result
+  },
+})
 
 /**
  * Create multiple async operations with shared loading state
@@ -145,32 +173,16 @@ export const useMultipleAsyncOperations = <
   const isAnyLoading = ref(false)
   const hasAnyError = ref(false)
 
-  // Watch for loading state changes
-  const checkLoadingState = () => {
-    isAnyLoading.value = Object.values(operations).some(op => op.isLoading.value)
+  const updateSharedState = () => {
+    isAnyLoading.value = checkAnyLoading(operations)
+    hasAnyError.value = checkAnyError(operations)
   }
 
-  const checkErrorState = () => {
-    hasAnyError.value = Object.values(operations).some(op => op.error.value !== null)
-  }
-
-  // Create proxied operations that update shared state
   const proxiedOperations = Object.fromEntries(
-    Object.entries(operations).map(([key, op]) => {
-      const originalExecute = op.execute
-      return [
-        key,
-        {
-          ...op,
-          execute: async (...args: Parameters<typeof originalExecute>) => {
-            const result = await originalExecute(...args)
-            checkLoadingState()
-            checkErrorState()
-            return result
-          },
-        },
-      ]
-    }),
+    Object.entries(operations).map(([key, op]) => [
+      key,
+      createProxiedOperation(op, updateSharedState),
+    ]),
   ) as T
 
   const resetAll = () => {

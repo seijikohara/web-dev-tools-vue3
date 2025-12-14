@@ -1,33 +1,34 @@
 import type { CodeGenerator, SwiftOptions, JsonValue, TypeInfo } from './types'
 import { inferType, toCamelCase, generateWithNestedTypes } from './utils'
 
-export const defaultSwiftOptions: SwiftOptions = {
+export const defaultSwiftOptions = {
   rootName: 'Root',
   optionalProperties: false,
   useStruct: true,
   useCodingKeys: true,
   useOptionalProperties: false,
-}
+} as const satisfies SwiftOptions
 
 const swiftType = (typeInfo: TypeInfo): string => {
+  // Early return for arrays
   if (typeInfo.isArray && typeInfo.arrayItemType) {
     return `[${swiftType(typeInfo.arrayItemType)}]`
   }
+
+  // Early return for objects
   if (typeInfo.isObject) {
     return typeInfo.name
   }
-  switch (typeInfo.name) {
-    case 'string':
-      return 'String'
-    case 'number':
-      return 'Double'
-    case 'boolean':
-      return 'Bool'
-    case 'null':
-      return 'Any'
-    default:
-      return 'Any'
-  }
+
+  // Map primitive types
+  const primitiveTypeMap = {
+    string: 'String',
+    number: 'Double',
+    boolean: 'Bool',
+    null: 'Any',
+  } as const
+
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'Any'
 }
 
 // Build Swift property type with optional suffix
@@ -40,38 +41,56 @@ const buildSwiftPropType = (childType: TypeInfo, options: SwiftOptions): string 
 const generateCodingKey = (key: string, propName: string): string =>
   propName !== key ? `        case ${propName} = "${key}"` : `        case ${propName}`
 
-// Generate a single Swift struct/class definition
-const generateStructDefinitionSwift = (typeInfo: TypeInfo, options: SwiftOptions): string => {
-  if (!typeInfo.isObject || !typeInfo.children) return ''
+const buildPropertyDefinition = (
+  key: string,
+  childType: TypeInfo,
+  options: SwiftOptions,
+): string => {
+  const propName = toCamelCase(key)
+  const propType = buildSwiftPropType(childType, options)
+  return `    let ${propName}: ${propType}`
+}
 
-  const entries = Object.entries(typeInfo.children)
+const buildCodingKeysEnum = (entries: [string, TypeInfo][], options: SwiftOptions): string => {
+  const needsCodingKeys = entries.some(([key]) => toCamelCase(key) !== key)
 
-  const properties = entries.map(([key, childType]) => {
-    const propName = toCamelCase(key)
-    const propType = buildSwiftPropType(childType, options)
-    return `    let ${propName}: ${propType}`
-  })
+  if (!options.useCodingKeys || !needsCodingKeys) return ''
 
   const codingKeys = entries.map(([key]) => {
     const propName = toCamelCase(key)
     return generateCodingKey(key, propName)
   })
 
-  const needsCodingKeys = entries.some(([key]) => toCamelCase(key) !== key)
+  return `
+
+    enum CodingKeys: String, CodingKey {
+${codingKeys.join('\n')}
+    }`
+}
+
+// Generate a single Swift struct/class definition
+const generateStructDefinitionSwift = (typeInfo: TypeInfo, options: SwiftOptions): string => {
+  // Early return for non-objects
+  if (!typeInfo.isObject || !typeInfo.children) return ''
+
+  const entries = Object.entries(typeInfo.children)
+
+  const properties = entries.map(([key, childType]) =>
+    buildPropertyDefinition(key, childType, options),
+  )
 
   const keyword = options.useStruct ? 'struct' : 'class'
   const codable = options.useStruct ? 'Codable' : 'Codable, Equatable'
 
   const propertiesSection = properties.join('\n')
-  const codingKeysSection =
-    options.useCodingKeys && needsCodingKeys
-      ? `\n\n    enum CodingKeys: String, CodingKey {\n${codingKeys.join('\n')}\n    }`
-      : ''
+  const codingKeysSection = buildCodingKeysEnum(entries, options)
 
-  return `${keyword} ${typeInfo.name}: ${codable} {\n${propertiesSection}${codingKeysSection}\n}`
+  return `${keyword} ${typeInfo.name}: ${codable} {
+${propertiesSection}${codingKeysSection}
+}`
 }
 
-export const swiftGenerator: CodeGenerator<SwiftOptions> = {
+export const swiftGenerator = {
   generate(data: unknown, options: SwiftOptions): string {
     const rootType = inferType(data as JsonValue, options.rootName)
     const structs = generateWithNestedTypes(rootType, typeInfo =>
@@ -83,4 +102,4 @@ export const swiftGenerator: CodeGenerator<SwiftOptions> = {
   getDefaultOptions(): SwiftOptions {
     return { ...defaultSwiftOptions }
   },
-}
+} as const satisfies CodeGenerator<SwiftOptions>

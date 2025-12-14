@@ -42,66 +42,101 @@ export interface JwtStats {
 
 // Pure functions
 export const base64UrlDecode = (str: string): string => {
+  // Early return for empty string
+  if (!str) {
+    throw new Error('Empty string cannot be decoded')
+  }
+
   // Replace URL-safe characters and add padding if necessary
   const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   const padding = base64.length % 4
-  const paddedBase64 = padding ? base64 + '='.repeat(4 - padding) : base64
+  const paddedBase64 = padding ? `${base64}${'='.repeat(4 - padding)}` : base64
+
   return decodeURIComponent(
     globalThis
       .atob(paddedBase64)
       .split('')
-      .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+      .map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
       .join(''),
   )
 }
 
 export const decodeJwt = (token: string): DecodedJwt => {
+  // Early return for empty or invalid token
+  if (!token.trim()) {
+    throw new Error('JWT token cannot be empty')
+  }
+
   const parts = token.trim().split('.')
-  if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+
+  // Early return for invalid format
+  if (parts.length !== 3) {
     throw new Error('Invalid JWT format: must have 3 parts separated by dots')
   }
 
-  try {
-    const header = JSON.parse(base64UrlDecode(parts[0])) as JwtHeader
-    const payload = JSON.parse(base64UrlDecode(parts[1])) as JwtPayload
-    const signature = parts[2]
+  const [headerPart, payloadPart, signaturePart] = parts
+  if (!headerPart || !payloadPart || !signaturePart) {
+    throw new Error('Invalid JWT format: all parts must be non-empty')
+  }
 
-    return { header, payload, signature }
-  } catch {
-    throw new Error('Failed to decode JWT: invalid Base64 or JSON')
+  try {
+    const header = JSON.parse(base64UrlDecode(headerPart)) as JwtHeader
+    const payload = JSON.parse(base64UrlDecode(payloadPart)) as JwtPayload
+
+    return { header, payload, signature: signaturePart }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to decode JWT: invalid Base64 or JSON'
+    throw new Error(message)
   }
 }
 
 export const formatTimestamp = (timestamp: number | undefined): string => {
-  if (!timestamp) return 'N/A'
+  // Early return for missing timestamp
+  if (!timestamp) {
+    return 'N/A'
+  }
+
   return dayjs.unix(timestamp).format('YYYY-MM-DD HH:mm:ss (Z)')
 }
+
+const TIME_UNITS = [
+  { seconds: 86400, label: 'days' },
+  { seconds: 3600, label: 'hours' },
+  { seconds: 60, label: 'minutes' },
+  { seconds: 1, label: 'seconds' },
+] as const
 
 export const calculateExpirationInfo = (exp: number): string => {
   const now = Date.now() / 1000
   const diff = exp - now
+  const isExpired = diff < 0
+  const absDiff = Math.abs(diff)
 
-  if (diff < 0) {
-    const absDiff = Math.abs(diff)
-    if (absDiff < 60) return `Expired ${Math.floor(absDiff)} seconds ago`
-    if (absDiff < 3600) return `Expired ${Math.floor(absDiff / 60)} minutes ago`
-    if (absDiff < 86400) return `Expired ${Math.floor(absDiff / 3600)} hours ago`
-    return `Expired ${Math.floor(absDiff / 86400)} days ago`
-  } else {
-    if (diff < 60) return `Expires in ${Math.floor(diff)} seconds`
-    if (diff < 3600) return `Expires in ${Math.floor(diff / 60)} minutes`
-    if (diff < 86400) return `Expires in ${Math.floor(diff / 3600)} hours`
-    return `Expires in ${Math.floor(diff / 86400)} days`
-  }
+  // Default fallback unit (smallest unit)
+  const defaultUnit = { seconds: 1, label: 'seconds' } as const
+  // Find the appropriate time unit using method chaining
+  const unit = TIME_UNITS.find(u => absDiff >= u.seconds) ?? defaultUnit
+  const value = Math.floor(absDiff / unit.seconds)
+
+  return isExpired ? `Expired ${value} ${unit.label} ago` : `Expires in ${value} ${unit.label}`
 }
 
 export const isTokenExpired = (exp: number | undefined): boolean | null => {
-  if (!exp) return null
+  // Early return for missing expiration
+  if (!exp) {
+    return null
+  }
+
   return Date.now() / 1000 > exp
 }
 
 export const getJwtStats = (token: string): JwtStats | null => {
-  if (!token) return null
+  // Early return for empty token
+  if (!token) {
+    return null
+  }
+
   const parts = token.trim().split('.')
   return {
     length: token.length,
@@ -110,53 +145,60 @@ export const getJwtStats = (token: string): JwtStats | null => {
   }
 }
 
-export const buildStandardClaims = (payload: JwtPayload): StandardClaim[] => [
+const STANDARD_CLAIM_DEFINITIONS = [
   {
     key: 'iss',
     name: 'Issuer',
     description: 'Who issued the token',
-    value: payload.iss,
+    getValue: (payload: JwtPayload) => payload.iss,
   },
   {
     key: 'sub',
     name: 'Subject',
     description: 'Who the token is about',
-    value: payload.sub,
+    getValue: (payload: JwtPayload) => payload.sub,
   },
   {
     key: 'aud',
     name: 'Audience',
     description: 'Who the token is intended for',
-    value: Array.isArray(payload.aud) ? payload.aud.join(', ') : payload.aud,
+    getValue: (payload: JwtPayload) =>
+      Array.isArray(payload.aud) ? payload.aud.join(', ') : payload.aud,
   },
   {
     key: 'exp',
     name: 'Expiration Time',
     description: 'When the token expires',
-    value: formatTimestamp(payload.exp),
+    getValue: (payload: JwtPayload) => formatTimestamp(payload.exp),
     isTime: true,
   },
   {
     key: 'nbf',
     name: 'Not Before',
     description: 'When the token becomes valid',
-    value: formatTimestamp(payload.nbf),
+    getValue: (payload: JwtPayload) => formatTimestamp(payload.nbf),
     isTime: true,
   },
   {
     key: 'iat',
     name: 'Issued At',
     description: 'When the token was issued',
-    value: formatTimestamp(payload.iat),
+    getValue: (payload: JwtPayload) => formatTimestamp(payload.iat),
     isTime: true,
   },
   {
     key: 'jti',
     name: 'JWT ID',
     description: 'Unique identifier for the token',
-    value: payload.jti,
+    getValue: (payload: JwtPayload) => payload.jti,
   },
-]
+] as const
+
+export const buildStandardClaims = (payload: JwtPayload): StandardClaim[] =>
+  STANDARD_CLAIM_DEFINITIONS.map(({ getValue, ...rest }) => ({
+    ...rest,
+    value: getValue(payload),
+  }))
 
 // Sample JWT for demo
 export const SAMPLE_JWT =
@@ -174,7 +216,10 @@ export const useJwtDecoder = () => {
     error.value = ''
     decodedJwt.value = null
 
-    if (!newValue.trim()) return
+    // Early return for empty input
+    if (!newValue.trim()) {
+      return
+    }
 
     try {
       decodedJwt.value = decodeJwt(newValue)
@@ -185,20 +230,22 @@ export const useJwtDecoder = () => {
 
   // Computed
   const headerJson = computed(() =>
-    decodedJwt.value ? JSON.stringify(decodedJwt.value.header, null, 2) : '',
+    decodedJwt.value?.header ? JSON.stringify(decodedJwt.value.header, null, 2) : '',
   )
 
   const payloadJson = computed(() =>
-    decodedJwt.value ? JSON.stringify(decodedJwt.value.payload, null, 2) : '',
+    decodedJwt.value?.payload ? JSON.stringify(decodedJwt.value.payload, null, 2) : '',
   )
 
-  const isExpired = computed(() =>
-    decodedJwt.value ? isTokenExpired(decodedJwt.value.payload.exp) : null,
-  )
+  const isExpired = computed(() => isTokenExpired(decodedJwt.value?.payload.exp))
 
   const expirationInfo = computed(() => {
-    if (!decodedJwt.value?.payload.exp) return null
-    return calculateExpirationInfo(decodedJwt.value.payload.exp)
+    const exp = decodedJwt.value?.payload.exp
+    // Early return for missing expiration
+    if (!exp) {
+      return null
+    }
+    return calculateExpirationInfo(exp)
   })
 
   const standardClaims = computed(() =>
@@ -213,9 +260,7 @@ export const useJwtDecoder = () => {
 
   const isDecoded = computed(() => decodedJwt.value !== null)
 
-  const claimsCount = computed(() =>
-    decodedJwt.value ? Object.keys(decodedJwt.value.payload).length : 0,
-  )
+  const claimsCount = computed(() => Object.keys(decodedJwt.value?.payload ?? {}).length)
 
   // Actions
   const loadSample = () => {

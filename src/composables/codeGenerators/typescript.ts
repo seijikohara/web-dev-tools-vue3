@@ -1,62 +1,79 @@
 import type { CodeGenerator, TypeScriptOptions, JsonValue, TypeInfo } from './types'
 import { inferType, generateWithNestedTypes } from './utils'
 
-export const defaultTypeScriptOptions: TypeScriptOptions = {
+export const defaultTypeScriptOptions = {
   rootName: 'Root',
   optionalProperties: false,
   useInterface: true,
   useExport: true,
   useReadonly: false,
   strictNullChecks: true,
-}
+} as const satisfies TypeScriptOptions
 
 const tsType = (typeInfo: TypeInfo, options: TypeScriptOptions): string => {
+  // Early return for arrays
   if (typeInfo.isArray && typeInfo.arrayItemType) {
     return `${tsType(typeInfo.arrayItemType, options)}[]`
   }
+
+  // Early return for objects
   if (typeInfo.isObject) {
     return typeInfo.name
   }
-  switch (typeInfo.name) {
-    case 'string':
-      return 'string'
-    case 'number':
-      return 'number'
-    case 'boolean':
-      return 'boolean'
-    case 'null':
-      return options.strictNullChecks ? 'null' : 'any'
-    default:
-      return 'unknown'
-  }
+
+  // Map primitive types
+  const primitiveTypeMap = {
+    string: 'string',
+    number: 'number',
+    boolean: 'boolean',
+    null: options.strictNullChecks ? 'null' : 'any',
+  } as const
+
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'unknown'
+}
+
+const buildPropertyType = (childType: TypeInfo, options: TypeScriptOptions): string => {
+  const baseType = tsType(childType, options)
+  return options.optionalProperties && options.strictNullChecks
+    ? `${baseType} | undefined`
+    : baseType
+}
+
+const buildPropertyName = (key: string): string =>
+  /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key) ? key : `'${key}'`
+
+const buildPropertySignature = (
+  key: string,
+  childType: TypeInfo,
+  options: TypeScriptOptions,
+): string => {
+  const propType = buildPropertyType(childType, options)
+  const readonly = options.useReadonly ? 'readonly ' : ''
+  const optional = options.optionalProperties ? '?' : ''
+  const displayName = buildPropertyName(key)
+
+  return `  ${readonly}${displayName}${optional}: ${propType};`
 }
 
 // Generate a single TypeScript type/interface definition
 const generateTypeDefinition = (typeInfo: TypeInfo, options: TypeScriptOptions): string => {
+  // Early return for non-objects
   if (!typeInfo.isObject || !typeInfo.children) return ''
 
-  const properties = Object.entries(typeInfo.children).map(([key, childType]) => {
-    const baseType = tsType(childType, options)
-    const propType =
-      options.optionalProperties && options.strictNullChecks ? `${baseType} | undefined` : baseType
-
-    const readonly = options.useReadonly ? 'readonly ' : ''
-    const optional = options.optionalProperties ? '?' : ''
-
-    // Use original key if it contains special characters
-    const displayName = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key) ? key : `'${key}'`
-
-    return `  ${readonly}${displayName}${optional}: ${propType};`
-  })
+  const properties = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildPropertySignature(key, childType, options),
+  )
 
   const keyword = options.useInterface ? 'interface' : 'type'
   const exportKeyword = options.useExport ? 'export ' : ''
   const assignment = options.useInterface ? '' : ' ='
 
-  return `${exportKeyword}${keyword} ${typeInfo.name}${assignment} {\n${properties.join('\n')}\n}`
+  return `${exportKeyword}${keyword} ${typeInfo.name}${assignment} {
+${properties.join('\n')}
+}`
 }
 
-export const typeScriptGenerator: CodeGenerator<TypeScriptOptions> = {
+export const typeScriptGenerator = {
   generate(data: unknown, options: TypeScriptOptions): string {
     const rootType = inferType(data as JsonValue, options.rootName)
     const definitions = generateWithNestedTypes(rootType, typeInfo =>
@@ -68,4 +85,4 @@ export const typeScriptGenerator: CodeGenerator<TypeScriptOptions> = {
   getDefaultOptions(): TypeScriptOptions {
     return { ...defaultTypeScriptOptions }
   },
-}
+} as const satisfies CodeGenerator<TypeScriptOptions>

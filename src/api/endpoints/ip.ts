@@ -26,15 +26,11 @@ export interface HttpHeaders {
 /**
  * Fetch client IP address information
  */
-export const getIpAddress = async (): Promise<IpInfo> => {
-  const { data } = await apiClient.get<IpInfo>('ip')
-  return data
-}
+export const getIpAddress = async (): Promise<IpInfo> =>
+  apiClient.get<IpInfo>('ip').then(({ data }) => data)
 
 /**
  * Fetch client HTTP headers
  */
-export const getHttpHeaders = async (): Promise<HttpHeaders> => {
-  const { data } = await apiClient.get<HttpHeaders>('http-headers')
-  return data
-}
+export const getHttpHeaders = async (): Promise<HttpHeaders> =>
+  apiClient.get<HttpHeaders>('http-headers').then(({ data }) => data)
