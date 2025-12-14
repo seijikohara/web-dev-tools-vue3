@@ -493,12 +493,14 @@ const compareJsonDiff = computed((): DiffItem[] => {
 const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
   // Type mismatch - early return
   if (typeof obj1 !== typeof obj2) {
-    return [{
-      path,
-      type: 'changed',
-      oldValue: JSON.stringify(obj1),
-      newValue: JSON.stringify(obj2),
-    }]
+    return [
+      {
+        path,
+        type: 'changed',
+        oldValue: JSON.stringify(obj1),
+        newValue: JSON.stringify(obj2),
+      },
+    ]
   }
 
   // Array comparison
@@ -506,30 +508,29 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
     const maxLen = Math.max(obj1.length, obj2.length)
     return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
       if (i >= obj1.length) {
-        return [{
-          path: `${path}[${i}]`,
-          type: 'added' as const,
-          newValue: JSON.stringify(obj2[i]),
-        }]
+        return [
+          {
+            path: `${path}[${i}]`,
+            type: 'added' as const,
+            newValue: JSON.stringify(obj2[i]),
+          },
+        ]
       }
       if (i >= obj2.length) {
-        return [{
-          path: `${path}[${i}]`,
-          type: 'removed' as const,
-          oldValue: JSON.stringify(obj1[i]),
-        }]
+        return [
+          {
+            path: `${path}[${i}]`,
+            type: 'removed' as const,
+            oldValue: JSON.stringify(obj1[i]),
+          },
+        ]
       }
       return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
     })
   }
 
   // Object comparison
-  if (
-    obj1 !== null &&
-    obj2 !== null &&
-    typeof obj1 === 'object' &&
-    typeof obj2 === 'object'
-  ) {
+  if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
     const keys1 = Object.keys(obj1)
     const keys2 = Object.keys(obj2)
     const allKeys = [...new Set([...keys1, ...keys2])]
@@ -537,18 +538,22 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
     return allKeys.flatMap(key => {
       const newPath = `${path}.${key}`
       if (!(key in obj1)) {
-        return [{
-          path: newPath,
-          type: 'added' as const,
-          newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
-        }]
+        return [
+          {
+            path: newPath,
+            type: 'added' as const,
+            newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
+          },
+        ]
       }
       if (!(key in obj2)) {
-        return [{
-          path: newPath,
-          type: 'removed' as const,
-          oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
-        }]
+        return [
+          {
+            path: newPath,
+            type: 'removed' as const,
+            oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+          },
+        ]
       }
       return findDifferences(
         (obj1 as Record<string, unknown>)[key],
@@ -560,12 +565,14 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
 
   // Primitive comparison
   if (obj1 !== obj2) {
-    return [{
-      path,
-      type: 'changed',
-      oldValue: JSON.stringify(obj1),
-      newValue: JSON.stringify(obj2),
-    }]
+    return [
+      {
+        path,
+        type: 'changed',
+        oldValue: JSON.stringify(obj1),
+        newValue: JSON.stringify(obj2),
+      },
+    ]
   }
 
   return []

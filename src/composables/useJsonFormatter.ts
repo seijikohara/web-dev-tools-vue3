@@ -107,10 +107,12 @@ function createJsonFormatterState() {
    * Pure function: Compute indent string from options
    */
   const getIndentString = (): string =>
-    state.indentType === 'tabs' ? '\t'.repeat(state.indentSize > 0 ? 1 : 0) : ' '.repeat(state.indentSize)
+    state.indentType === 'tabs'
+      ? '\t'.repeat(state.indentSize > 0 ? 1 : 0)
+      : ' '.repeat(state.indentSize)
 
   // Calculate JSON statistics using pure recursive approach
-  const calculateJsonStats = (obj: unknown, depth = 0): JsonStats => {
+  const calculateJsonStats = (obj: unknown, _depth = 0): JsonStats => {
     interface TraverseResult {
       keys: number
       values: number
@@ -257,13 +259,14 @@ function createJsonFormatterState() {
    * Pure transformation functions for JSON post-processing
    */
   const escapeUnicodeTransform = (s: string): string =>
-    s.replace(/[\u0080-\uFFFF]/g, char =>
-      `\\u${('0000' + char.charCodeAt(0).toString(16)).slice(-4)}`
+    s.replace(
+      /[\u0080-\uFFFF]/g,
+      char => `\\u${('0000' + char.charCodeAt(0).toString(16)).slice(-4)}`,
     )
 
   const singleQuoteTransform = (s: string): string =>
     s.replace(/"([^"\\]*)"/g, (match, content: string) =>
-      content.includes("'") ? match : `'${content}'`
+      content.includes("'") ? match : `'${content}'`,
     )
 
   const arrayBracketSpacingTransform = (s: string): string =>
@@ -277,8 +280,7 @@ function createJsonFormatterState() {
   const compactArraysTransform = (s: string): string =>
     s.replace(
       /\[\s*\n(\s*)((?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null)(?:,\s*\n\s*(?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null))*)\s*\n\s*\]/g,
-      (_, _indent, content: string) =>
-        `[${content.split(/,\s*\n\s*/).join(', ')}]`
+      (_, _indent, content: string) => `[${content.split(/,\s*\n\s*/).join(', ')}]`,
     )
 
   const trailingCommaTransform = (s: string): string => s.replace(/([}\]])\n(\s*[}\]])/g, '$1,\n$2')
@@ -490,12 +492,14 @@ export function useJsonCompare(inputRef: Ref<string>) {
   const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
     // Type mismatch - early return
     if (typeof obj1 !== typeof obj2) {
-      return [{
-        path,
-        type: 'changed',
-        oldValue: JSON.stringify(obj1),
-        newValue: JSON.stringify(obj2),
-      }]
+      return [
+        {
+          path,
+          type: 'changed',
+          oldValue: JSON.stringify(obj1),
+          newValue: JSON.stringify(obj2),
+        },
+      ]
     }
 
     // Array comparison
@@ -503,30 +507,29 @@ export function useJsonCompare(inputRef: Ref<string>) {
       const maxLen = Math.max(obj1.length, obj2.length)
       return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
         if (i >= obj1.length) {
-          return [{
-            path: `${path}[${i}]`,
-            type: 'added' as const,
-            newValue: JSON.stringify(obj2[i]),
-          }]
+          return [
+            {
+              path: `${path}[${i}]`,
+              type: 'added' as const,
+              newValue: JSON.stringify(obj2[i]),
+            },
+          ]
         }
         if (i >= obj2.length) {
-          return [{
-            path: `${path}[${i}]`,
-            type: 'removed' as const,
-            oldValue: JSON.stringify(obj1[i]),
-          }]
+          return [
+            {
+              path: `${path}[${i}]`,
+              type: 'removed' as const,
+              oldValue: JSON.stringify(obj1[i]),
+            },
+          ]
         }
         return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
       })
     }
 
     // Object comparison
-    if (
-      obj1 !== null &&
-      obj2 !== null &&
-      typeof obj1 === 'object' &&
-      typeof obj2 === 'object'
-    ) {
+    if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
       const keys1 = Object.keys(obj1)
       const keys2 = Object.keys(obj2)
       const allKeys = [...new Set([...keys1, ...keys2])]
@@ -534,18 +537,22 @@ export function useJsonCompare(inputRef: Ref<string>) {
       return allKeys.flatMap(key => {
         const newPath = `${path}.${key}`
         if (!(key in obj1)) {
-          return [{
-            path: newPath,
-            type: 'added' as const,
-            newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
-          }]
+          return [
+            {
+              path: newPath,
+              type: 'added' as const,
+              newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
+            },
+          ]
         }
         if (!(key in obj2)) {
-          return [{
-            path: newPath,
-            type: 'removed' as const,
-            oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
-          }]
+          return [
+            {
+              path: newPath,
+              type: 'removed' as const,
+              oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+            },
+          ]
         }
         return findDifferences(
           (obj1 as Record<string, unknown>)[key],
@@ -557,12 +564,14 @@ export function useJsonCompare(inputRef: Ref<string>) {
 
     // Primitive comparison
     if (obj1 !== obj2) {
-      return [{
-        path,
-        type: 'changed',
-        oldValue: JSON.stringify(obj1),
-        newValue: JSON.stringify(obj2),
-      }]
+      return [
+        {
+          path,
+          type: 'changed',
+          oldValue: JSON.stringify(obj1),
+          newValue: JSON.stringify(obj2),
+        },
+      ]
     }
 
     return []

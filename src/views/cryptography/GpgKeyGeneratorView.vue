@@ -141,7 +141,7 @@ const userId = computed(() =>
     `<${state.email.trim()}>`,
   ]
     .filter(Boolean)
-    .join(' ')
+    .join(' '),
 )
 
 // Generate GPG command

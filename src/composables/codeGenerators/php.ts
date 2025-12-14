@@ -29,7 +29,7 @@ const phpType = (typeInfo: TypeInfo): string => {
     null: 'mixed',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'mixed'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'mixed'
 }
 
 // Build PHP property type with optional prefix
@@ -57,10 +57,9 @@ const generatePromotedClassPhp = (typeInfo: TypeInfo, options: PhpOptions): stri
   if (!typeInfo.children) return ''
 
   const entries = Object.entries(typeInfo.children)
-  const properties = entries
-    .map(([key, childType], index) =>
-      buildPromotedProperty(key, childType, options, index === entries.length - 1)
-    )
+  const properties = entries.map(([key, childType], index) =>
+    buildPromotedProperty(key, childType, options, index === entries.length - 1),
+  )
 
   return `class ${typeInfo.name}
 {
@@ -99,14 +98,15 @@ const generateTraditionalClassPhp = (typeInfo: TypeInfo, options: PhpOptions): s
 
   const entries = Object.entries(typeInfo.children)
 
-  const properties = entries
-    .map(([key, childType]) => buildTraditionalProperty(key, childType, options))
+  const properties = entries.map(([key, childType]) =>
+    buildTraditionalProperty(key, childType, options),
+  )
 
-  const constructorParams = entries
-    .map(([key, childType]) => buildConstructorParam(key, childType, options))
+  const constructorParams = entries.map(([key, childType]) =>
+    buildConstructorParam(key, childType, options),
+  )
 
-  const constructorAssignments = entries
-    .map(([key]) => buildConstructorAssignment(key))
+  const constructorAssignments = entries.map(([key]) => buildConstructorAssignment(key))
 
   const constructor = `    public function __construct(
         ${constructorParams.join(`,
@@ -133,12 +133,11 @@ const generateClassDefinitionPhp = (typeInfo: TypeInfo, options: PhpOptions): st
     : generateTraditionalClassPhp(typeInfo, options)
 }
 
-const buildHeader = (options: PhpOptions): string[] =>
-  [
-    '<?php',
-    ...(options.useStrictTypes ? ['', 'declare(strict_types=1);'] : []),
-    ...(options.namespace ? ['', `namespace ${options.namespace};`] : []),
-  ]
+const buildHeader = (options: PhpOptions): string[] => [
+  '<?php',
+  ...(options.useStrictTypes ? ['', 'declare(strict_types=1);'] : []),
+  ...(options.namespace ? ['', `namespace ${options.namespace};`] : []),
+]
 
 export const phpGenerator = {
   generate(data: unknown, options: PhpOptions): string {

@@ -30,7 +30,7 @@ const csharpType = (typeInfo: TypeInfo, options: CSharpOptions): string => {
     null: 'object',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'object'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'object'
 }
 
 // Build property type with nullable suffix
@@ -68,11 +68,14 @@ const generateRecordDefinition = (typeInfo: TypeInfo, options: CSharpOptions): s
   // Early return for non-objects
   if (!typeInfo.children) return ''
 
-  const properties = Object.entries(typeInfo.children)
-    .map(([key, childType]) => buildRecordProperty(key, childType, options))
+  const properties = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildRecordProperty(key, childType, options),
+  )
 
-  const dataContractAttr = options.generateDataContract ? `[DataContract]
-` : ''
+  const dataContractAttr = options.generateDataContract
+    ? `[DataContract]
+`
+    : ''
   return `${dataContractAttr}public record ${typeInfo.name}(
 ${properties.join(',\n')}
 );`
@@ -91,11 +94,14 @@ const generateClassDefinitionCSharp = (typeInfo: TypeInfo, options: CSharpOption
   // Early return for non-objects
   if (!typeInfo.children) return ''
 
-  const properties = Object.entries(typeInfo.children)
-    .map(([key, childType]) => buildClassProperty(key, childType, options))
+  const properties = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildClassProperty(key, childType, options),
+  )
 
-  const dataContractAttr = options.generateDataContract ? `[DataContract]
-` : ''
+  const dataContractAttr = options.generateDataContract
+    ? `[DataContract]
+`
+    : ''
   return `${dataContractAttr}public class ${typeInfo.name}
 {
 ${properties.join('\n\n')}

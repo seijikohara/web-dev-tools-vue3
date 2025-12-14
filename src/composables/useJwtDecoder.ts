@@ -63,7 +63,7 @@ export const base64UrlDecode = (str: string): string => {
 
 export const decodeJwt = (token: string): DecodedJwt => {
   // Early return for empty or invalid token
-  if (!token?.trim()) {
+  if (!token.trim()) {
     throw new Error('JWT token cannot be empty')
   }
 
@@ -113,8 +113,10 @@ export const calculateExpirationInfo = (exp: number): string => {
   const isExpired = diff < 0
   const absDiff = Math.abs(diff)
 
+  // Default fallback unit (smallest unit)
+  const defaultUnit = { seconds: 1, label: 'seconds' } as const
   // Find the appropriate time unit using method chaining
-  const unit = TIME_UNITS.find(u => absDiff >= u.seconds) ?? TIME_UNITS[TIME_UNITS.length - 1]!
+  const unit = TIME_UNITS.find(u => absDiff >= u.seconds) ?? defaultUnit
   const value = Math.floor(absDiff / unit.seconds)
 
   return isExpired ? `Expired ${value} ${unit.label} ago` : `Expires in ${value} ${unit.label}`

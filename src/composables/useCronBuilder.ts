@@ -257,7 +257,8 @@ export const useCronBuilder = () => {
 
   const describeDayOfMonth = (dom: CronField): string | null => {
     const typeMap: Record<string, () => string | null> = {
-      specific: () => (dom.values.length > 0 ? `on day ${dom.values.join(', ')} of the month` : null),
+      specific: () =>
+        dom.values.length > 0 ? `on day ${dom.values.join(', ')} of the month` : null,
       range: () => `days ${dom.rangeStart}-${dom.rangeEnd} of the month`,
       step: () => `every ${dom.stepValue} days`,
     }

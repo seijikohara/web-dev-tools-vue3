@@ -28,7 +28,7 @@ const swiftType = (typeInfo: TypeInfo): string => {
     null: 'Any',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'Any'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'Any'
 }
 
 // Build Swift property type with optional suffix
@@ -41,7 +41,11 @@ const buildSwiftPropType = (childType: TypeInfo, options: SwiftOptions): string 
 const generateCodingKey = (key: string, propName: string): string =>
   propName !== key ? `        case ${propName} = "${key}"` : `        case ${propName}`
 
-const buildPropertyDefinition = (key: string, childType: TypeInfo, options: SwiftOptions): string => {
+const buildPropertyDefinition = (
+  key: string,
+  childType: TypeInfo,
+  options: SwiftOptions,
+): string => {
   const propName = toCamelCase(key)
   const propType = buildSwiftPropType(childType, options)
   return `    let ${propName}: ${propType}`
@@ -52,11 +56,10 @@ const buildCodingKeysEnum = (entries: [string, TypeInfo][], options: SwiftOption
 
   if (!options.useCodingKeys || !needsCodingKeys) return ''
 
-  const codingKeys = entries
-    .map(([key]) => {
-      const propName = toCamelCase(key)
-      return generateCodingKey(key, propName)
-    })
+  const codingKeys = entries.map(([key]) => {
+    const propName = toCamelCase(key)
+    return generateCodingKey(key, propName)
+  })
 
   return `
 
@@ -72,8 +75,9 @@ const generateStructDefinitionSwift = (typeInfo: TypeInfo, options: SwiftOptions
 
   const entries = Object.entries(typeInfo.children)
 
-  const properties = entries
-    .map(([key, childType]) => buildPropertyDefinition(key, childType, options))
+  const properties = entries.map(([key, childType]) =>
+    buildPropertyDefinition(key, childType, options),
+  )
 
   const keyword = options.useStruct ? 'struct' : 'class'
   const codable = options.useStruct ? 'Codable' : 'Codable, Equatable'

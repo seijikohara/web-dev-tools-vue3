@@ -34,7 +34,7 @@ const mapPrimitiveType = (typeName: string): string => {
     null: 'None',
   } as const
 
-  return primitiveTypeMap[typeName as keyof typeof primitiveTypeMap] ?? 'Any'
+  return (primitiveTypeMap as Record<string, string>)[typeName] ?? 'Any'
 }
 
 // Python type mapping

@@ -30,7 +30,7 @@ const rustType = (typeInfo: TypeInfo, options: RustOptions): string => {
     null: 'Option<()>',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'serde_json::Value'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'serde_json::Value'
 }
 
 // Build derive attributes array based on options
@@ -82,8 +82,11 @@ const generateStructDefinition = (
     buildFieldDefinition(key, childType, options),
   )
 
-  const deriveAttr = derives.length > 0 ? `#[derive(${derives.join(', ')})]
-` : ''
+  const deriveAttr =
+    derives.length > 0
+      ? `#[derive(${derives.join(', ')})]
+`
+      : ''
   return `${deriveAttr}pub struct ${typeInfo.name} {
 ${fields.join('\n')}
 }`
@@ -97,9 +100,11 @@ export const rustGenerator = {
       generateStructDefinition(typeInfo, options, derives),
     )
 
-    const imports = options.deriveSerde ? `use serde::{Deserialize, Serialize};
+    const imports = options.deriveSerde
+      ? `use serde::{Deserialize, Serialize};
 
-` : ''
+`
+      : ''
     return imports + definitions.filter(Boolean).join('\n\n')
   },
 

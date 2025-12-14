@@ -30,7 +30,7 @@ const generateJSDocType = (typeInfo: TypeInfo): string => {
     null: 'null',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? '*'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? '*'
 }
 
 const getDefaultValue = (childType: TypeInfo): string => {
@@ -43,7 +43,7 @@ const getDefaultValue = (childType: TypeInfo): string => {
     boolean: 'false',
   } as const
 
-  return defaultValueMap[childType.name as keyof typeof defaultValueMap] ?? 'null'
+  return (defaultValueMap as Record<string, string>)[childType.name] ?? 'null'
 }
 
 const buildJSDocLines = (name: string, entries: [string, TypeInfo][]): string[] => [
@@ -84,17 +84,13 @@ const buildValidatorChecks = (entries: [string, TypeInfo][]): string =>
         boolean: `  if (typeof obj.${propName} !== 'boolean') return false;`,
       } as const
 
-      return typeCheckMap[childType.name as keyof typeof typeCheckMap] ?? ''
+      return (typeCheckMap as Record<string, string>)[childType.name] ?? ''
     })
     .filter(Boolean)
     .join('\n')
 
 // Build factory function code
-const buildFactoryFunction = (
-  name: string,
-  params: string,
-  useJSDoc: boolean,
-): string => {
+const buildFactoryFunction = (name: string, params: string, useJSDoc: boolean): string => {
   const doc = useJSDoc
     ? `/**
  * Create a new ${name} instance
@@ -156,7 +152,9 @@ ${constructorBody}
 
   return [
     jsDoc + classBody,
-    ...(options.generateFactory ? [buildFactoryFunction(name, constructorParams, options.useJSDoc)] : []),
+    ...(options.generateFactory
+      ? [buildFactoryFunction(name, constructorParams, options.useJSDoc)]
+      : []),
     ...(options.generateValidator ? [buildValidatorFunction(name, entries, options.useJSDoc)] : []),
   ]
 }

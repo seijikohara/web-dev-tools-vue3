@@ -32,7 +32,7 @@ const javaType = (typeInfo: TypeInfo, options: JavaOptions): string => {
     null: 'Object',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'Object'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'Object'
 }
 
 const javaTypeBoxed = (typeInfo: TypeInfo, options: JavaOptions): string => {
@@ -49,7 +49,7 @@ const javaTypeBoxed = (typeInfo: TypeInfo, options: JavaOptions): string => {
     char: 'Character',
   } as const
 
-  return boxedTypeMap[type as keyof typeof boxedTypeMap] ?? type
+  return (boxedTypeMap as Record<string, string>)[type] ?? type
 }
 
 // Generate field annotation based on serialization library
@@ -69,16 +69,18 @@ const getFieldAnnotation = (
 `,
   } as const
 
-  return annotationMap[library as keyof typeof annotationMap] ?? ''
+  return (annotationMap as Record<string, string>)[library] ?? ''
 }
 
 // Generate validation annotation
 const getValidationAnnotation = (typeInfo: TypeInfo, useValidation: boolean): string => {
   if (!useValidation) return ''
 
-  if (typeInfo.name === 'string') return `    @NotBlank
+  if (typeInfo.name === 'string')
+    return `    @NotBlank
 `
-  if (!typeInfo.isPrimitive) return `    @NotNull
+  if (!typeInfo.isPrimitive)
+    return `    @NotNull
 `
 
   return ''
@@ -92,11 +94,7 @@ const buildFieldType = (childType: TypeInfo, options: JavaOptions): string => {
     : baseType
 }
 
-const buildRecordField = (
-  key: string,
-  childType: TypeInfo,
-  options: JavaOptions,
-): string => {
+const buildRecordField = (key: string, childType: TypeInfo, options: JavaOptions): string => {
   const fieldName = toCamelCase(key)
   const fieldType = buildFieldType(childType, options)
   const annotation = getFieldAnnotation(key, fieldName, options.serializationLibrary)
@@ -108,19 +106,16 @@ const generateRecordDefinition = (typeInfo: TypeInfo, options: JavaOptions): str
   // Early return for non-objects
   if (!typeInfo.children) return ''
 
-  const fields = Object.entries(typeInfo.children)
-    .map(([key, childType]) => buildRecordField(key, childType, options))
+  const fields = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildRecordField(key, childType, options),
+  )
 
   return `public record ${typeInfo.name}(
 ${fields.join(',\n')}
 ) {}`
 }
 
-const buildLombokField = (
-  key: string,
-  childType: TypeInfo,
-  options: JavaOptions,
-): string => {
+const buildLombokField = (key: string, childType: TypeInfo, options: JavaOptions): string => {
   const fieldName = toCamelCase(key)
   const fieldType = buildFieldType(childType, options)
   const serializationAnnotation = getFieldAnnotation(key, fieldName, options.serializationLibrary)
@@ -144,8 +139,9 @@ const generateLombokDefinition = (typeInfo: TypeInfo, options: JavaOptions): str
   // Early return for non-objects
   if (!typeInfo.children) return ''
 
-  const fields = Object.entries(typeInfo.children)
-    .map(([key, childType]) => buildLombokField(key, childType, options))
+  const fields = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildLombokField(key, childType, options),
+  )
 
   const lombokAnnotations = buildLombokAnnotations(options)
 
@@ -155,11 +151,7 @@ ${fields.join('\n\n')}
 }`
 }
 
-const buildImmutablesMethod = (
-  key: string,
-  childType: TypeInfo,
-  options: JavaOptions,
-): string => {
+const buildImmutablesMethod = (key: string, childType: TypeInfo, options: JavaOptions): string => {
   const fieldName = toCamelCase(key)
   const fieldType = buildFieldType(childType, options)
   const annotation = getFieldAnnotation(key, fieldName, options.serializationLibrary)
@@ -171,8 +163,9 @@ const generateImmutablesDefinition = (typeInfo: TypeInfo, options: JavaOptions):
   // Early return for non-objects
   if (!typeInfo.children) return ''
 
-  const methods = Object.entries(typeInfo.children)
-    .map(([key, childType]) => buildImmutablesMethod(key, childType, options))
+  const methods = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildImmutablesMethod(key, childType, options),
+  )
 
   return `@Value.Immutable
 public interface ${typeInfo.name} {
@@ -182,9 +175,7 @@ ${methods.join('\n\n')}
 
 // Generate equals/hashCode methods for POJO
 const generateEqualsHashCode = (typeName: string, fieldNames: string[]): string[] => {
-  const equalsComparisons = fieldNames
-    .map(f => `Objects.equals(${f}, that.${f})`)
-    .join(` &&
+  const equalsComparisons = fieldNames.map(f => `Objects.equals(${f}, that.${f})`).join(` &&
                `)
 
   const equalsMethod = `    @Override
@@ -203,11 +194,7 @@ const generateEqualsHashCode = (typeName: string, fieldNames: string[]): string[
   return ['', equalsMethod, hashCodeMethod]
 }
 
-const buildPojoField = (
-  key: string,
-  childType: TypeInfo,
-  options: JavaOptions,
-): string => {
+const buildPojoField = (key: string, childType: TypeInfo, options: JavaOptions): string => {
   const fieldName = toCamelCase(key)
   const fieldType = buildFieldType(childType, options)
   const serializationAnnotation = getFieldAnnotation(key, fieldName, options.serializationLibrary)
@@ -237,11 +224,11 @@ const generatePojoDefinition = (typeInfo: TypeInfo, options: JavaOptions): strin
 
   const entries = Object.entries(typeInfo.children)
 
-  const fields = entries
-    .map(([key, childType]) => buildPojoField(key, childType, options))
+  const fields = entries.map(([key, childType]) => buildPojoField(key, childType, options))
 
-  const gettersSetters = entries
-    .flatMap(([key, childType]) => buildPojoAccessors(key, childType, options))
+  const gettersSetters = entries.flatMap(([key, childType]) =>
+    buildPojoAccessors(key, childType, options),
+  )
 
   const fieldNames = entries.map(([key]) => toCamelCase(key))
   const equalsHashCode = options.generateEquals
@@ -291,7 +278,7 @@ const buildSerializationImports = (library: JavaOptions['serializationLibrary'])
     moshi: ['import com.squareup.moshi.Json;'],
   }
 
-  return importMap[library as keyof typeof importMap] ?? []
+  return (importMap as Record<string, string[]>)[library] ?? []
 }
 
 const buildLombokImports = (options: JavaOptions): string[] => {
@@ -312,7 +299,10 @@ const buildImmutablesImport = (options: JavaOptions): string[] =>
 
 const buildValidationImports = (options: JavaOptions): string[] =>
   options.useValidation
-    ? ['import javax.validation.constraints.NotNull;', 'import javax.validation.constraints.NotBlank;']
+    ? [
+        'import javax.validation.constraints.NotNull;',
+        'import javax.validation.constraints.NotBlank;',
+      ]
     : []
 
 const buildAllImports = (options: JavaOptions): string[] => {

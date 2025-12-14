@@ -162,9 +162,7 @@ const buildOptionFlags = (options: CurlOptions): string[] =>
 
 // Build header flags
 const buildHeaderFlags = (headers: Header[]): string[] =>
-  headers
-    .filter(h => h.enabled && h.key)
-    .map(h => `-H ${escapeShell(`${h.key}: ${h.value}`)}`)
+  headers.filter(h => h.enabled && h.key).map(h => `-H ${escapeShell(`${h.key}: ${h.value}`)}`)
 
 // Get Content-Type header if needed
 const getContentTypeHeader = (
@@ -185,8 +183,8 @@ const getContentTypeHeader = (
     form: 'application/x-www-form-urlencoded',
   } as const
 
-  const contentType = contentTypeMap[bodyType as keyof typeof contentTypeMap]
-  return contentType ? `-H 'Content-Type: ${contentType}'` : null
+  const contentType = (contentTypeMap as Record<string, string>)[bodyType]
+  return contentType !== undefined ? `-H 'Content-Type: ${contentType}'` : null
 }
 
 export const generateCurlCommand = (
@@ -203,7 +201,10 @@ export const generateCurlCommand = (
     ...(method !== 'GET' ? [`-X ${method}`] : []),
     ...buildOptionFlags(options),
     ...buildHeaderFlags(headers),
-    ...(getContentTypeHeader(bodyType, body, headers) ? [getContentTypeHeader(bodyType, body, headers)!] : []),
+    ...(() => {
+      const contentTypeHeader = getContentTypeHeader(bodyType, body, headers)
+      return contentTypeHeader ? [contentTypeHeader] : []
+    })(),
     ...(body && bodyType !== 'none' ? [`-d ${escapeShell(body)}`] : []),
     ...(url ? [escapeShell(buildUrlWithParams(url, queryParams))] : []),
   ].join(` \\

@@ -29,7 +29,7 @@ const goType = (typeInfo: TypeInfo, options: GoOptions): string => {
     null: 'interface{}',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'interface{}'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'interface{}'
 }
 
 const buildJsonTag = (key: string, options: GoOptions): string => {

@@ -29,7 +29,7 @@ const tsType = (typeInfo: TypeInfo, options: TypeScriptOptions): string => {
     null: options.strictNullChecks ? 'null' : 'any',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'unknown'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'unknown'
 }
 
 const buildPropertyType = (childType: TypeInfo, options: TypeScriptOptions): string => {

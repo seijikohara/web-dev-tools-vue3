@@ -27,7 +27,7 @@ import {
 } from '@/composables/useUrlEncoder'
 import { useClipboardToast } from '@/composables/useClipboardToast'
 
-const { copy, showSuccess, showError } = useClipboardToast()
+const { copy, showError } = useClipboardToast()
 
 // Use composable
 const {
@@ -38,7 +38,6 @@ const {
   encodingMode,
   inputStats,
   outputStats,
-  decodeOutput,
   loadSample,
   clearAll,
 
@@ -66,13 +65,6 @@ const copyInput = () => {
 
 const copyOutput = () => {
   void copy(outputText.value, { detail: 'Encoded text copied to clipboard' })
-}
-
-const handleDecode = () => {
-  const success = decodeOutput()
-  if (success) {
-    showSuccess('Decoded', 'Text decoded successfully')
-  }
 }
 
 const copyParsedValue = (value: string, label: string) => {

@@ -28,7 +28,7 @@ const kotlinType = (typeInfo: TypeInfo): string => {
     null: 'Any',
   } as const
 
-  return primitiveTypeMap[typeInfo.name as keyof typeof primitiveTypeMap] ?? 'Any'
+  return (primitiveTypeMap as Record<string, string>)[typeInfo.name] ?? 'Any'
 }
 
 const getDefaultValue = (typeInfo: TypeInfo): string => {
@@ -40,7 +40,7 @@ const getDefaultValue = (typeInfo: TypeInfo): string => {
     boolean: 'false',
   } as const
 
-  return defaultValueMap[typeInfo.name as keyof typeof defaultValueMap] ?? 'null'
+  return (defaultValueMap as Record<string, string>)[typeInfo.name] ?? 'null'
 }
 
 // Get serialization annotation for property
@@ -58,7 +58,7 @@ const getSerializationAnnotation = (
     jackson: `@JsonProperty("${key}")`,
   } as const
 
-  return annotationMap[library as keyof typeof annotationMap] ?? null
+  return (annotationMap as Record<string, string>)[library] ?? null
 }
 
 const buildPropertyDefinition = (
@@ -71,8 +71,10 @@ const buildPropertyDefinition = (
   const propType = options.optionalProperties ? `${baseType}?` : baseType
 
   const annotation = getSerializationAnnotation(key, propName, options.serializationLibrary)
-  const annotationStr = annotation ? `${annotation}
-    ` : ''
+  const annotationStr = annotation
+    ? `${annotation}
+    `
+    : ''
   const defaultValue = options.useDefaultValues ? ` = ${getDefaultValue(childType)}` : ''
 
   return `${annotationStr}val ${propName}: ${propType}${defaultValue}`
@@ -85,13 +87,16 @@ const buildImports = (library: KotlinOptions['serializationLibrary']): string[] 
   if (library === 'none') return []
 
   const importMap = {
-    kotlinx: ['import kotlinx.serialization.Serializable', 'import kotlinx.serialization.SerialName'],
+    kotlinx: [
+      'import kotlinx.serialization.Serializable',
+      'import kotlinx.serialization.SerialName',
+    ],
     gson: ['import com.google.gson.annotations.SerializedName'],
     moshi: ['import com.squareup.moshi.Json'],
     jackson: ['import com.fasterxml.jackson.annotation.JsonProperty'],
   }
 
-  return importMap[library as keyof typeof importMap] ?? []
+  return (importMap as Record<string, string[]>)[library] ?? []
 }
 
 // Generate a single Kotlin class definition
@@ -99,8 +104,9 @@ const generateClassDefinitionKotlin = (typeInfo: TypeInfo, options: KotlinOption
   // Early return for non-objects
   if (!typeInfo.isObject || !typeInfo.children) return ''
 
-  const properties = Object.entries(typeInfo.children)
-    .map(([key, childType]) => buildPropertyDefinition(key, childType, options))
+  const properties = Object.entries(typeInfo.children).map(([key, childType]) =>
+    buildPropertyDefinition(key, childType, options),
+  )
 
   const classAnnotations = buildClassAnnotations(options.serializationLibrary)
   const classAnnotationStr = classAnnotations.length > 0 ? `${classAnnotations.join('\n')}\n` : ''
