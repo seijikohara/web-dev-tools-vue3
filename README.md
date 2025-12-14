@@ -19,6 +19,7 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **SQL Formatter**: SQL query formatting with multi-dialect support (MySQL, PostgreSQL, SQLite, etc.)
 - **Markdown Editor**: Real-time Markdown rendering with live preview
 - **Diff Viewer**: Side-by-side text comparison with highlighting
+- **String Case Converter**: Convert text between camelCase, PascalCase, snake_case, kebab-case, and more
 
 ### Encoding and Decoding
 - **Base64 Encoder**: Base64 encoding and decoding utilities
@@ -29,21 +30,25 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 ### Hash & Cryptography
 - **Hash Generator**: Cryptographic hash generation (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
 - **BCrypt Generator**: Secure password hashing and verification using BCrypt algorithm
+- **SSH Key Generator**: Generate SSH key pairs (RSA, ECDSA, Ed25519)
+- **GPG Key Generator**: Generate GPG key pairs for encryption and signing
 
 ### Generators
 - **UUID Generator**: UUID v1/v4 generation with bulk support
+- **Password Generator**: Secure random password generation with customizable options
 - **QR Code Generator**: Generate QR codes from text, URLs, vCard, WiFi config with PNG/SVG export
 - **Cron Builder**: Visual cron expression builder with human-readable descriptions
 - **cURL Builder**: Build and parse cURL commands with a visual interface
 
 ### Converters
-- **JSON to TypeScript**: Automatic TypeScript interface generation from JSON schemas
 - **Color Converter**: Convert between HEX, RGB, HSL color formats
 - **Timestamp Converter**: Unix timestamp and date format conversions
-- **String Case Converter**: Convert text between camelCase, PascalCase, snake_case, kebab-case, and more
 
 ### Testing & Validation
 - **Regex Tester**: Regular expression testing with match highlighting
+
+### Network Tools
+- **IP Lookup**: IP address geolocation, RDAP queries, and network information
 
 ## Technology Stack
 
@@ -64,7 +69,8 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **Composables**: VueUse utilities
 
 ### Quality Assurance
-- **Testing Framework**: Playwright 1.x (end-to-end)
+- **Unit Testing**: Vitest 4.x with coverage support
+- **E2E Testing**: Playwright 1.x (end-to-end)
 - **Linting**: ESLint 9.x with TypeScript support
 - **Code Formatting**: Prettier 3.x
 
@@ -72,7 +78,7 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **HTTP Client**: Axios
 - **Date/Time**: Day.js
 - **Security**: DOMPurify (XSS prevention), bcryptjs (password hashing), crypto-js
-- **Code Editor**: vue3-ace-editor (ACE integration)
+- **Code Editor**: vue-codemirror6 (CodeMirror 6 integration)
 - **Markdown**: marked (parsing and rendering)
 - **XML**: xml-formatter
 - **SQL**: sql-formatter (multi-dialect SQL formatting)
@@ -109,7 +115,7 @@ The **Vue - Official** extension automatically provides TypeScript language serv
 
 ## Prerequisites
 
-- Node.js >= 22.0.0
+- Node.js >= 22.12.0
 - npm >= 11.0.0
 
 ## Installation
@@ -158,6 +164,24 @@ npm run preview
 ```
 
 ### Testing
+
+#### Unit Tests (Vitest)
+
+```sh
+# Run unit tests in watch mode
+npm run test
+
+# Execute unit test suite once
+npm run test:run
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Launch Vitest UI for interactive testing
+npm run test:ui
+```
+
+#### End-to-End Tests (Playwright)
 
 ```sh
 # Execute end-to-end test suite
@@ -231,6 +255,7 @@ graph TD
     src --> types["types/<br/><i>TypeScript definitions</i>"]
     src --> utils["utils/<br/><i>Utility functions</i>"]
     src --> views["views/<br/><i>Tool feature views</i>"]
+    src --> workers["workers/<br/><i>Web Workers</i>"]
     src --> assets["assets/<br/><i>Static assets and styles</i>"]
 
     style src fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
@@ -243,22 +268,34 @@ graph TD
     style types fill:#fff3e0,stroke:#e65100,stroke-width:1px
     style utils fill:#fff3e0,stroke:#e65100,stroke-width:1px
     style views fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style workers fill:#fff3e0,stroke:#e65100,stroke-width:1px
     style assets fill:#fff3e0,stroke:#e65100,stroke-width:1px
 ```
 
 ## Environment Configuration
 
-The application requires environment-specific configuration. Create a `.env` file in the project root directory using [`.env.example`](.env.example) as a template:
+The application supports optional environment-specific configuration. Create a `.env` file in the project root directory using [`.env.example`](.env.example) as a template:
 
 ```env
-VUE_APP_API_BASE_URL=       # Base URL for API endpoints
-VUE_APP_HISTORY_MODE=       # Vue Router history mode (hash|history)
-VUE_APP_GA_MEASUREMENT_ID=  # Google Analytics measurement ID (optional)
+# Google Analytics Measurement ID (optional)
+VUE_APP_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Development settings
+NODE_ENV=development
+VITE_DEV_PORT=5173
+
+# API Configuration (optional)
+# VUE_APP_API_BASE_URL=http://localhost:3000/api
+
+# Vue Router history mode: 'hash' or 'history' (optional, defaults to 'history')
+# VUE_APP_HISTORY_MODE=history
 ```
 
 ## Testing Strategy
 
-The project implements end-to-end testing using Playwright to detect regressions through basic functionality verification.
+The project implements a two-tier testing strategy:
+- **Unit tests**: Vitest for testing composables and utility functions
+- **End-to-end tests**: Playwright for detecting regressions through basic functionality verification
 
 ### Testing Approach
 
@@ -301,7 +338,7 @@ For detailed information about writing and running E2E tests, see the [E2E Testi
 
 GitHub Actions workflows are configured for automated quality assurance:
 
-- **ci.yml**: Build verification and type checking across Node.js 22.x and 24.x
+- **ci.yml**: Unit tests, build verification, and type checking across Node.js 22.x and 24.x
 - **playwright.yml**: Multi-browser end-to-end test execution
 - **auto-merge-dependabot.yml**: Automated dependency update integration
 
