@@ -43,7 +43,7 @@ export const computeLCS = (orig: string[], mod: string[]): LCSItem[] => {
   // Create DP table
   const dp = Array.from({ length: m + 1 }, () => Array.from({ length: n + 1 }, () => 0))
 
-  // Fill DP table using method chaining
+  // Fill DP table using nested iteration
   Array.from({ length: m }, (_, i) => i + 1).forEach(i => {
     Array.from({ length: n }, (_, j) => j + 1).forEach(j => {
       const dpRow = dp[i]
