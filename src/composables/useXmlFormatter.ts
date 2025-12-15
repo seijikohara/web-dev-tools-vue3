@@ -912,7 +912,7 @@ export function useXmlSchema(inputRef: Ref<string>) {
       }
 
       // Recursively validate children
-      Array.from(element.children).map((child, index) =>
+      Array.from(element.children).forEach((child, index) =>
         validateElement(child, `${path}/${child.nodeName}[${index + 1}]`),
       )
     }
