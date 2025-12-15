@@ -54,39 +54,13 @@ Examples:
 
 If any check fails, fix the issues before creating the PR.
 
-## Branch Strategy
+## Branch and Commit
 
-### Branch Naming
-
-```
-<type>/<short-description>
-```
-
-| Prefix | Use Case |
-|--------|----------|
-| `feature/` | New features |
-| `fix/` | Bug fixes |
-| `refactor/` | Code improvements |
-| `docs/` | Documentation |
-| `test/` | Test additions/fixes |
-| `chore/` | Tooling, dependencies |
-
-### Base Branch
+See @rules/general/git.md for branch naming and commit message format.
 
 - Always branch from and merge to `main`
-
-## Commit Guidelines
-
-### During Development
-
 - Make atomic commits (one logical change per commit)
-- Use Conventional Commits format
-- Keep commits focused and reviewable
-
-### Before Merge
-
-- Squash related commits if needed
-- Ensure commit history tells a clear story
+- Squash related commits before merge if needed
 
 ## Review Process
 

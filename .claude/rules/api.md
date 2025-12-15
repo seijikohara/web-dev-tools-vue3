@@ -135,7 +135,7 @@ export const useData = () => {
     try {
       data.value = await getData()
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed'
+      error.value = e instanceof Error ? e.message : 'Unknown error'
     } finally {
       isLoading.value = false
     }

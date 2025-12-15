@@ -12,20 +12,6 @@ paths: src/**/*.{ts,vue}
 - Consult the official reference before implementation
 - Avoid deprecated patterns and legacy syntax
 
-### Pure Function Orientation
-
-Prioritize pure functions wherever possible:
-
-```typescript
-// ✅ Pure function: no side effects, deterministic output
-export const calculateTotal = (items: Item[]): number =>
-  items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-// ✅ Separate pure logic from stateful wrappers
-export const formatCurrency = (value: number, locale: string): string =>
-  new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(value)
-```
-
 ### Modern Syntax Enforcement
 
 Always use the latest TypeScript syntax features:
@@ -291,6 +277,22 @@ type PartialOptions<T> = {
 }
 ```
 
+## Code Organization
+
+### Immutability
+
+- Prefer `const` over `let`
+- Never use `var`
+- Use `readonly` types where applicable
+- Avoid mutating function parameters
+
+### General Principles
+
+- Group imports: external → internal → types
+- Export types separately from runtime code
+- Keep functions small and focused (single responsibility)
+- Use descriptive variable names over comments
+
 ## Module Organization
 
 ### Import Order
@@ -371,13 +373,34 @@ const query = sql`SELECT * FROM ${table} WHERE id = ${id}`
 const markup = html`<div class="${className}">${content}</div>`
 ```
 
-## Best Practices
+## Documentation
 
-- Enable strict mode in tsconfig
-- Avoid `any` - use `unknown` for truly unknown types
-- Use `readonly` for immutable properties
-- Prefer explicit return types on exported functions
-- Use type guards over type assertions
-- Derive types from constants with `(typeof X)[number]`
-- Always use template literals for string interpolation
-- Never use `\n` escape sequences; use actual line breaks in template literals
+All code comments, commit messages, and documentation must follow:
+
+- **Language**: English only
+- **Tone**: Formal and professional (avoid casual expressions)
+- **Objectivity**: State facts only; no subjective opinions
+
+```typescript
+// ❌ Avoid
+// This is a really nice helper  (subjective)
+// Just a quick fix              (casual)
+// この関数は...                  (non-English)
+
+// ✅ Preferred
+// Converts timestamp to ISO 8601 format
+// Resolves edge case in date parsing
+```
+
+## Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Variables | camelCase | `userName` |
+| Constants | UPPER_SNAKE_CASE | `API_BASE_URL` |
+| Functions | camelCase | `transformData` |
+| Types/Interfaces | PascalCase | `ApiResponse` |
+| Components | PascalCase | `MyComponent.vue` |
+| Composables | use + PascalCase | `useFeature.ts` |
+| Stores | camelCase or use + PascalCase | `ui.ts`, `useSettingsStore.ts` |
+| Other Files | kebab-case | `api-client.ts` |

@@ -90,9 +90,10 @@ await copy('text')
 
 ### Store Naming
 
-- File: `xxx.ts` or `useXxxStore.ts`
 - Store ID: lowercase `'ui'`, `'settings'`
 - Export: `useXxxStore`
+
+See @rules/typescript.md for file naming conventions.
 
 ### State Protection
 
