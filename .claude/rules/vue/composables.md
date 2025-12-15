@@ -4,12 +4,12 @@ paths: src/composables/**/*.ts
 
 # Composable Design Guidelines
 
-## Naming Convention
+## File Naming
 
 - File: `useXxxx.ts`
 - Export: `useXxxx` function as named export
-- Constants: Export alongside composable with UPPER_SNAKE_CASE
-- Pure Functions: Export for testing with camelCase
+
+See @rules/typescript.md for general naming conventions.
 
 ## Structure Pattern
 
@@ -67,7 +67,7 @@ export const useFeature = (): UseFeatureReturn => {
     try {
       // async operation
     } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e)
+      error.value = e instanceof Error ? e.message : 'Unknown error'
     } finally {
       isLoading.value = false
     }
@@ -108,7 +108,7 @@ export const useFeature = (): UseFeatureReturn => {
 
 - Expose error as `Ref<string | null>`
 - Clear errors at start of new operations
-- Use type guards for error extraction
+- See @rules/typescript.md for error extraction patterns
 
 ### Loading States
 

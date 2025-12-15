@@ -51,110 +51,27 @@ e2e/                  # Playwright E2E tests
 - **HTTP Client**: Axios
 - **Utilities**: @vueuse/core, dayjs, crypto-js
 
-## Architecture Principles
+## Rules Reference
 
-### Pure Functions First
+Detailed guidelines are organized in the `rules/` directory:
 
-Extract business logic as pure functions for testability:
+| Category | File | Description |
+|----------|------|-------------|
+| **TypeScript** | @rules/typescript.md | Type patterns, pure functions, error handling, code style |
+| **API** | @rules/api.md | HTTP client, error handling, endpoint definitions |
+| **Vue Components** | @rules/vue/components.md | Component structure, props, slots |
+| **Composables** | @rules/vue/composables.md | Composition API patterns |
+| **Stores** | @rules/vue/stores.md | Pinia state management |
+| **Views** | @rules/vue/views.md | Page component guidelines |
+| **Unit Testing** | @rules/testing/unit.md | Vitest patterns |
+| **E2E Testing** | @rules/testing/e2e.md | Playwright patterns |
+| **Git** | @rules/general/git.md | Commit message format |
+| **Pull Requests** | @rules/general/pr.md | PR guidelines and checklist |
 
-```typescript
-// Pure function (exported for testing)
-export const transformData = (input: string): Result => { ... }
+## Key Principles
 
-// Composable wraps pure functions with reactive state
-export const useTransformer = () => {
-  const input = ref('')
-  const output = computed(() => transformData(input.value))
-  return { input, output }
-}
-```
+- **Pure functions first**: Extract business logic as testable pure functions
+- **Single responsibility**: Each component/function does one thing well
+- **Documentation**: English only, formal tone, objective facts only
 
-### Higher-Order Functions for Cross-Cutting Concerns
-
-```typescript
-const withErrorHandling = <T extends unknown[], R>(
-  fn: (...args: T) => R,
-  errorRef: Ref<string | null>,
-  defaultMessage: string,
-) => (...args: T): R => { ... }
-```
-
-### Type Safety
-
-- Enable strict mode in tsconfig
-- Use `as const` with `satisfies` for type-checked constants
-- Derive types from constants: `type X = (typeof OPTIONS)[number]`
-- Avoid `any`, use `unknown` for truly unknown types
-- Prefer explicit return types on exported functions
-
-### Component Composition
-
-- Single responsibility per component
-- Slot-based composition over prop drilling
-- PrimeVue components for consistent UI
-- Scoped styles with CSS custom properties
-
-## Import Aliases
-
-```typescript
-import { useFeature } from '@/composables/useFeature'
-import MyComponent from '@/components/MyComponent.vue'
-import type { MyType } from '@/types'
-```
-
-## Key Conventions
-
-### Naming
-
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `MyComponent.vue` |
-| Composables | use + PascalCase | `useFeature.ts` |
-| Pure Functions | camelCase | `transformData` |
-| Constants | UPPER_SNAKE_CASE | `OPTIONS`, `CONFIG` |
-| Types/Interfaces | PascalCase | `MyResult`, `ApiResponse` |
-
-### Code Style
-
-- 2-space indentation
-- Single quotes, no semicolons
-- Trailing commas in multiline
-
-**Mandatory Rules:**
-
-- **Method chaining**: Always use `.filter()`, `.map()`, `.reduce()` instead of `for`, `while`, `forEach`
-- **Early returns**: Always use early returns; never use `else` after return
-- **Template literals**: Always use template literals for string interpolation
-- **No `\n`**: Never use `\n` escape; use actual line breaks in template literals
-- **Latest syntax**: Always use modern TypeScript features (`as const satisfies`, optional chaining, etc.)
-
-### Error Handling
-
-- Use custom error classes for domain errors
-- Expose error state as `Ref<string | null>`
-- Type guards: `e instanceof Error ? e.message : String(e)`
-- Never use non-null assertion (`!`) - forbidden by lint
-
-### Documentation
-
-All documentation (including code comments, commit messages, PR descriptions) must:
-
-- **Language**: Always use English
-- **Tone**: Use formal, professional language (avoid casual expressions)
-- **Objectivity**: State facts only; avoid subjective opinions or evaluations
-
-Examples:
-
-```typescript
-// ❌ Avoid
-// This is a really nice helper function that makes things easier
-// TODO: Fix this ugly hack later
-
-// ✅ Preferred
-// Converts Unix timestamp to ISO 8601 format
-// TODO: Refactor to handle timezone conversion
-```
-
-### Git Commits
-
-Follow Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
+For code style, naming conventions, and detailed patterns, see @rules/typescript.md.
