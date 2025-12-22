@@ -261,7 +261,7 @@ function createJsonFormatterState() {
   const escapeUnicodeTransform = (s: string): string =>
     s.replace(
       /[\u0080-\uFFFF]/g,
-      char => `\\u${('0000' + char.charCodeAt(0).toString(16)).slice(-4)}`,
+      char => `\\u${`0000${char.charCodeAt(0).toString(16)}`.slice(-4)}`,
     )
 
   const singleQuoteTransform = (s: string): string =>
@@ -439,9 +439,8 @@ export function useJsonQuery(inputRef: Ref<string>) {
           return current[index]
         } else if (typeof current === 'object') {
           return (current as Record<string, unknown>)[part]
-        } else {
-          throw new Error(`Cannot access property of non-object: ${part}`)
         }
+        throw new Error(`Cannot access property of non-object: ${part}`)
       }, parsed)
 
       if (typeof result === 'object' && result !== null) {

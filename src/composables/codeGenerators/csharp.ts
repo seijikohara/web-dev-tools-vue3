@@ -59,7 +59,7 @@ const buildRecordProperty = (key: string, childType: TypeInfo, options: CSharpOp
   const propName = toPascalCase(key)
   const propType = buildPropType(childType, options)
   const annotations = buildAnnotations(key, propName, options)
-  const annotationStr = annotations.length > 0 ? annotations.join(' ') + ' ' : ''
+  const annotationStr = annotations.length > 0 ? `${annotations.join(' ')} ` : ''
   return `    ${annotationStr}${propType} ${propName}`
 }
 

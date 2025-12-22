@@ -414,7 +414,7 @@ const executeXPath = () => {
 
     const parserError = doc.querySelector('parsererror')
     if (parserError) {
-      xpathError.value = 'Invalid XML: ' + (parserError.textContent || 'Parse error')
+      xpathError.value = `Invalid XML: ${parserError.textContent || 'Parse error'}`
       return
     }
 
@@ -434,9 +434,8 @@ const executeXPath = () => {
         return serializer.serializeToString(node)
       } else if (node.nodeType === Node.ATTRIBUTE_NODE) {
         return `${(node as Attr).name}="${(node as Attr).value}"`
-      } else {
-        return node.textContent ?? ''
       }
+      return node.textContent ?? ''
     }).filter(Boolean)
 
     xpathResults.value = results
@@ -512,7 +511,7 @@ const convertTo = (targetFormat: 'json' | 'yaml') => {
 
     const parserError = doc.querySelector('parsererror')
     if (parserError) {
-      convertError.value = 'Invalid XML: ' + (parserError.textContent || 'Parse error')
+      convertError.value = `Invalid XML: ${parserError.textContent || 'Parse error'}`
       return
     }
 
