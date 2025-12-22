@@ -469,9 +469,8 @@ const executeYamlPath = () => {
         return current[index]
       } else if (typeof current === 'object') {
         return (current as Record<string, unknown>)[part]
-      } else {
-        throw new Error(`Cannot access property of non-object: ${part}`)
       }
+      throw new Error(`Cannot access property of non-object: ${part}`)
     }, parsed)
 
     if (typeof result === 'object' && result !== null) {

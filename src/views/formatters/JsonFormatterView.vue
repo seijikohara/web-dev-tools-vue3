@@ -264,7 +264,7 @@ const processJsonWithOptions = (obj: unknown, depth = 0): unknown => {
 // JSON post-processing transformations
 const escapeUnicodeTransform = (s: string): string =>
   s.replace(/[\u0080-\uFFFF]/g, char => {
-    return '\\u' + ('0000' + char.charCodeAt(0).toString(16)).slice(-4)
+    return `\\u${`0000${char.charCodeAt(0).toString(16)}`.slice(-4)}`
   })
 
 const singleQuoteTransform = (s: string): string =>
@@ -288,7 +288,7 @@ const compactArraysTransform = (s: string): string =>
     /\[\s*\n(\s*)((?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null)(?:,\s*\n\s*(?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null))*)\s*\n\s*\]/g,
     (_, _indent, content: string) => {
       const items = content.split(/,\s*\n\s*/)
-      return '[' + items.join(', ') + ']'
+      return `[${items.join(', ')}]`
     },
   )
 
@@ -426,9 +426,8 @@ const executeJsonPath = () => {
         return current[index]
       } else if (typeof current === 'object') {
         return (current as Record<string, unknown>)[part]
-      } else {
-        throw new Error(`Cannot access property of non-object: ${part}`)
       }
+      throw new Error(`Cannot access property of non-object: ${part}`)
     }, parsed)
 
     if (typeof result === 'object' && result !== null) {

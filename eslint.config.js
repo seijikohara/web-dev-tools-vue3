@@ -8,6 +8,7 @@ import globals from 'globals'
 import prettierConfig from '@vue/eslint-config-prettier'
 
 // Common TypeScript rules for strict type checking
+// See: .claude/rules/typescript.md
 const commonTypeScriptRules = {
   '@typescript-eslint/no-unused-vars': [
     'error',
@@ -22,6 +23,21 @@ const commonTypeScriptRules = {
   ],
   '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
   '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { attributes: false } }],
+
+  // Enforce `import type` for type-only imports (typescript.md: Modern Syntax Enforcement)
+  '@typescript-eslint/consistent-type-imports': [
+    'error',
+    { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+  ],
+}
+
+// Code style rules (typescript.md: Function Patterns & String Handling)
+const codeStyleRules = {
+  // Enforce early returns (typescript.md: Early Returns)
+  'no-else-return': 'error',
+
+  // Prefer template literals over string concatenation (typescript.md: Template Literals)
+  'prefer-template': 'error',
 }
 
 // Common immutability rules
@@ -85,6 +101,7 @@ export default defineConfig(
       'vue/block-order': ['warn', { order: [['script', 'template'], 'style'] }],
 
       ...immutabilityRules,
+      ...codeStyleRules,
     },
   },
 
@@ -106,6 +123,7 @@ export default defineConfig(
     rules: {
       ...commonTypeScriptRules,
       ...immutabilityRules,
+      ...codeStyleRules,
     },
   },
 
@@ -134,6 +152,7 @@ export default defineConfig(
         { allowNumber: true, allowBoolean: true },
       ],
       ...immutabilityRules,
+      ...codeStyleRules,
     },
   },
 

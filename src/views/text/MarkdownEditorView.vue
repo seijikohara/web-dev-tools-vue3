@@ -166,7 +166,7 @@ const generateTocMarkdown = () => {
     }),
   ]
 
-  const tocMarkdown = tocLines.join('\n') + '\n\n'
+  const tocMarkdown = `${tocLines.join('\n')}\n\n`
   state.markdown = tocMarkdown + state.markdown
 
   showSuccess('TOC Generated', 'Table of contents added to document')

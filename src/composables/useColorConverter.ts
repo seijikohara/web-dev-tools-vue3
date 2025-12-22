@@ -72,7 +72,7 @@ export const hexToRgb = (hexValue: string): RGB | null => {
 }
 
 export const rgbToHex = (r: number, g: number, b: number): string =>
-  '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')
+  `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`
 
 export const rgbToHsl = (r: number, g: number, b: number): HSL => {
   const rNorm = r / 255
@@ -225,10 +225,10 @@ export const calculateContrastColor = (rgb: RGB): string => {
 // Expand shorthand HEX
 export const expandShorthandHex = (hex: string): string => {
   const trimmed = hex.trim()
-  const withHash = trimmed.startsWith('#') ? trimmed : '#' + trimmed
+  const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`
 
   if (/^#[a-fA-F0-9]{3}$/.test(withHash)) {
-    return '#' + [1, 2, 3].map(i => (withHash[i] ?? '').repeat(2)).join('')
+    return `#${[1, 2, 3].map(i => (withHash[i] ?? '').repeat(2)).join('')}`
   }
   return withHash
 }
