@@ -280,7 +280,7 @@ const handleUsePattern = (p: string) => {
                             <Tag
                               v-for="(g, i) in slotProps.data.groups"
                               :key="i"
-                              :value="`$${i + 1}: ${g}`"
+                              :value="`$${Number(i) + 1}: ${g}`"
                               severity="warn"
                             />
                           </div>
