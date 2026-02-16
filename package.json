@@ -63,7 +63,7 @@
     "dayjs": "^1.11.19",
     "dompurify": "^3.3.1",
     "json-tree-view-vue3": "^1.1.2",
-    "marked": "^17.0.1",
+    "marked": "^17.0.2",
     "pinia": "^3.0.4",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
