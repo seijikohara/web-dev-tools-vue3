@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Asia/Tokyo",
+  "schedule": ["* 3 * * *"],
+  "enabledManagers": ["npm", "github-actions"],
+  "separateMajorMinor": false,
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm dependencies",
+      "groupSlug": "npm-dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions dependencies",
+      "groupSlug": "github-actions-dependencies"
+    },
+    {
+      "matchManagers": ["npm", "github-actions"],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "replacement",
+        "rollback"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    }
+  ]
+}
