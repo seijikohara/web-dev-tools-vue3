@@ -368,6 +368,7 @@ test.describe('JSON Formatter', () => {
       for (const tabName of tabs) {
         await test.step(`Switch to ${tabName} tab`, async () => {
           const tab = page.getByRole('tab', { name: tabName })
+          await tab.scrollIntoViewIfNeeded()
           await tab.click()
           await expect(tab).toHaveAttribute('aria-selected', 'true')
         })
