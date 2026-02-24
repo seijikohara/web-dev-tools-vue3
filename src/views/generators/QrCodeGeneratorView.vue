@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import QRCode from 'qrcode'
+import { toDataURL as qrToDataURL, toString as qrToString } from 'qrcode'
 
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -65,10 +65,10 @@ const generateQRCode = async () => {
     }
 
     // Generate PNG data URL
-    qrCodeDataUrl.value = await QRCode.toDataURL(inputText.value, qrOptions)
+    qrCodeDataUrl.value = await qrToDataURL(inputText.value, qrOptions)
 
     // Generate SVG
-    qrCodeSvg.value = await QRCode.toString(inputText.value, {
+    qrCodeSvg.value = await qrToString(inputText.value, {
       ...qrOptions,
       type: 'svg',
     })
