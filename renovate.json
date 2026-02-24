@@ -1,0 +1,66 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["every day"],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "automerge": false
+  },
+  "packageRules": [
+    {
+      "groupName": "codemirror",
+      "matchPackageNames": ["codemirror", "@codemirror/**", "vue-codemirror6"]
+    },
+    {
+      "groupName": "primevue",
+      "matchPackageNames": ["primevue", "@primeuix/**", "primeflex", "primeicons"]
+    },
+    {
+      "groupName": "eslint",
+      "matchPackageNames": [
+        "eslint",
+        "@eslint/**",
+        "eslint-plugin-vue",
+        "typescript-eslint",
+        "vue-eslint-parser",
+        "@vue/eslint-config-prettier"
+      ]
+    },
+    {
+      "groupName": "vue",
+      "matchPackageNames": [
+        "vue",
+        "vue-router",
+        "pinia",
+        "@vueuse/**",
+        "vue-tsc",
+        "@vue/tsconfig",
+        "@vue/test-utils"
+      ]
+    },
+    {
+      "groupName": "vitest",
+      "matchPackageNames": ["vitest", "@vitest/**"]
+    },
+    {
+      "groupName": "vite",
+      "matchPackageNames": ["vite", "@vitejs/**"]
+    },
+    {
+      "groupName": "playwright",
+      "matchPackageNames": ["@playwright/test"]
+    },
+    {
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "groupName": "type-definitions",
+      "matchPackageNames": ["@types/**", "@tsconfig/**"]
+    }
+  ]
+}
