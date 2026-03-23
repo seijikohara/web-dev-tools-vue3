@@ -60,7 +60,7 @@
     "bcryptjs": "^3.0.3",
     "codemirror": "^6.0.2",
     "crypto-js": "^4.2.0",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "dompurify": "^3.3.3",
     "json-tree-view-vue3": "^1.1.2",
     "marked": "^17.0.3",
