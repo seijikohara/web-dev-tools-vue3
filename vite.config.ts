@@ -29,16 +29,22 @@ export default defineConfig({
   },
   build: {
     manifest: true,
-    // Vite 7 default: baseline-widely-available (Chrome 107+, Edge 107+, Firefox 104+, Safari 16+)
+    // Vite 8 default: baseline-widely-available (Chrome 111+, Edge 111+, Firefox 114+, Safari 16.4+)
     target: 'baseline-widely-available',
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          vendor: ['vue', 'vue-router', 'pinia'],
-          primevue: ['primevue', '@primeuix/themes'],
-          codemirror: ['codemirror', 'vue-codemirror6', '@codemirror/view', '@codemirror/state'],
+        // Vite 8: object form of manualChunks was removed. Use codeSplitting.groups instead.
+        codeSplitting: {
+          groups: [
+            { test: /node_modules\/(vue|vue-router|pinia)\//, name: 'vendor' },
+            { test: /node_modules\/(primevue|@primeuix\/themes)\//, name: 'primevue' },
+            {
+              test: /node_modules\/(codemirror|vue-codemirror6|@codemirror\/view|@codemirror\/state)\//,
+              name: 'codemirror',
+            },
+          ],
         },
       },
     },

@@ -87,7 +87,7 @@ export const decodeJwt = (token: string): DecodedJwt => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to decode JWT: invalid Base64 or JSON'
-    throw new Error(message)
+    throw new Error(message, { cause: error })
   }
 }
 
