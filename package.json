@@ -76,7 +76,7 @@
     "vue-codemirror6": "^1.4.2",
     "vue-gtag": "^3.7.0",
     "vue-router": "^5.0.4",
-    "xml-formatter": "^3.6.7",
+    "xml-formatter": "^3.7.0",
     "yaml": "^2.8.3"
   },
   "devDependencies": {
