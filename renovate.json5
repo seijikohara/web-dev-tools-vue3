@@ -1,0 +1,119 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
+    ":semanticCommitScopeDisabled",
+    "schedule:weekly",
+    "group:allNonMajor",
+  ],
+  "labels": ["dependencies"],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "packageRules": [
+    // ----------------------------------------------------------
+    // Group: CodeMirror
+    // ----------------------------------------------------------
+    {
+      "groupName": "codemirror",
+      "matchPackagePatterns": ["^@codemirror/", "^codemirror$"],
+    },
+    // ----------------------------------------------------------
+    // Group: PrimeVue ecosystem
+    // ----------------------------------------------------------
+    {
+      "groupName": "primevue",
+      "matchPackagePatterns": [
+        "^primevue$",
+        "^@primeuix/",
+        "^primeflex$",
+        "^primeicons$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Vue ecosystem
+    // ----------------------------------------------------------
+    {
+      "groupName": "vue",
+      "matchPackagePatterns": [
+        "^vue$",
+        "^vue-router$",
+        "^pinia$",
+        "^@vueuse/",
+        "^@vue/",
+        "^vue-tsc$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Linting and formatting
+    // ----------------------------------------------------------
+    {
+      "groupName": "linting and formatting",
+      "matchPackagePatterns": [
+        "^eslint",
+        "^@eslint/",
+        "^prettier$",
+        "^typescript-eslint$",
+        "^vue-eslint-parser$",
+        "^@vue/eslint-config-prettier$",
+        "^eslint-plugin-vue$",
+        "^globals$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Testing (unit)
+    // ----------------------------------------------------------
+    {
+      "groupName": "vitest",
+      "matchPackagePatterns": [
+        "^vitest$",
+        "^@vitest/",
+        "^@vue/test-utils$",
+        "^happy-dom$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Testing (E2E)
+    // ----------------------------------------------------------
+    {
+      "groupName": "playwright",
+      "matchPackagePatterns": ["^@playwright/"],
+    },
+    // ----------------------------------------------------------
+    // Group: Build toolchain
+    // ----------------------------------------------------------
+    {
+      "groupName": "build toolchain",
+      "matchPackagePatterns": [
+        "^vite$",
+        "^@vitejs/",
+        "^typescript$",
+        "^sass$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Type definitions
+    // ----------------------------------------------------------
+    {
+      "groupName": "type definitions",
+      "matchPackagePatterns": ["^@types/", "^@tsconfig/"],
+    },
+    // ----------------------------------------------------------
+    // Group: GitHub Actions
+    // ----------------------------------------------------------
+    {
+      "groupName": "github actions",
+      "matchManagers": ["github-actions"],
+    },
+    // ----------------------------------------------------------
+    // Major updates: require manual review
+    // ----------------------------------------------------------
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major"],
+    },
+  ],
+}
