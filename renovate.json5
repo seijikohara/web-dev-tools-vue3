@@ -1,0 +1,171 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
+    ":semanticCommitScopeDisabled",
+    "schedule:weekly",
+  ],
+  "labels": ["dependencies"],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "vulnerabilityAlerts": {
+    "automerge": false,
+    "labels": ["dependencies", "security"],
+  },
+  "packageRules": [
+    // ----------------------------------------------------------
+    // Group: CodeMirror
+    // ----------------------------------------------------------
+    {
+      "groupName": "codemirror",
+      "matchPackagePatterns": ["^@codemirror/", "^codemirror$"],
+    },
+    // ----------------------------------------------------------
+    // Group: PrimeVue ecosystem
+    // ----------------------------------------------------------
+    {
+      "groupName": "primevue",
+      "matchPackagePatterns": [
+        "^primevue$",
+        "^@primeuix/",
+        "^primeflex$",
+        "^primeicons$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Vue ecosystem
+    // ----------------------------------------------------------
+    {
+      "groupName": "vue",
+      "matchPackagePatterns": [
+        "^vue$",
+        "^vue-router$",
+        "^pinia$",
+        "^@vueuse/",
+        "^@vue/",
+        "^vue-tsc$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Linting and formatting
+    // ----------------------------------------------------------
+    {
+      "groupName": "linting and formatting",
+      "matchPackagePatterns": [
+        "^eslint",
+        "^@eslint/",
+        "^prettier$",
+        "^typescript-eslint$",
+        "^vue-eslint-parser$",
+        "^@vue/eslint-config-prettier$",
+        "^eslint-plugin-vue$",
+        "^globals$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Testing (unit)
+    // ----------------------------------------------------------
+    {
+      "groupName": "vitest",
+      "matchPackagePatterns": [
+        "^vitest$",
+        "^@vitest/",
+        "^@vue/test-utils$",
+        "^happy-dom$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Testing (E2E)
+    // ----------------------------------------------------------
+    {
+      "groupName": "playwright",
+      "matchPackagePatterns": ["^@playwright/"],
+    },
+    // ----------------------------------------------------------
+    // Group: Build toolchain
+    // ----------------------------------------------------------
+    {
+      "groupName": "build toolchain",
+      "matchPackagePatterns": [
+        "^vite$",
+        "^@vitejs/",
+        "^typescript$",
+        "^sass$",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Type definitions
+    // ----------------------------------------------------------
+    {
+      "groupName": "type definitions",
+      "matchPackagePatterns": ["^@types/", "^@tsconfig/"],
+    },
+    // ----------------------------------------------------------
+    // Group: Vue plugins
+    // ----------------------------------------------------------
+    {
+      "groupName": "vue plugins",
+      "matchPackageNames": [
+        "json-tree-view-vue3",
+        "vue-codemirror6",
+        "vue-gtag",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Formatters and parsers
+    // ----------------------------------------------------------
+    {
+      "groupName": "formatters and parsers",
+      "matchPackageNames": [
+        "marked",
+        "dompurify",
+        "sql-formatter",
+        "xml-formatter",
+        "yaml",
+        "regexp-tree",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: HTTP and validation
+    // ----------------------------------------------------------
+    {
+      "groupName": "http and validation",
+      "matchPackageNames": [
+        "axios",
+        "ajv",
+        "ajv-formats",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: Crypto and utilities
+    // ----------------------------------------------------------
+    {
+      "groupName": "crypto and utilities",
+      "matchPackageNames": [
+        "bcryptjs",
+        "crypto-js",
+        "dayjs",
+        "qrcode",
+        "ua-parser-js",
+      ],
+    },
+    // ----------------------------------------------------------
+    // Group: GitHub Actions
+    // ----------------------------------------------------------
+    {
+      "groupName": "github actions",
+      "matchManagers": ["github-actions"],
+    },
+    // ----------------------------------------------------------
+    // Major updates: require manual review
+    // ----------------------------------------------------------
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major"],
+    },
+  ],
+}
