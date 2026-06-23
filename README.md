@@ -340,7 +340,8 @@ GitHub Actions workflows are configured for automated quality assurance:
 
 - **ci.yml**: Unit tests, build verification, and type checking across Node.js 22.x and 24.x
 - **playwright.yml**: Multi-browser end-to-end test execution
-- **auto-merge-dependabot.yml**: Automated dependency update integration
+
+Dependency updates are automated by [Renovate](renovate.json5).
 
 ## Build Configuration
 
