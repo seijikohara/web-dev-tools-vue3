@@ -1,121 +1,113 @@
 {
+  // Shared Renovate policy across seijikohara repositories.
+  // Schema: https://docs.renovatebot.com/renovate-schema.json
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
-    "config:recommended",
+    // Maintainer-recommended superset of config:recommended. Pins GitHub Action
+    // and Docker digests, enables config migration, dev-dependency pinning,
+    // weekly lock file maintenance, and the npm minimum-release-age cooldown.
+    "config:best-practices",
+    // Conventional Commits with a unified `chore(deps): ...` subject.
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)",
-    ":semanticCommitScopeDisabled",
-    "schedule:weekly",
+    ":semanticCommitScope(deps)",
   ],
+  timezone: "Asia/Tokyo",
+  schedule: ["before 9am on monday"],
   labels: ["dependencies"],
-  automerge: true,
-  automergeType: "pr",
+  // Keep update branches rebased on main and merge via rebase once CI passes.
+  rebaseWhen: "behind-base-branch",
   platformAutomerge: true,
-  vulnerabilityAlerts: {
-    automerge: false,
-    labels: ["dependencies", "security"],
-  },
+  automergeStrategy: "rebase",
+  // Hold every release for 3 days so a hijacked publish cannot ride automerge on day zero.
+  minimumReleaseAge: "3 days",
+  // Auto-merge the weekly lock file refresh together with regular updates.
+  lockFileMaintenance: { automerge: true },
   packageRules: [
     {
-      groupName: "codemirror",
-      matchPackageNames: ["/^@codemirror//", "/^codemirror$/"],
+      description: "Auto-merge non-major updates once CI passes",
+      matchUpdateTypes: ["minor", "patch", "pin", "digest"],
+      automerge: true,
     },
     {
-      groupName: "primevue",
-      matchPackageNames: [
-        "/^primevue$/",
-        "/^@primeuix//",
-        "/^primeflex$/",
-        "/^primeicons$/",
-      ],
+      description: "Hold major updates for manual review via the dependency dashboard",
+      matchUpdateTypes: ["major"],
+      automerge: false,
+      dependencyDashboardApproval: true,
+      addLabels: ["major"],
     },
     {
+      description: "Group and label GitHub Actions updates",
+      matchManagers: ["github-actions"],
+      groupName: "github-actions",
+      addLabels: ["github-actions"],
+    },
+    {
+      description: "Group the Vue framework and state/router",
       groupName: "vue",
-      matchPackageNames: [
-        "/^vue$/",
-        "/^vue-router$/",
-        "/^pinia$/",
-        "/^@vueuse//",
-        "/^@vue//",
-        "/^vue-tsc$/",
-      ],
+      matchPackageNames: ["vue", "vue-router", "pinia", "@vueuse/*", "@vue/*", "vue-tsc"],
     },
     {
+      description: "Group PrimeVue packages",
+      groupName: "primevue",
+      matchPackageNames: ["primevue", "@primeuix/*", "primeflex", "primeicons"],
+    },
+    {
+      description: "Group CodeMirror packages",
+      groupName: "codemirror",
+      matchPackageNames: ["codemirror", "@codemirror/*"],
+    },
+    {
+      description: "Group linting and formatting tools",
       groupName: "linting and formatting",
-      matchPackageNames: [
-        "/^eslint/",
-        "/^@eslint//",
-        "/^prettier$/",
-        "/^typescript-eslint$/",
-        "/^vue-eslint-parser$/",
-        "/^@vue/eslint-config-prettier$/",
-        "/^eslint-plugin-vue$/",
-        "/^globals$/",
-      ],
+      matchPackageNames: ["eslint", "@eslint/*", "eslint-plugin-*", "prettier", "typescript-eslint", "vue-eslint-parser", "@vue/eslint-config-prettier", "globals"],
     },
     {
+      description: "Group the test toolchain",
       groupName: "vitest",
-      matchPackageNames: [
-        "/^vitest$/",
-        "/^@vitest//",
-        "/^@vue/test-utils$/",
-        "/^happy-dom$/",
-      ],
+      matchPackageNames: ["vitest", "@vitest/*", "@vue/test-utils", "happy-dom"],
     },
     {
+      description: "Group Playwright packages",
       groupName: "playwright",
-      matchPackageNames: ["/^@playwright//"],
+      matchPackageNames: ["playwright", "@playwright/*"],
     },
     {
+      description: "Group the build toolchain",
       groupName: "build toolchain",
-      matchPackageNames: [
-        "/^vite$/",
-        "/^@vitejs//",
-        "/^typescript$/",
-        "/^sass$/",
-      ],
+      matchPackageNames: ["vite", "@vitejs/*", "vite-plugin-*", "typescript", "sass"],
     },
     {
+      description: "Group TypeScript type definitions",
       groupName: "type definitions",
-      matchPackageNames: ["/^@types//", "/^@tsconfig//"],
+      matchPackageNames: ["@types/*", "@tsconfig/*"],
     },
     {
+      description: "Group Vue plugins maintained alongside the app",
       groupName: "vue plugins",
       matchPackageNames: ["json-tree-view-vue3", "vue-codemirror6", "vue-gtag"],
     },
     {
+      description: "Group formatters and parsers",
       groupName: "formatters and parsers",
-      matchPackageNames: [
-        "marked",
-        "dompurify",
-        "sql-formatter",
-        "xml-formatter",
-        "yaml",
-        "regexp-tree",
-      ],
+      matchPackageNames: ["marked", "dompurify", "sql-formatter", "xml-formatter", "yaml", "regexp-tree"],
     },
     {
+      description: "Group HTTP and validation libraries",
       groupName: "http and validation",
       matchPackageNames: ["axios", "ajv", "ajv-formats"],
     },
     {
+      description: "Group crypto and utility libraries",
       groupName: "crypto and utilities",
-      matchPackageNames: [
-        "bcryptjs",
-        "crypto-js",
-        "dayjs",
-        "qrcode",
-        "ua-parser-js",
-      ],
-    },
-    {
-      groupName: "github actions",
-      matchManagers: ["github-actions"],
-    },
-    {
-      matchUpdateTypes: ["major"],
-      automerge: false,
-      labels: ["dependencies", "major"],
+      matchPackageNames: ["bcryptjs", "crypto-js", "dayjs", "qrcode", "ua-parser-js"],
     },
   ],
+  vulnerabilityAlerts: {
+    description: "Raise security fixes immediately and require manual review",
+    schedule: ["at any time"],
+    minimumReleaseAge: null,
+    addLabels: ["security"],
+    automerge: false,
+  },
 }
