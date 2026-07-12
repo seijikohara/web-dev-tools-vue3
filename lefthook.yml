@@ -1,0 +1,21 @@
+pre-commit:
+  jobs:
+    - name: format staged files
+      run: pnpm exec oxfmt {staged_files}
+      glob: '*.{ts,vue,js,mjs,cjs,json,md,yml,yaml,scss}'
+      stage_fixed: true
+    - name: lint staged files (oxlint)
+      run: pnpm exec oxlint --fix {staged_files}
+      glob: '*.{ts,js,mjs,cjs,vue}'
+      stage_fixed: true
+    - name: lint staged Vue files (eslint)
+      run: pnpm exec eslint --fix {staged_files}
+      glob: '*.vue'
+      stage_fixed: true
+
+pre-push:
+  jobs:
+    - name: lint
+      run: pnpm run lint
+    - name: typecheck
+      run: pnpm run typecheck
