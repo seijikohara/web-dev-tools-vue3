@@ -177,6 +177,50 @@ export const matchesCronField = (
   }
 }
 
+// Pure helper functions for human readable description
+export const describeSeconds = (sec: CronField, enabled: boolean): string | null => {
+  if (!enabled) return null
+  const typeMap: Record<string, () => string | null> = {
+    every: () => 'Every second',
+    step: () => `Every ${sec.stepValue} seconds`,
+    specific: () => (sec.values.length > 0 ? `At second ${sec.values.join(', ')}` : null),
+    range: () => `Seconds ${sec.rangeStart}-${sec.rangeEnd}`,
+  }
+  return typeMap[sec.type]?.() ?? null
+}
+
+export const describeMinutes = (
+  min: CronField,
+  sec: CronField,
+  usesSec: boolean,
+): string | null => {
+  const typeMap: Record<string, () => string | null> = {
+    every: () => (!usesSec || sec.type !== 'every' ? 'Every minute' : null),
+    step: () => `Every ${min.stepValue} minutes`,
+    specific: () => (min.values.length > 0 ? `At minute ${min.values.join(', ')}` : null),
+    range: () => `Minutes ${min.rangeStart}-${min.rangeEnd}`,
+  }
+  return typeMap[min.type]?.() ?? null
+}
+
+export const describeHours = (hr: CronField): string | null => {
+  const typeMap: Record<string, () => string | null> = {
+    step: () => `every ${hr.stepValue} hours`,
+    specific: () => (hr.values.length > 0 ? `at hour ${hr.values.join(', ')}` : null),
+    range: () => `hours ${hr.rangeStart}-${hr.rangeEnd}`,
+  }
+  return typeMap[hr.type]?.() ?? null
+}
+
+export const describeDayOfMonth = (dom: CronField): string | null => {
+  const typeMap: Record<string, () => string | null> = {
+    specific: () => (dom.values.length > 0 ? `on day ${dom.values.join(', ')} of the month` : null),
+    range: () => `days ${dom.rangeStart}-${dom.rangeEnd} of the month`,
+    step: () => `every ${dom.stepValue} days`,
+  }
+  return typeMap[dom.type]?.() ?? null
+}
+
 // Composable
 export const useCronBuilder = () => {
   // State
@@ -226,46 +270,6 @@ export const useCronBuilder = () => {
   )
 
   // Pure helper functions for human readable description
-  const describeSeconds = (sec: CronField, enabled: boolean): string | null => {
-    if (!enabled) return null
-    const typeMap: Record<string, () => string | null> = {
-      every: () => 'Every second',
-      step: () => `Every ${sec.stepValue} seconds`,
-      specific: () => (sec.values.length > 0 ? `At second ${sec.values.join(', ')}` : null),
-      range: () => `Seconds ${sec.rangeStart}-${sec.rangeEnd}`,
-    }
-    return typeMap[sec.type]?.() ?? null
-  }
-
-  const describeMinutes = (min: CronField, sec: CronField, usesSec: boolean): string | null => {
-    const typeMap: Record<string, () => string | null> = {
-      every: () => (!usesSec || sec.type !== 'every' ? 'Every minute' : null),
-      step: () => `Every ${min.stepValue} minutes`,
-      specific: () => (min.values.length > 0 ? `At minute ${min.values.join(', ')}` : null),
-      range: () => `Minutes ${min.rangeStart}-${min.rangeEnd}`,
-    }
-    return typeMap[min.type]?.() ?? null
-  }
-
-  const describeHours = (hr: CronField): string | null => {
-    const typeMap: Record<string, () => string | null> = {
-      step: () => `every ${hr.stepValue} hours`,
-      specific: () => (hr.values.length > 0 ? `at hour ${hr.values.join(', ')}` : null),
-      range: () => `hours ${hr.rangeStart}-${hr.rangeEnd}`,
-    }
-    return typeMap[hr.type]?.() ?? null
-  }
-
-  const describeDayOfMonth = (dom: CronField): string | null => {
-    const typeMap: Record<string, () => string | null> = {
-      specific: () =>
-        dom.values.length > 0 ? `on day ${dom.values.join(', ')} of the month` : null,
-      range: () => `days ${dom.rangeStart}-${dom.rangeEnd} of the month`,
-      step: () => `every ${dom.stepValue} days`,
-    }
-    return typeMap[dom.type]?.() ?? null
-  }
-
   const describeMonth = (mon: CronField): string | null => {
     if (mon.type === 'specific' && mon.values.length > 0) {
       const monthLabels = mon.values

@@ -385,25 +385,26 @@ const copyOutput = () => {
   void copy(state.output, { detail: 'Output copied to clipboard' })
 }
 
+// Recursively render a parsed value's children as XML elements named `name`
+const convert = (data: unknown, name: string): string => {
+  if (data === null || data === undefined) {
+    return `<${name}/>`
+  }
+  if (Array.isArray(data)) {
+    return data.map(item => convert(item, name)).join('')
+  }
+  if (typeof data === 'object') {
+    const entries = Object.entries(data as Record<string, unknown>)
+    const children = entries.map(([key, value]) => convert(value, key)).join('')
+    return `<${name}>${children}</${name}>`
+  }
+  // Primitive types: string, number, boolean, bigint, symbol
+  const primitiveValue = typeof data === 'string' ? data : JSON.stringify(data)
+  return `<${name}>${primitiveValue}</${name}>`
+}
+
 // Convert to JSON helper
 const jsonToXml = (obj: unknown, rootName = 'root'): string => {
-  const convert = (data: unknown, name: string): string => {
-    if (data === null || data === undefined) {
-      return `<${name}/>`
-    }
-    if (Array.isArray(data)) {
-      return data.map(item => convert(item, name)).join('')
-    }
-    if (typeof data === 'object') {
-      const entries = Object.entries(data as Record<string, unknown>)
-      const children = entries.map(([key, value]) => convert(value, key)).join('')
-      return `<${name}>${children}</${name}>`
-    }
-    // Primitive types: string, number, boolean, bigint, symbol
-    const primitiveValue = typeof data === 'string' ? data : JSON.stringify(data)
-    return `<${name}>${primitiveValue}</${name}>`
-  }
-
   return convert(obj, rootName)
 }
 

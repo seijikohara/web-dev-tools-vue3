@@ -124,38 +124,39 @@ const convertFormat = ref<'json' | 'yaml'>('json')
 const compareXml1 = ref('')
 const compareXml2 = ref('')
 
+// Recursively count elements, attributes, and max depth of a parsed XML document
+const traverse = (
+  node: Node,
+  depth: number,
+): { elements: number; attributes: number; maxDepth: number } => {
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return { elements: 0, attributes: 0, maxDepth: depth }
+  }
+
+  const element = node as Element
+  const childResults = Array.from(node.childNodes).reduce(
+    (acc, child) => {
+      const result = traverse(child, depth + 1)
+      return {
+        elements: acc.elements + result.elements,
+        attributes: acc.attributes + result.attributes,
+        maxDepth: Math.max(acc.maxDepth, result.maxDepth),
+      }
+    },
+    { elements: 0, attributes: 0, maxDepth: depth },
+  )
+
+  return {
+    elements: 1 + childResults.elements,
+    attributes: element.attributes.length + childResults.attributes,
+    maxDepth: childResults.maxDepth,
+  }
+}
+
 // Calculate XML statistics
 const calculateXmlStats = (
   doc: Document,
 ): { elements: number; attributes: number; depth: number; size: string } => {
-  const traverse = (
-    node: Node,
-    depth: number,
-  ): { elements: number; attributes: number; maxDepth: number } => {
-    if (node.nodeType !== Node.ELEMENT_NODE) {
-      return { elements: 0, attributes: 0, maxDepth: depth }
-    }
-
-    const element = node as Element
-    const childResults = Array.from(node.childNodes).reduce(
-      (acc, child) => {
-        const result = traverse(child, depth + 1)
-        return {
-          elements: acc.elements + result.elements,
-          attributes: acc.attributes + result.attributes,
-          maxDepth: Math.max(acc.maxDepth, result.maxDepth),
-        }
-      },
-      { elements: 0, attributes: 0, maxDepth: depth },
-    )
-
-    return {
-      elements: 1 + childResults.elements,
-      attributes: element.attributes.length + childResults.attributes,
-      maxDepth: childResults.maxDepth,
-    }
-  }
-
   const stats = traverse(doc.documentElement, 0)
 
   const bytes = new Blob([state.input]).size

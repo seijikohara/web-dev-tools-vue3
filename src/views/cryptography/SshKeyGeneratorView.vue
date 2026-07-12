@@ -193,6 +193,12 @@ const generateKeyPair = async (algorithm: string): Promise<CryptoKeyPair> => {
   }
 }
 
+// Format a base64-encoded key as PEM
+const formatPem = (base64: string, type: 'PUBLIC' | 'PRIVATE'): string => {
+  const lines = base64.match(/.{1,64}/g) ?? []
+  return `-----BEGIN ${type} KEY-----\n${lines.join('\n')}\n-----END ${type} KEY-----`
+}
+
 // Generate SSH key pair
 const generateKeys = async () => {
   isGenerating.value = true
@@ -208,12 +214,6 @@ const generateKeys = async () => {
 
     const publicKeyBase64 = arrayBufferToBase64(publicKeyBuffer)
     const privateKeyBase64 = arrayBufferToBase64(privateKeyBuffer)
-
-    // Format as PEM
-    const formatPem = (base64: string, type: 'PUBLIC' | 'PRIVATE'): string => {
-      const lines = base64.match(/.{1,64}/g) ?? []
-      return `-----BEGIN ${type} KEY-----\n${lines.join('\n')}\n-----END ${type} KEY-----`
-    }
 
     // Format public key in OpenSSH format
     const formatOpenSshPublicKey = (base64: string): string => {

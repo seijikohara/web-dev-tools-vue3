@@ -210,16 +210,17 @@ export const generateCurlCommand = (
   ].join(` \\
   `)
 
+// Strip a single matching pair of surrounding quotes from a token value
+const cleanValue = (val: string): string => {
+  if (!val) return ''
+  if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
+    return val.slice(1, -1)
+  }
+  return val
+}
+
 export const parseCurlString = (input: string): ParseResult => {
   const tokens = input.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? []
-
-  const cleanValue = (val: string): string => {
-    if (!val) return ''
-    if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
-      return val.slice(1, -1)
-    }
-    return val
-  }
 
   const processTokens = (tokenList: string[], index: number, state: ParseResult): ParseResult => {
     if (index >= tokenList.length) return state
