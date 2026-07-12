@@ -28,16 +28,18 @@ export const useUIStore = defineStore('ui', () => {
   // Derived State
   // ============================================================
 
-  const sidebarWidth = computed(() =>
-    isSidebarCollapsed.value ? COLLAPSED_WIDTH : FULL_WIDTH
-  )
+  const sidebarWidth = computed(() => (isSidebarCollapsed.value ? COLLAPSED_WIDTH : FULL_WIDTH))
 
   // ============================================================
   // Actions
   // ============================================================
 
-  const openMenu = () => { isMenuOpen.value = true }
-  const closeMenu = () => { isMenuOpen.value = false }
+  const openMenu = () => {
+    isMenuOpen.value = true
+  }
+  const closeMenu = () => {
+    isMenuOpen.value = false
+  }
 
   const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value
@@ -99,8 +101,8 @@ See @rules/typescript.md for file naming conventions.
 
 ```typescript
 return {
-  count: readonly(count),  // Prevent external mutation
-  increment,               // Actions for mutation
+  count: readonly(count), // Prevent external mutation
+  increment, // Actions for mutation
 }
 ```
 

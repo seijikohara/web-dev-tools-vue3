@@ -7,6 +7,7 @@ paths: src/views/**/*.vue
 ## Purpose
 
 Views are page-level components that:
+
 - Correspond to routes
 - Compose UI from smaller components
 - Connect composables to the UI

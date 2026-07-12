@@ -58,7 +58,7 @@ export const useFeature = (): UseFeatureReturn => {
   const error = ref<string | null>(null)
 
   const output = computed(() =>
-    input.value ? transformData(input.value, selectedOption.value) : ''
+    input.value ? transformData(input.value, selectedOption.value) : '',
   )
 
   const execute = async () => {
@@ -124,7 +124,9 @@ export const useTimer = () => {
   let intervalId: ReturnType<typeof setInterval> | null = null
 
   const start = () => {
-    intervalId = setInterval(() => { /* ... */ }, 1000)
+    intervalId = setInterval(() => {
+      /* ... */
+    }, 1000)
   }
 
   const stop = () => {
@@ -143,6 +145,7 @@ export const useTimer = () => {
 ## Testing
 
 Location: `src/composables/__tests__/useXxxx.test.ts`
+
 - Test pure functions independently
 - Test composable state initialization
 - Test computed value reactivity

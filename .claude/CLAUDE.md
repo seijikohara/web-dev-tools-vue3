@@ -55,18 +55,18 @@ e2e/                  # Playwright E2E tests
 
 Detailed guidelines are organized in the `rules/` directory:
 
-| Category | File | Description |
-|----------|------|-------------|
-| **TypeScript** | @rules/typescript.md | Type patterns, pure functions, error handling, code style |
-| **API** | @rules/api.md | HTTP client, error handling, endpoint definitions |
-| **Vue Components** | @rules/vue/components.md | Component structure, props, slots |
-| **Composables** | @rules/vue/composables.md | Composition API patterns |
-| **Stores** | @rules/vue/stores.md | Pinia state management |
-| **Views** | @rules/vue/views.md | Page component guidelines |
-| **Unit Testing** | @rules/testing/unit.md | Vitest patterns |
-| **E2E Testing** | @rules/testing/e2e.md | Playwright patterns |
-| **Git** | @rules/general/git.md | Commit message format |
-| **Pull Requests** | @rules/general/pr.md | PR guidelines and checklist |
+| Category           | File                      | Description                                               |
+| ------------------ | ------------------------- | --------------------------------------------------------- |
+| **TypeScript**     | @rules/typescript.md      | Type patterns, pure functions, error handling, code style |
+| **API**            | @rules/api.md             | HTTP client, error handling, endpoint definitions         |
+| **Vue Components** | @rules/vue/components.md  | Component structure, props, slots                         |
+| **Composables**    | @rules/vue/composables.md | Composition API patterns                                  |
+| **Stores**         | @rules/vue/stores.md      | Pinia state management                                    |
+| **Views**          | @rules/vue/views.md       | Page component guidelines                                 |
+| **Unit Testing**   | @rules/testing/unit.md    | Vitest patterns                                           |
+| **E2E Testing**    | @rules/testing/e2e.md     | Playwright patterns                                       |
+| **Git**            | @rules/general/git.md     | Commit message format                                     |
+| **Pull Requests**  | @rules/general/pr.md      | PR guidelines and checklist                               |
 
 ## Key Principles
 

@@ -10,9 +10,11 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 ## Core Features
 
 ### Information Retrieval
+
 - **Dashboard**: System and network diagnostics including User Agent parsing, IP address resolution, geolocation data, RDAP queries, and HTTP header inspection
 
 ### Data Formatting and Transformation
+
 - **JSON Formatter**: JSON validation, formatting, and beautification with syntax highlighting
 - **XML Formatter**: XML document formatting and structure visualization
 - **YAML Formatter**: YAML validation and formatting utilities
@@ -22,18 +24,21 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **String Case Converter**: Convert text between camelCase, PascalCase, snake_case, kebab-case, and more
 
 ### Encoding and Decoding
+
 - **Base64 Encoder**: Base64 encoding and decoding utilities
 - **URL Encoding**: Bidirectional URL encoding and decoding utilities
 - **HTML Entities**: HTML entity reference lookup and conversion utilities
 - **JWT Decoder**: JSON Web Token parsing and validation
 
 ### Hash & Cryptography
+
 - **Hash Generator**: Cryptographic hash generation (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
 - **BCrypt Generator**: Secure password hashing and verification using BCrypt algorithm
 - **SSH Key Generator**: Generate SSH key pairs (RSA, ECDSA, Ed25519)
 - **GPG Key Generator**: Generate GPG key pairs for encryption and signing
 
 ### Generators
+
 - **UUID Generator**: UUID v1/v4 generation with bulk support
 - **Password Generator**: Secure random password generation with customizable options
 - **QR Code Generator**: Generate QR codes from text, URLs, vCard, WiFi config with PNG/SVG export
@@ -41,40 +46,48 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **cURL Builder**: Build and parse cURL commands with a visual interface
 
 ### Converters
+
 - **Color Converter**: Convert between HEX, RGB, HSL color formats
 - **Timestamp Converter**: Unix timestamp and date format conversions
 
 ### Testing & Validation
+
 - **Regex Tester**: Regular expression testing with match highlighting
 
 ### Network Tools
+
 - **IP Lookup**: IP address geolocation, RDAP queries, and network information
 
 ## Technology Stack
 
 ### Core Framework
+
 - **Frontend**: Vue 3 (Composition API)
 - **Language**: TypeScript (strict mode)
 - **Build System**: Vite 7.x
 
 ### UI and Styling
+
 - **Component Library**: PrimeVue 4.x
 - **CSS Framework**: PrimeFlex 4.x
 - **Icons**: PrimeIcons 7.x
 - **Theme System**: PrimeUix Themes
 
 ### Architecture
+
 - **State Management**: Pinia 3.x
 - **Routing**: Vue Router 4.x
 - **Composables**: VueUse utilities
 
 ### Quality Assurance
+
 - **Unit Testing**: Vitest 4.x with coverage support
 - **E2E Testing**: Playwright 1.x (end-to-end)
 - **Linting**: ESLint 9.x with TypeScript support
 - **Code Formatting**: Prettier 3.x
 
 ### Utilities and Libraries
+
 - **HTTP Client**: Axios
 - **Date/Time**: Day.js
 - **Security**: DOMPurify (XSS prevention), bcryptjs (password hashing), crypto-js
@@ -108,6 +121,7 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 TypeScript cannot handle type information for `.vue` imports by default. This project uses `vue-tsc` (a TypeScript CLI wrapper) for type checking Vue components.
 
 The **Vue - Official** extension automatically provides TypeScript language service support for `.vue` files in your editor, enabling:
+
 - Type inference for component props, emits, and slots
 - Import path auto-completion
 - Type checking in template expressions
@@ -294,6 +308,7 @@ VITE_DEV_PORT=5173
 ## Testing Strategy
 
 The project implements a two-tier testing strategy:
+
 - **Unit tests**: Vitest for testing composables and utility functions
 - **End-to-end tests**: Playwright for detecting regressions through basic functionality verification
 

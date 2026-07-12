@@ -3,6 +3,7 @@
 ## Objective
 
 These tests validate regression detection through basic functionality verification. They confirm:
+
 1. All pages load without errors
 2. Core input/output flows function correctly
 3. Critical regressions are detected
@@ -61,26 +62,32 @@ npm run test:e2e -- --ui
 ## Test Coverage
 
 ### Critical Tests (tests/critical/)
+
 **smoke.spec.ts**: Validates page accessibility and basic rendering across all application routes
+
 - Verifies HTTP 200 responses
 - Confirms page title accuracy
 - Ensures DOM structure renders
 
 **layout.spec.ts**: Validates common layout elements and responsive behavior
+
 - Verifies topbar and logo display
 - Desktop: Confirms sidebar is always visible
 - Mobile: Confirms menu button opens/closes sidebar
 - Tests navigation link functionality
 
 ### Page Tests (tests/pages/)
+
 Validates pages covering both API-dependent and client-side functionality:
 
 **dashboard.spec.ts**: Dashboard page with API integration
+
 - Verifies page sections are visible
 - Validates API mock data display (IP address, hostname)
 - Confirms HTTP headers table population
 
 **Tool Pages**: Validates input-to-output transformation for utility tools
+
 - **hash.spec.ts**: Hash Generator
 - **bcrypt-hash.spec.ts**: BCrypt Hash Generator
 - **json-formatter.spec.ts**: JSON Formatter
@@ -94,11 +101,13 @@ Each test verifies the happy path without validating implementation details.
 ### Test Scope
 
 Included:
+
 - Page load verification
 - Basic user workflows
 - Critical regression detection
 
 Excluded:
+
 - Algorithm correctness validation (covered by unit tests)
 - Input edge case handling
 - UI styling verification
@@ -107,6 +116,7 @@ Excluded:
 ## Configuration
 
 Test configuration is defined in `../playwright.config.ts`:
+
 - Browser targets: Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari
 - Timeout: 60 seconds per test
 - Retry: 1 attempt on failure
@@ -123,6 +133,7 @@ Test configuration is defined in `../playwright.config.ts`:
 5. Verify single happy path only; avoid implementation detail validation
 
 ### API Mocking
+
 - Add mock responses to `fixtures/api-mocks.ts`
 - Use `pageWithMocks` fixture to automatically apply mocks
 - Mock data should be minimal but representative
@@ -139,6 +150,7 @@ npx playwright show-report
 ### Failure Artifacts
 
 Test failures automatically generate:
+
 - Screenshots (PNG) at failure point
 - Video recordings (WebM) of test execution
 - Detailed error traces with DOM snapshots

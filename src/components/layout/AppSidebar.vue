@@ -46,16 +46,18 @@ const groupedMenuItems = computed<CategoryGroup[]>(() => {
     return acc
   }, new Map<MenuCategory, MenuItem[]>())
 
-  return Array.from(groups.entries())
-    .map(([category, items]) => ({
-      category,
-      label: MENU_CATEGORIES[category].label,
-      icon: MENU_CATEGORIES[category].icon,
-      items,
-      order: MENU_CATEGORIES[category].order,
-    }))
-    // oxlint-disable-next-line unicorn/no-array-sort -- sorts the array just built by Array.from().map() above, not a shared/original array
-    .sort((a, b) => a.order - b.order)
+  return (
+    Array.from(groups.entries())
+      .map(([category, items]) => ({
+        category,
+        label: MENU_CATEGORIES[category].label,
+        icon: MENU_CATEGORIES[category].icon,
+        items,
+        order: MENU_CATEGORIES[category].order,
+      }))
+      // oxlint-disable-next-line unicorn/no-array-sort -- sorts the array just built by Array.from().map() above, not a shared/original array
+      .sort((a, b) => a.order - b.order)
+  )
 })
 
 const currentRouteName = computed(() => route.name)

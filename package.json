@@ -1,19 +1,8 @@
 {
   "name": "web-dev-tools-vue3",
-  "description": "Web Development Tools",
   "private": true,
+  "description": "Web Development Tools",
   "type": "module",
-  "packageManager": "pnpm@11.11.0",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.11.0",
-      "onFail": "download"
-    }
-  },
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "scripts": {
     "dev": "vite",
     "dev:host": "vite --host",
@@ -115,5 +104,16 @@
     "vitest": "^4.1.10",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.3.7"
-  }
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.11.0",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@11.11.0"
 }

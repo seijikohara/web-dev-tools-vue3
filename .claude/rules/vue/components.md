@@ -50,6 +50,7 @@ onMounted(() => { ... })
 ## Block Order
 
 Always maintain this order:
+
 1. `<script setup lang="ts">`
 2. `<template>`
 3. `<style lang="scss" scoped>`
@@ -86,7 +87,7 @@ const emit = defineEmits<{
 
 ```typescript
 const modelValue = defineModel<string>({ default: '' })
-const selected = defineModel<string>('selected')  // Named model
+const selected = defineModel<string>('selected') // Named model
 ```
 
 ### Expose for Parent Access
@@ -94,7 +95,9 @@ const selected = defineModel<string>('selected')  // Named model
 ```typescript
 defineExpose({
   focus: () => inputRef.value?.focus(),
-  reset: () => { inputText.value = '' },
+  reset: () => {
+    inputText.value = ''
+  },
 })
 ```
 
@@ -110,13 +113,7 @@ defineExpose({
 <Button label="Reset" severity="secondary" @click="reset" />
 
 <!-- Icon button with tooltip -->
-<Button
-  v-tooltip.top="'Tooltip text'"
-  icon="pi pi-copy"
-  text
-  rounded
-  @click="handleAction"
-/>
+<Button v-tooltip.top="'Tooltip text'" icon="pi pi-copy" text rounded @click="handleAction" />
 ```
 
 ### Toast Usage
@@ -127,7 +124,7 @@ import { useToast } from 'primevue/usetoast'
 const toast = useToast()
 
 toast.add({
-  severity: 'success',  // 'success' | 'info' | 'warn' | 'error'
+  severity: 'success', // 'success' | 'info' | 'warn' | 'error'
   summary: 'Title',
   detail: 'Message content',
   life: 3000,

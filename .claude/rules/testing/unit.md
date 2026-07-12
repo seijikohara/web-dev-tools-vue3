@@ -19,11 +19,7 @@ src/composables/
 
 ```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import {
-  pureFunction,
-  CONSTANTS,
-  useFeature,
-} from '../useFeature'
+import { pureFunction, CONSTANTS, useFeature } from '../useFeature'
 
 describe('useFeature', () => {
   // ============================================================
@@ -153,8 +149,8 @@ npm run test:ui     # Visual UI
 ## Common Matchers
 
 ```typescript
-expect(value).toBe(expected)           // Strict equality
-expect(value).toEqual(expected)        // Deep equality
+expect(value).toBe(expected) // Strict equality
+expect(value).toEqual(expected) // Deep equality
 expect(value).toBeTruthy()
 expect(value).toBeNull()
 expect(str).toContain('substring')

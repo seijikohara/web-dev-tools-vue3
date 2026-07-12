@@ -12,16 +12,16 @@ Follow Conventional Commits format:
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
-| `style` | Formatting, no code change |
+| Type       | Description                     |
+| ---------- | ------------------------------- |
+| `feat`     | New feature                     |
+| `fix`      | Bug fix                         |
+| `docs`     | Documentation only              |
+| `style`    | Formatting, no code change      |
 | `refactor` | Code change without feature/fix |
-| `perf` | Performance improvement |
-| `test` | Adding/updating tests |
-| `chore` | Build, tooling, dependencies |
+| `perf`     | Performance improvement         |
+| `test`     | Adding/updating tests           |
+| `chore`    | Build, tooling, dependencies    |
 
 ### Scope Examples
 
