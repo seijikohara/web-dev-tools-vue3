@@ -171,11 +171,11 @@ export const useBase64Encoder = () => {
   const processFile = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = () => {
+      reader.addEventListener('load', () => {
         const result = reader.result as string
         resolve(result.split(',')[1] ?? result)
-      }
-      reader.onerror = () => reject(new Error('Failed to read file'))
+      })
+      reader.addEventListener('error', () => reject(new Error('Failed to read file')))
       reader.readAsDataURL(file)
     })
   }

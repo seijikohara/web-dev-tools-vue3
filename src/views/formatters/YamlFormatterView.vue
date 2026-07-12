@@ -238,7 +238,8 @@ const processYamlWithOptions = (obj: unknown): unknown => {
 
     // Sort keys if enabled
     const sortedEntries = state.sortKeys
-      ? entries.sort((a, b) => a[0].localeCompare(b[0]))
+      ? // oxlint-disable-next-line unicorn/no-array-sort -- entries is Object.entries(obj) above, a fresh local array; nothing external is mutated
+        entries.sort((a, b) => a[0].localeCompare(b[0]))
       : entries
 
     return sortedEntries.reduce<Record<string, unknown>>((acc, [key, value]) => {

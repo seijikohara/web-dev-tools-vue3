@@ -18,7 +18,7 @@ defineProps<{
     </template>
     <template v-if="subtitle" #subtitle>{{ subtitle }}</template>
     <template #content>
-      <slot />
+      <slot></slot>
     </template>
   </Card>
 </template>

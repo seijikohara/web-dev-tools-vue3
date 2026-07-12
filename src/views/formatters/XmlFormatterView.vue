@@ -226,6 +226,7 @@ const sortAttributesTransform = (s: string): string =>
         return m ? { name: m[1], value: m[2] } : null
       })
       .filter((a): a is { name: string; value: string } => a !== null)
+      // oxlint-disable-next-line unicorn/no-array-sort -- sorts the array just built by the map/filter chain above, not a shared/original array
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(a => ` ${a.name}="${a.value}"`)
       .join('')

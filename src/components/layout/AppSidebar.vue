@@ -54,6 +54,7 @@ const groupedMenuItems = computed<CategoryGroup[]>(() => {
       items,
       order: MENU_CATEGORIES[category].order,
     }))
+    // oxlint-disable-next-line unicorn/no-array-sort -- sorts the array just built by Array.from().map() above, not a shared/original array
     .sort((a, b) => a.order - b.order)
 })
 

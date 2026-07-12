@@ -106,14 +106,15 @@ export class BcryptWorkerManager {
   private initWorker(): void {
     if (this.worker) return
 
-    this.worker = new BcryptWorker()
-    this.worker.onmessage = (event: MessageEvent<BcryptWorkerResponse>) => {
+    const worker = new BcryptWorker()
+    worker.addEventListener('message', (event: MessageEvent<BcryptWorkerResponse>) => {
       this.handleResponse(event.data)
-    }
-    this.worker.onerror = (error: ErrorEvent) => {
+    })
+    worker.addEventListener('error', (error: ErrorEvent) => {
       console.error('Worker error:', error)
       this.callbacks.onError?.('An error occurred during computation')
-    }
+    })
+    this.worker = worker
   }
 
   private handleResponse(data: BcryptWorkerResponse): void {

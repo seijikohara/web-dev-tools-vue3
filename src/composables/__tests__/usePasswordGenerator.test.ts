@@ -406,7 +406,6 @@ describe('usePasswordGenerator', () => {
     it('should prepend new passwords', () => {
       generator.count.value = 2
       generator.generate()
-      const _firstBatchIds = generator.generatedPasswords.value.map(p => p.id)
 
       generator.generate()
 

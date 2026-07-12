@@ -116,10 +116,12 @@ export const expandIpv6 = (ip: string): string => {
 // Convert IP to reverse DNS format for PTR lookup
 export const ipToReverseDns = (ip: string): string => {
   if (isValidIpv4(ip)) {
+    // oxlint-disable-next-line unicorn/no-array-reverse -- reverses the array built by String#split() on this same line, not a shared/original array
     return `${ip.split('.').reverse().join('.')}.in-addr.arpa`
   }
 
   if (isValidIpv6(ip)) {
+    // oxlint-disable-next-line unicorn/no-array-reverse -- reverses the array built by String#split() on this same line, not a shared/original array
     return `${expandIpv6(ip).replace(/:/g, '').split('').reverse().join('.')}.ip6.arpa`
   }
 

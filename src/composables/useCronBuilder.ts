@@ -95,7 +95,8 @@ export const generateFieldExpression = (field: CronField, min: number, max: numb
     case 'every':
       return '*'
     case 'specific':
-      return field.values.length > 0 ? field.values.sort((a, b) => a - b).join(',') : '*'
+      // oxlint-disable-next-line unicorn/no-array-sort -- sorts a spread copy of field.values, not the source array; Array#toSorted() needs ES2023, unavailable under this project's ES2022 lib target (tsconfig.app.json)
+      return field.values.length > 0 ? [...field.values].sort((a, b) => a - b).join(',') : '*'
     case 'range':
       return `${Math.max(min, field.rangeStart)}-${Math.min(max, field.rangeEnd)}`
     case 'step':

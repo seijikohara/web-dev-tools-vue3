@@ -375,9 +375,7 @@ test.describe('URL Encoder', () => {
 
       await test.step('Verify common encodings are shown', async () => {
         // Check for common URL encoding characters
-        await Promise.all([
-          expect.soft(page.locator('.p-tag').filter({ hasText: '%20' })).toBeVisible(),
-        ])
+        await expect.soft(page.locator('.p-tag').filter({ hasText: '%20' })).toBeVisible()
       })
     })
   })

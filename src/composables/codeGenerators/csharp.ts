@@ -11,10 +11,10 @@ export const defaultCSharpOptions = {
   generateDataContract: false,
 } as const satisfies CSharpOptions
 
-const csharpType = (typeInfo: TypeInfo, options: CSharpOptions): string => {
+const csharpType = (typeInfo: TypeInfo): string => {
   // Early return for arrays
   if (typeInfo.isArray && typeInfo.arrayItemType) {
-    return `List<${csharpType(typeInfo.arrayItemType, options)}>`
+    return `List<${csharpType(typeInfo.arrayItemType)}>`
   }
 
   // Early return for objects
@@ -35,7 +35,7 @@ const csharpType = (typeInfo: TypeInfo, options: CSharpOptions): string => {
 
 // Build property type with nullable suffix
 const buildPropType = (childType: TypeInfo, options: CSharpOptions): string => {
-  const baseType = csharpType(childType, options)
+  const baseType = csharpType(childType)
   return options.optionalProperties && options.useNullableReferenceTypes ? `${baseType}?` : baseType
 }
 
