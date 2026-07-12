@@ -70,7 +70,7 @@ export default defineConfig({
 
   // Auto-start development server
   webServer: {
-    command: 'npm run dev',
+    command: 'pnpm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
