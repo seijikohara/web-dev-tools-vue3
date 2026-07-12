@@ -1,13 +1,20 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig, mergeConfig } from 'vitest/config'
+import { playwright } from '@vitest/browser-playwright'
 import viteConfig from './vite.config'
 
 export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
-      // Test environment
-      environment: 'happy-dom',
+      // Browser Mode replaces the happy-dom environment with real Chromium,
+      // driven headlessly through Playwright.
+      browser: {
+        enabled: true,
+        provider: playwright(),
+        instances: [{ browser: 'chromium' }],
+        headless: true,
+      },
 
       // Include test files
       include: ['src/**/*.{test,spec}.{js,ts}'],
