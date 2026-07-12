@@ -353,7 +353,7 @@ For detailed information about writing and running E2E tests, see the [E2E Testi
 
 GitHub Actions workflows are configured for automated quality assurance:
 
-- **ci.yml**: Unit tests, build verification, and type checking across Node.js 22.x and 24.x
+- **ci.yml**: Lint, format checking, type checking, unit tests, and build verification on Node.js 24
 - **playwright.yml**: Multi-browser end-to-end test execution
 
 Dependency updates are automated by [Renovate](renovate.json5).
