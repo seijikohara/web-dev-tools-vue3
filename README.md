@@ -130,7 +130,7 @@ The **Vue - Official** extension automatically provides TypeScript language serv
 ## Prerequisites
 
 - Node.js >= 22.12.0
-- npm >= 11.0.0
+- pnpm >= 11.11.0
 
 ## Installation
 
@@ -228,11 +228,11 @@ For comprehensive information about the E2E testing setup, see the [E2E Testing 
 # Perform TypeScript type checking
 pnpm run typecheck
 
-# Lint source code with automatic fixes
+# Lint source code (check only)
 pnpm run lint
 
-# Lint without modifying files
-pnpm run lint:check
+# Lint source code with automatic fixes
+pnpm run lint:fix
 
 # Format code using oxfmt
 pnpm run format
