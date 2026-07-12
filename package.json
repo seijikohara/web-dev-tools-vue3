@@ -21,8 +21,8 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "build:analyze": "vite build --mode analyze",
-    "type-check": "vue-tsc --build --force",
-    "type-check:watch": "vue-tsc --build --force --watch",
+    "typecheck": "vue-tsc --build --force",
+    "typecheck:watch": "vue-tsc --build --force --watch",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "format": "prettier --write src/",
@@ -30,7 +30,7 @@
     "clean": "rm -rf dist node_modules/.vite node_modules/.tmp",
     "deps:update": "taze -w && pnpm install",
     "deps:check": "taze",
-    "ci:check": "pnpm run lint:check && pnpm run format:check && pnpm run type-check",
+    "ci:check": "pnpm run lint:check && pnpm run format:check && pnpm run typecheck",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -111,11 +111,11 @@
     "prettier": "^3.8.2",
     "sass": "^1.99.0",
     "taze": "^19.14.1",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.1",
-    "vite": "^8.0.8",
+    "vite": "^8.1.4",
     "vitest": "^4.1.4",
     "vue-eslint-parser": "^10.4.0",
-    "vue-tsc": "^3.2.6"
+    "vue-tsc": "^3.3.7"
   }
 }
