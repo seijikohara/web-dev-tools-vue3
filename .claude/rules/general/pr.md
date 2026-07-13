@@ -31,11 +31,12 @@ Examples:
 
 ## Checklist
 
-- [ ] Type check passes (`npm run type-check`)
-- [ ] Lint passes (`npm run lint`)
-- [ ] Unit tests pass (`npm run test:run`)
-- [ ] E2E tests pass (`npm run test:e2e`) - if UI changes
-- [ ] Build succeeds (`npm run build`)
+- [ ] Lint passes (`pnpm lint`)
+- [ ] Format check passes (`pnpm format:check`)
+- [ ] Type check passes (`pnpm typecheck`)
+- [ ] Unit tests pass (`pnpm test:run`)
+- [ ] E2E tests pass (`pnpm test:e2e`) - if UI changes
+- [ ] Build succeeds (`pnpm build`)
 
 ## Related Issues
 
@@ -50,13 +51,14 @@ Examples:
 2. **Check the box** (`[x]`) only after confirming success
 3. **Do not check boxes** for items that were not run or failed
 
-| Item       | Command              | When Required |
-| ---------- | -------------------- | ------------- |
-| Type Check | `npm run type-check` | Always        |
-| Lint       | `npm run lint`       | Always        |
-| Unit Tests | `npm run test:run`   | Always        |
-| E2E Tests  | `npm run test:e2e`   | UI changes    |
-| Build      | `npm run build`      | Always        |
+| Item         | Command             | When Required |
+| ------------ | ------------------- | ------------- |
+| Lint         | `pnpm lint`         | Always        |
+| Format Check | `pnpm format:check` | Always        |
+| Type Check   | `pnpm typecheck`    | Always        |
+| Unit Tests   | `pnpm test:run`     | Always        |
+| E2E Tests    | `pnpm test:e2e`     | UI changes    |
+| Build        | `pnpm build`        | Always        |
 
 If any check fails, fix the issues before creating the PR.
 
