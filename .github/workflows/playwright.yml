@@ -91,7 +91,7 @@ jobs:
         run: pnpm exec playwright install --with-deps ${{ matrix.binary }}
 
       - name: Run Playwright tests
-        run: pnpm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: pnpm run test:e2e --project=${{ matrix.browser }} --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report
         if: ${{ !cancelled() }}
