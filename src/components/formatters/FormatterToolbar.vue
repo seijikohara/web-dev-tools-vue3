@@ -109,7 +109,7 @@ const handleCopy = () => {
         </slot>
 
         <!-- Custom start actions -->
-        <slot name="start-actions" />
+        <slot name="start-actions"></slot>
 
         <!-- Copy Button (in start section) -->
         <slot name="copy-start">
@@ -125,10 +125,10 @@ const handleCopy = () => {
 
       <template #end>
         <!-- Custom end actions -->
-        <slot name="end-actions" />
+        <slot name="end-actions"></slot>
 
         <!-- Copy Button (in end section, alternative placement) -->
-        <slot name="copy-end" />
+        <slot name="copy-end"></slot>
 
         <!-- Load Sample Button -->
         <slot name="load-sample">
@@ -182,7 +182,7 @@ const handleCopy = () => {
     </div>
 
     <!-- Custom content slot (for additional toolbar content) -->
-    <slot name="additional-content" />
+    <slot name="additional-content"></slot>
   </div>
 </template>
 

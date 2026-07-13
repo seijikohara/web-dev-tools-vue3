@@ -78,6 +78,113 @@ const defaultFormatOptions = {
 // Singleton state for sharing between tabs
 let sharedState: ReturnType<typeof createXmlFormatterState> | null = null
 
+// Recursively count elements, attributes, and max depth of a parsed XML document
+const traverse = (
+  node: Node,
+  depth: number,
+): { elements: number; attributes: number; maxDepth: number } => {
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return { elements: 0, attributes: 0, maxDepth: depth }
+  }
+
+  const element = node as Element
+  const childResults = Array.from(node.childNodes).reduce(
+    (acc, child) => {
+      const result = traverse(child, depth + 1)
+      return {
+        elements: acc.elements + result.elements,
+        attributes: acc.attributes + result.attributes,
+        maxDepth: Math.max(acc.maxDepth, result.maxDepth),
+      }
+    },
+    { elements: 0, attributes: 0, maxDepth: depth },
+  )
+
+  return {
+    elements: 1 + childResults.elements,
+    attributes: element.attributes.length + childResults.attributes,
+    maxDepth: childResults.maxDepth,
+  }
+}
+
+/**
+ * Pure transformation functions for XML post-processing
+ */
+const sortAttributesTransform = (s: string): string =>
+  s.replace(/<(\w+)((?:\s+[\w:]+="[^"]*")+)/g, (_match, tagName, attrs) => {
+    const attrRegex = /\s+([\w:]+)="([^"]*)"/g
+    const attrMatches = (attrs as string).match(attrRegex) ?? []
+    const sortedAttrs = attrMatches
+      .map(attr => {
+        const m = /\s+([\w:]+)="([^"]*)"/.exec(attr)
+        return m ? { name: m[1], value: m[2] } : null
+      })
+      .filter((a): a is { name: string; value: string } => a !== null)
+      // oxlint-disable-next-line unicorn/no-array-sort -- sorts the array just built by the map/filter chain above, not a shared/original array
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(a => ` ${a.name}="${a.value}"`)
+      .join('')
+    return `<${tagName}${sortedAttrs}`
+  })
+
+const normalizeAttributeValuesTransform = (s: string): string =>
+  s.replace(
+    /([\w:]+)="([^"]*)"/g,
+    (_match, name, value) => `${name}="${(value as string).trim().replace(/\s+/g, ' ')}"`,
+  )
+
+const removeEmptyElementsTransform = (str: string): string => {
+  const cleaned = str.replace(/<(\w+)([^>]*)>\s*<\/\1>/g, '').replace(/<(\w+)([^/>]*)\s*\/>/g, '')
+  return cleaned === str ? str : removeEmptyElementsTransform(cleaned)
+}
+
+const forceSelfClosingTransform =
+  (addSpace: boolean) =>
+  (s: string): string =>
+    s.replace(
+      /<(\w+)([^>]*)>\s*<\/\1>/g,
+      (_, tag, attrs) => `<${tag}${attrs}${addSpace ? ' ' : ''}/>`,
+    )
+
+const enforceEmptyTagsTransform = (s: string): string =>
+  s.replace(/<(\w+)([^/>]*)\s*\/>/g, '<$1$2></$1>')
+
+const maxLineWidthTransform =
+  (maxWidth: number) =>
+  (s: string): string =>
+    s
+      .split(
+        `
+`,
+      )
+      .map(line =>
+        line.length <= maxWidth
+          ? line
+          : line.replace(/(<\w+)(\s+[\w:]+="[^"]*"){3,}/g, (match, tag: string) => {
+              const attrMatches = match.match(/\s+[\w:]+="[^"]*"/g) ?? []
+              const indent = /^\s*/.exec(line)?.[0] ?? ''
+              return `${tag}${attrMatches
+                .map(
+                  a => `
+${indent}  ${a.trim()}`,
+                )
+                .join('')}`
+            }),
+      ).join(`
+`)
+
+const lineSeparatorTransform =
+  (separator: string) =>
+  (s: string): string =>
+    s.replace(
+      new RegExp(
+        `
+`,
+        'g',
+      ),
+      separator,
+    )
+
 function createXmlFormatterState() {
   const persistedOptions = useLocalStorage<XmlFormatOptions>(
     'xml-formatter-advanced-options',
@@ -124,34 +231,6 @@ function createXmlFormatterState() {
 
   // Calculate XML statistics
   const calculateXmlStats = (doc: Document): XmlStats => {
-    const traverse = (
-      node: Node,
-      depth: number,
-    ): { elements: number; attributes: number; maxDepth: number } => {
-      if (node.nodeType !== Node.ELEMENT_NODE) {
-        return { elements: 0, attributes: 0, maxDepth: depth }
-      }
-
-      const element = node as Element
-      const childResults = Array.from(node.childNodes).reduce(
-        (acc, child) => {
-          const result = traverse(child, depth + 1)
-          return {
-            elements: acc.elements + result.elements,
-            attributes: acc.attributes + result.attributes,
-            maxDepth: Math.max(acc.maxDepth, result.maxDepth),
-          }
-        },
-        { elements: 0, attributes: 0, maxDepth: depth },
-      )
-
-      return {
-        elements: 1 + childResults.elements,
-        attributes: element.attributes.length + childResults.attributes,
-        maxDepth: childResults.maxDepth,
-      }
-    }
-
     const stats = traverse(doc.documentElement, 0)
 
     const bytes = new Blob([state.input]).size
@@ -205,83 +284,6 @@ function createXmlFormatterState() {
 
     return transformations.reduce((result, transform) => transform(result), xml)
   }
-
-  /**
-   * Pure transformation functions for XML post-processing
-   */
-  const sortAttributesTransform = (s: string): string =>
-    s.replace(/<(\w+)((?:\s+[\w:]+="[^"]*")+)/g, (_match, tagName, attrs) => {
-      const attrRegex = /\s+([\w:]+)="([^"]*)"/g
-      const attrMatches = (attrs as string).match(attrRegex) ?? []
-      const sortedAttrs = attrMatches
-        .map(attr => {
-          const m = /\s+([\w:]+)="([^"]*)"/.exec(attr)
-          return m ? { name: m[1], value: m[2] } : null
-        })
-        .filter((a): a is { name: string; value: string } => a !== null)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(a => ` ${a.name}="${a.value}"`)
-        .join('')
-      return `<${tagName}${sortedAttrs}`
-    })
-
-  const normalizeAttributeValuesTransform = (s: string): string =>
-    s.replace(
-      /([\w:]+)="([^"]*)"/g,
-      (_match, name, value) => `${name}="${(value as string).trim().replace(/\s+/g, ' ')}"`,
-    )
-
-  const removeEmptyElementsTransform = (str: string): string => {
-    const cleaned = str.replace(/<(\w+)([^>]*)>\s*<\/\1>/g, '').replace(/<(\w+)([^/>]*)\s*\/>/g, '')
-    return cleaned === str ? str : removeEmptyElementsTransform(cleaned)
-  }
-
-  const forceSelfClosingTransform =
-    (addSpace: boolean) =>
-    (s: string): string =>
-      s.replace(
-        /<(\w+)([^>]*)>\s*<\/\1>/g,
-        (_, tag, attrs) => `<${tag}${attrs}${addSpace ? ' ' : ''}/>`,
-      )
-
-  const enforceEmptyTagsTransform = (s: string): string =>
-    s.replace(/<(\w+)([^/>]*)\s*\/>/g, '<$1$2></$1>')
-
-  const maxLineWidthTransform =
-    (maxWidth: number) =>
-    (s: string): string =>
-      s
-        .split(
-          `
-`,
-        )
-        .map(line =>
-          line.length <= maxWidth
-            ? line
-            : line.replace(/(<\w+)(\s+[\w:]+="[^"]*"){3,}/g, (match, tag: string) => {
-                const attrMatches = match.match(/\s+[\w:]+="[^"]*"/g) ?? []
-                const indent = /^\s*/.exec(line)?.[0] ?? ''
-                return `${tag}${attrMatches
-                  .map(
-                    a => `
-${indent}  ${a.trim()}`,
-                  )
-                  .join('')}`
-              }),
-        ).join(`
-`)
-
-  const lineSeparatorTransform =
-    (separator: string) =>
-    (s: string): string =>
-      s.replace(
-        new RegExp(
-          `
-`,
-          'g',
-        ),
-        separator,
-      )
 
   // Post-process formatted XML
   const postprocessXml = (xml: string): string => {
@@ -486,77 +488,163 @@ export function useXmlQuery(inputRef: Ref<string>) {
   }
 }
 
+// Convert XML to JSON. Shared by useXmlCompare and useXmlConvert.
+const xmlToJson = (xml: Element): unknown => {
+  const obj: Record<string, unknown> = {}
+
+  // Handle attributes
+  if (xml.attributes.length > 0) {
+    obj['@attributes'] = Array.from(xml.attributes).reduce<Record<string, string>>((acc, attr) => {
+      acc[attr.nodeName] = attr.nodeValue ?? ''
+      return acc
+    }, {})
+  }
+
+  // Handle child nodes using reduce
+  if (xml.hasChildNodes()) {
+    Array.from(xml.childNodes).reduce((acc, item) => {
+      if (item.nodeType === Node.ELEMENT_NODE) {
+        const nodeName = item.nodeName
+        const nodeValue = xmlToJson(item as Element)
+
+        if (acc[nodeName] === undefined) {
+          acc[nodeName] = nodeValue
+        } else {
+          if (!Array.isArray(acc[nodeName])) {
+            acc[nodeName] = [acc[nodeName]]
+          }
+          ;(acc[nodeName] as unknown[]).push(nodeValue)
+        }
+      } else if (item.nodeType === Node.TEXT_NODE) {
+        const text = item.nodeValue?.trim()
+        if (text) {
+          acc['#text'] = text
+        }
+      } else if (item.nodeType === Node.CDATA_SECTION_NODE) {
+        acc['#cdata'] = item.nodeValue ?? ''
+      }
+      return acc
+    }, obj)
+  }
+
+  // If object only has text content, return just the text
+  const keys = Object.keys(obj)
+  if (keys.length === 1 && keys[0] === '#text') {
+    return obj['#text']
+  }
+
+  return obj
+}
+
+// Parse XML and convert to a comparable object
+const parseXmlToObject = (xmlString: string): Record<string, unknown> | null => {
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(xmlString, 'application/xml')
+    const parserError = doc.querySelector('parsererror')
+    if (parserError) return null
+    return { [doc.documentElement.nodeName]: xmlToJson(doc.documentElement) } as Record<
+      string,
+      unknown
+    >
+  } catch {
+    return null
+  }
+}
+
+// Recursively find differences between two parsed XML-as-JSON values
+const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
+  // Type mismatch - early return
+  if (typeof obj1 !== typeof obj2) {
+    return [
+      {
+        path,
+        type: 'changed',
+        oldValue: JSON.stringify(obj1),
+        newValue: JSON.stringify(obj2),
+      },
+    ]
+  }
+
+  // Array comparison
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    const maxLen = Math.max(obj1.length, obj2.length)
+    return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
+      if (i >= obj1.length) {
+        return [
+          {
+            path: `${path}[${i}]`,
+            type: 'added' as const,
+            newValue: JSON.stringify(obj2[i]),
+          },
+        ]
+      }
+      if (i >= obj2.length) {
+        return [
+          {
+            path: `${path}[${i}]`,
+            type: 'removed' as const,
+            oldValue: JSON.stringify(obj1[i]),
+          },
+        ]
+      }
+      return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
+    })
+  }
+
+  // Object comparison
+  if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
+    const keys1 = Object.keys(obj1)
+    const keys2 = Object.keys(obj2)
+    const allKeys = [...new Set([...keys1, ...keys2])]
+
+    return allKeys.flatMap(key => {
+      const newPath = `${path}.${key}`
+      if (!(key in obj1)) {
+        return [
+          {
+            path: newPath,
+            type: 'added' as const,
+            newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
+          },
+        ]
+      }
+      if (!(key in obj2)) {
+        return [
+          {
+            path: newPath,
+            type: 'removed' as const,
+            oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+          },
+        ]
+      }
+      return findDifferences(
+        (obj1 as Record<string, unknown>)[key],
+        (obj2 as Record<string, unknown>)[key],
+        newPath,
+      )
+    })
+  }
+
+  // Primitive comparison
+  if (obj1 !== obj2) {
+    return [
+      {
+        path,
+        type: 'changed',
+        oldValue: JSON.stringify(obj1),
+        newValue: JSON.stringify(obj2),
+      },
+    ]
+  }
+
+  return []
+}
+
 // Compare Tab
 export function useXmlCompare(inputRef: Ref<string>) {
   const compareXml1 = ref('')
   const compareXml2 = ref('')
-
-  // Helper function to parse XML and convert to comparable object
-  const parseXmlToObject = (xmlString: string): Record<string, unknown> | null => {
-    try {
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(xmlString, 'application/xml')
-      const parserError = doc.querySelector('parsererror')
-      if (parserError) return null
-      return { [doc.documentElement.nodeName]: xmlToJson(doc.documentElement) } as Record<
-        string,
-        unknown
-      >
-    } catch {
-      return null
-    }
-  }
-
-  // Convert XML to JSON
-  const xmlToJson = (xml: Element): unknown => {
-    const obj: Record<string, unknown> = {}
-
-    // Handle attributes
-    if (xml.attributes.length > 0) {
-      obj['@attributes'] = Array.from(xml.attributes).reduce<Record<string, string>>(
-        (acc, attr) => {
-          acc[attr.nodeName] = attr.nodeValue ?? ''
-          return acc
-        },
-        {},
-      )
-    }
-
-    // Handle child nodes using reduce
-    if (xml.hasChildNodes()) {
-      Array.from(xml.childNodes).reduce((acc, item) => {
-        if (item.nodeType === Node.ELEMENT_NODE) {
-          const nodeName = item.nodeName
-          const nodeValue = xmlToJson(item as Element)
-
-          if (acc[nodeName] === undefined) {
-            acc[nodeName] = nodeValue
-          } else {
-            if (!Array.isArray(acc[nodeName])) {
-              acc[nodeName] = [acc[nodeName]]
-            }
-            ;(acc[nodeName] as unknown[]).push(nodeValue)
-          }
-        } else if (item.nodeType === Node.TEXT_NODE) {
-          const text = item.nodeValue?.trim()
-          if (text) {
-            acc['#text'] = text
-          }
-        } else if (item.nodeType === Node.CDATA_SECTION_NODE) {
-          acc['#cdata'] = item.nodeValue ?? ''
-        }
-        return acc
-      }, obj)
-    }
-
-    // If object only has text content, return just the text
-    const keys = Object.keys(obj)
-    if (keys.length === 1 && keys[0] === '#text') {
-      return obj['#text']
-    }
-
-    return obj
-  }
 
   const xmlCompareError = computed(() => {
     if (!compareXml1.value.trim() || !compareXml2.value.trim()) return ''
@@ -569,94 +657,6 @@ export function useXmlCompare(inputRef: Ref<string>) {
 
     return ''
   })
-
-  const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
-    // Type mismatch - early return
-    if (typeof obj1 !== typeof obj2) {
-      return [
-        {
-          path,
-          type: 'changed',
-          oldValue: JSON.stringify(obj1),
-          newValue: JSON.stringify(obj2),
-        },
-      ]
-    }
-
-    // Array comparison
-    if (Array.isArray(obj1) && Array.isArray(obj2)) {
-      const maxLen = Math.max(obj1.length, obj2.length)
-      return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
-        if (i >= obj1.length) {
-          return [
-            {
-              path: `${path}[${i}]`,
-              type: 'added' as const,
-              newValue: JSON.stringify(obj2[i]),
-            },
-          ]
-        }
-        if (i >= obj2.length) {
-          return [
-            {
-              path: `${path}[${i}]`,
-              type: 'removed' as const,
-              oldValue: JSON.stringify(obj1[i]),
-            },
-          ]
-        }
-        return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
-      })
-    }
-
-    // Object comparison
-    if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
-      const keys1 = Object.keys(obj1)
-      const keys2 = Object.keys(obj2)
-      const allKeys = [...new Set([...keys1, ...keys2])]
-
-      return allKeys.flatMap(key => {
-        const newPath = `${path}.${key}`
-        if (!(key in obj1)) {
-          return [
-            {
-              path: newPath,
-              type: 'added' as const,
-              newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
-            },
-          ]
-        }
-        if (!(key in obj2)) {
-          return [
-            {
-              path: newPath,
-              type: 'removed' as const,
-              oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
-            },
-          ]
-        }
-        return findDifferences(
-          (obj1 as Record<string, unknown>)[key],
-          (obj2 as Record<string, unknown>)[key],
-          newPath,
-        )
-      })
-    }
-
-    // Primitive comparison
-    if (obj1 !== obj2) {
-      return [
-        {
-          path,
-          type: 'changed',
-          oldValue: JSON.stringify(obj1),
-          newValue: JSON.stringify(obj2),
-        },
-      ]
-    }
-
-    return []
-  }
 
   const compareXmlDiff = computed((): DiffItem[] => {
     if (!compareXml1.value.trim() || !compareXml2.value.trim() || xmlCompareError.value) return []
@@ -692,57 +692,6 @@ export function useXmlConvert(inputRef: Ref<string>) {
   const convertOutput = ref('')
   const convertError = ref('')
   const convertFormat = ref<'json' | 'yaml'>('json')
-
-  // Convert XML to JSON
-  const xmlToJson = (xml: Element): unknown => {
-    const obj: Record<string, unknown> = {}
-
-    // Handle attributes
-    if (xml.attributes.length > 0) {
-      obj['@attributes'] = Array.from(xml.attributes).reduce<Record<string, string>>(
-        (acc, attr) => {
-          acc[attr.nodeName] = attr.nodeValue ?? ''
-          return acc
-        },
-        {},
-      )
-    }
-
-    // Handle child nodes using reduce
-    if (xml.hasChildNodes()) {
-      Array.from(xml.childNodes).reduce((acc, item) => {
-        if (item.nodeType === Node.ELEMENT_NODE) {
-          const nodeName = item.nodeName
-          const nodeValue = xmlToJson(item as Element)
-
-          if (acc[nodeName] === undefined) {
-            acc[nodeName] = nodeValue
-          } else {
-            if (!Array.isArray(acc[nodeName])) {
-              acc[nodeName] = [acc[nodeName]]
-            }
-            ;(acc[nodeName] as unknown[]).push(nodeValue)
-          }
-        } else if (item.nodeType === Node.TEXT_NODE) {
-          const text = item.nodeValue?.trim()
-          if (text) {
-            acc['#text'] = text
-          }
-        } else if (item.nodeType === Node.CDATA_SECTION_NODE) {
-          acc['#cdata'] = item.nodeValue ?? ''
-        }
-        return acc
-      }, obj)
-    }
-
-    // If object only has text content, return just the text
-    const keys = Object.keys(obj)
-    if (keys.length === 1 && keys[0] === '#text') {
-      return obj['#text']
-    }
-
-    return obj
-  }
 
   const convertTo = (targetFormat: 'json' | 'yaml') => {
     convertOutput.value = ''

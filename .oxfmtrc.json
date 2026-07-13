@@ -1,0 +1,16 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "arrowParens": "avoid",
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "dist/",
+    "coverage/",
+    "playwright-report/",
+    "blob-report/",
+    "test-results/"
+  ]
+}

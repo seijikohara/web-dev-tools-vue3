@@ -130,7 +130,7 @@ export const parseUrl = (urlString: string): ParsedUrl | null => {
 export const validateUrl = (urlString: string): string => {
   if (!urlString.trim()) return ''
   try {
-    new URL(urlString)
+    void new URL(urlString)
     return ''
   } catch {
     return 'Invalid URL format'

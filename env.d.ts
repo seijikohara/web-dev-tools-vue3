@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+import type { MenuCategory } from '@/router'
+
 declare module '*.vue' {
   import type { Component } from 'vue'
   const component: Component
@@ -11,7 +13,7 @@ declare module 'vue-router' {
     title: string
     menu: boolean
     icon?: string
-    category?: import('@/types/router').MenuCategory
+    category?: MenuCategory
   }
 }
 
@@ -30,5 +32,3 @@ declare global {
     readonly env: ImportMetaEnv
   }
 }
-
-export {}

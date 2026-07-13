@@ -110,6 +110,15 @@ export const rgbToHsl = (r: number, g: number, b: number): HSL => {
   }
 }
 
+// Interpolate one RGB channel from hue, used three times (offset by 1/3) by hslToRgb
+export const hue2rgb = (p: number, q: number, t: number): number => {
+  const tNorm = t < 0 ? t + 1 : t > 1 ? t - 1 : t
+  if (tNorm < 1 / 6) return p + (q - p) * 6 * tNorm
+  if (tNorm < 1 / 2) return q
+  if (tNorm < 2 / 3) return p + (q - p) * (2 / 3 - tNorm) * 6
+  return p
+}
+
 export const hslToRgb = (h: number, s: number, l: number): RGB => {
   const hNorm = h / 360
   const sNorm = s / 100
@@ -118,14 +127,6 @@ export const hslToRgb = (h: number, s: number, l: number): RGB => {
   if (sNorm === 0) {
     const gray = Math.round(lNorm * 255)
     return { r: gray, g: gray, b: gray }
-  }
-
-  const hue2rgb = (p: number, q: number, t: number): number => {
-    const tNorm = t < 0 ? t + 1 : t > 1 ? t - 1 : t
-    if (tNorm < 1 / 6) return p + (q - p) * 6 * tNorm
-    if (tNorm < 1 / 2) return q
-    if (tNorm < 2 / 3) return p + (q - p) * (2 / 3 - tNorm) * 6
-    return p
   }
 
   const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm

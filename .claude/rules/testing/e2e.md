@@ -113,7 +113,7 @@ await page.route('**/api/endpoint', route =>
     status: 200,
     contentType: 'application/json',
     body: JSON.stringify(mockData),
-  })
+  }),
 )
 ```
 

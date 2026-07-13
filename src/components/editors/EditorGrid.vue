@@ -6,7 +6,7 @@ defineProps<{
 
 <template>
   <div :class="columns === 3 ? 'editor-grid-3col' : 'editor-grid-2col'">
-    <slot />
+    <slot></slot>
   </div>
 </template>
 

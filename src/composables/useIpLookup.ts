@@ -116,10 +116,12 @@ export const expandIpv6 = (ip: string): string => {
 // Convert IP to reverse DNS format for PTR lookup
 export const ipToReverseDns = (ip: string): string => {
   if (isValidIpv4(ip)) {
+    // oxlint-disable-next-line unicorn/no-array-reverse -- reverses the array built by String#split() on this same line, not a shared/original array
     return `${ip.split('.').reverse().join('.')}.in-addr.arpa`
   }
 
   if (isValidIpv6(ip)) {
+    // oxlint-disable-next-line unicorn/no-array-reverse -- reverses the array built by String#split() on this same line, not a shared/original array
     return `${expandIpv6(ip).replace(/:/g, '').split('').reverse().join('.')}.ip6.arpa`
   }
 
@@ -194,6 +196,25 @@ export const buildRdapBasicInfo = (rdap: RdapInfo): TableDataRow[] => {
   return entries.filter(entry => entry.condition).map(({ label, value }) => ({ label, value }))
 }
 
+// Resolve a hostname to its A (IPv4) and AAAA (IPv6) records
+export const resolveHostnameToIps = async (hostname: string): Promise<ResolvedIps> => {
+  const [ipv4Result, ipv6Result] = await Promise.allSettled([
+    resolveDns(hostname, 'A'),
+    resolveDns(hostname, 'AAAA'),
+  ])
+
+  return {
+    ipv4:
+      ipv4Result.status === 'fulfilled'
+        ? (ipv4Result.value.answer?.filter(r => r.type === 1).map(r => r.data) ?? [])
+        : [],
+    ipv6:
+      ipv6Result.status === 'fulfilled'
+        ? (ipv6Result.value.answer?.filter(r => r.type === 28).map(r => r.data) ?? [])
+        : [],
+  }
+}
+
 // Composable
 export const useIpLookup = () => {
   // State
@@ -236,24 +257,6 @@ export const useIpLookup = () => {
   const hasResults = computed(() => !!(geoData.value ?? rdapData.value ?? dnsData.value))
 
   // API calls
-  const resolveHostnameToIps = async (hostname: string): Promise<ResolvedIps> => {
-    const [ipv4Result, ipv6Result] = await Promise.allSettled([
-      resolveDns(hostname, 'A'),
-      resolveDns(hostname, 'AAAA'),
-    ])
-
-    return {
-      ipv4:
-        ipv4Result.status === 'fulfilled'
-          ? (ipv4Result.value.answer?.filter(r => r.type === 1).map(r => r.data) ?? [])
-          : [],
-      ipv6:
-        ipv6Result.status === 'fulfilled'
-          ? (ipv6Result.value.answer?.filter(r => r.type === 28).map(r => r.data) ?? [])
-          : [],
-    }
-  }
-
   const fetchPtrRecord = async (ip: string): Promise<void> => {
     try {
       const reverseDns = ipToReverseDns(ip)

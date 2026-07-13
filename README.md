@@ -10,9 +10,11 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 ## Core Features
 
 ### Information Retrieval
+
 - **Dashboard**: System and network diagnostics including User Agent parsing, IP address resolution, geolocation data, RDAP queries, and HTTP header inspection
 
 ### Data Formatting and Transformation
+
 - **JSON Formatter**: JSON validation, formatting, and beautification with syntax highlighting
 - **XML Formatter**: XML document formatting and structure visualization
 - **YAML Formatter**: YAML validation and formatting utilities
@@ -22,18 +24,21 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **String Case Converter**: Convert text between camelCase, PascalCase, snake_case, kebab-case, and more
 
 ### Encoding and Decoding
+
 - **Base64 Encoder**: Base64 encoding and decoding utilities
 - **URL Encoding**: Bidirectional URL encoding and decoding utilities
 - **HTML Entities**: HTML entity reference lookup and conversion utilities
 - **JWT Decoder**: JSON Web Token parsing and validation
 
 ### Hash & Cryptography
+
 - **Hash Generator**: Cryptographic hash generation (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
 - **BCrypt Generator**: Secure password hashing and verification using BCrypt algorithm
 - **SSH Key Generator**: Generate SSH key pairs (RSA, ECDSA, Ed25519)
 - **GPG Key Generator**: Generate GPG key pairs for encryption and signing
 
 ### Generators
+
 - **UUID Generator**: UUID v1/v4 generation with bulk support
 - **Password Generator**: Secure random password generation with customizable options
 - **QR Code Generator**: Generate QR codes from text, URLs, vCard, WiFi config with PNG/SVG export
@@ -41,40 +46,48 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 - **cURL Builder**: Build and parse cURL commands with a visual interface
 
 ### Converters
+
 - **Color Converter**: Convert between HEX, RGB, HSL color formats
 - **Timestamp Converter**: Unix timestamp and date format conversions
 
 ### Testing & Validation
+
 - **Regex Tester**: Regular expression testing with match highlighting
 
 ### Network Tools
+
 - **IP Lookup**: IP address geolocation, RDAP queries, and network information
 
 ## Technology Stack
 
 ### Core Framework
+
 - **Frontend**: Vue 3 (Composition API)
 - **Language**: TypeScript (strict mode)
-- **Build System**: Vite 7.x
+- **Build System**: Vite 8.x
 
 ### UI and Styling
+
 - **Component Library**: PrimeVue 4.x
 - **CSS Framework**: PrimeFlex 4.x
 - **Icons**: PrimeIcons 7.x
 - **Theme System**: PrimeUix Themes
 
 ### Architecture
+
 - **State Management**: Pinia 3.x
 - **Routing**: Vue Router 4.x
 - **Composables**: VueUse utilities
 
 ### Quality Assurance
+
 - **Unit Testing**: Vitest 4.x with coverage support
 - **E2E Testing**: Playwright 1.x (end-to-end)
-- **Linting**: ESLint 9.x with TypeScript support
-- **Code Formatting**: Prettier 3.x
+- **Linting**: oxlint with ESLint retained for Vue template rules (`eslint-plugin-vue`, scoped to `.vue` files)
+- **Code Formatting**: oxfmt
 
 ### Utilities and Libraries
+
 - **HTTP Client**: Axios
 - **Date/Time**: Day.js
 - **Security**: DOMPurify (XSS prevention), bcryptjs (password hashing), crypto-js
@@ -108,6 +121,7 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 TypeScript cannot handle type information for `.vue` imports by default. This project uses `vue-tsc` (a TypeScript CLI wrapper) for type checking Vue components.
 
 The **Vue - Official** extension automatically provides TypeScript language service support for `.vue` files in your editor, enabling:
+
 - Type inference for component props, emits, and slots
 - Import path auto-completion
 - Type checking in template expressions
@@ -116,20 +130,20 @@ The **Vue - Official** extension automatically provides TypeScript language serv
 ## Prerequisites
 
 - Node.js >= 22.12.0
-- npm >= 11.0.0
+- pnpm >= 11.11.0
 
 ## Installation
 
-Install project dependencies using npm:
+Install project dependencies using pnpm:
 
 ```sh
-npm install
+pnpm install
 ```
 
 For Playwright browser binaries (required for E2E testing):
 
 ```sh
-npm run test:e2e:install
+pnpm run test:e2e:install
 ```
 
 ## Development Commands
@@ -138,29 +152,29 @@ npm run test:e2e:install
 
 ```sh
 # Start local development server with HMR
-npm run dev
+pnpm run dev
 
 # Start development server accessible on local network
-npm run dev:host
+pnpm run dev:host
 
 # Enable continuous type checking
-npm run type-check:watch
+pnpm run typecheck:watch
 ```
 
 ### Production Build
 
 ```sh
 # Full production build with type checking
-npm run build
+pnpm run build
 
 # Build without type checking (faster, use cautiously)
-npm run build-only
+pnpm run build-only
 
 # Generate bundle analysis report
-npm run build:analyze
+pnpm run build:analyze
 
 # Serve production build locally
-npm run preview
+pnpm run preview
 ```
 
 ### Testing
@@ -169,41 +183,41 @@ npm run preview
 
 ```sh
 # Run unit tests in watch mode
-npm run test
+pnpm run test
 
 # Execute unit test suite once
-npm run test:run
+pnpm run test:run
 
 # Run tests with coverage report
-npm run test:coverage
+pnpm run test:coverage
 
 # Launch Vitest UI for interactive testing
-npm run test:ui
+pnpm run test:ui
 ```
 
 #### End-to-End Tests (Playwright)
 
 ```sh
 # Execute end-to-end test suite
-npm run test:e2e
+pnpm run test:e2e
 
 # Launch Playwright UI for interactive testing
-npm run test:e2e:ui
+pnpm run test:e2e:ui
 
 # Run tests with visible browser windows
-npm run test:e2e:headed
+pnpm run test:e2e:headed
 
 # Start debugging session for test development
-npm run test:e2e:debug
+pnpm run test:e2e:debug
 
 # Display HTML test results report
-npm run test:e2e:report
+pnpm run test:e2e:report
 
 # Launch Playwright test generator
-npm run test:e2e:codegen
+pnpm run test:e2e:codegen
 
 # Install required browser binaries
-npm run test:e2e:install
+pnpm run test:e2e:install
 ```
 
 For comprehensive information about the E2E testing setup, see the [E2E Testing Guide](e2e/README.md).
@@ -212,32 +226,32 @@ For comprehensive information about the E2E testing setup, see the [E2E Testing 
 
 ```sh
 # Perform TypeScript type checking
-npm run type-check
+pnpm run typecheck
+
+# Lint source code (check only)
+pnpm run lint
 
 # Lint source code with automatic fixes
-npm run lint
+pnpm run lint:fix
 
-# Lint without modifying files
-npm run lint:check
-
-# Format code using Prettier
-npm run format
+# Format code using oxfmt
+pnpm run format
 
 # Verify code formatting compliance
-npm run format:check
+pnpm run format:check
 ```
 
 ### Project Maintenance
 
 ```sh
 # Remove build artifacts and cache files
-npm run clean
+pnpm run clean
 
 # Audit for available dependency updates
-npm run deps:check
+pnpm run deps:check
 
 # Update all dependencies to latest versions
-npm run deps:update
+pnpm run deps:update
 ```
 
 ## Project Structure
@@ -294,6 +308,7 @@ VITE_DEV_PORT=5173
 ## Testing Strategy
 
 The project implements a two-tier testing strategy:
+
 - **Unit tests**: Vitest for testing composables and utility functions
 - **End-to-end tests**: Playwright for detecting regressions through basic functionality verification
 
@@ -338,7 +353,7 @@ For detailed information about writing and running E2E tests, see the [E2E Testi
 
 GitHub Actions workflows are configured for automated quality assurance:
 
-- **ci.yml**: Unit tests, build verification, and type checking across Node.js 22.x and 24.x
+- **ci.yml**: Lint, format checking, type checking, unit tests, and build verification on Node.js 24
 - **playwright.yml**: Multi-browser end-to-end test execution
 
 Dependency updates are automated by [Renovate](renovate.json5).

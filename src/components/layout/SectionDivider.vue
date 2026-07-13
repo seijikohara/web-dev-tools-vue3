@@ -11,7 +11,7 @@ defineProps<{
   <Divider :align="align ?? 'left'">
     <span class="divider-text">
       <i v-if="icon" :class="`pi pi-${icon}`"></i>
-      <slot />
+      <slot></slot>
     </span>
   </Divider>
 </template>

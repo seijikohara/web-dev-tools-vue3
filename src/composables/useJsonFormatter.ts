@@ -76,6 +76,69 @@ const defaultFormatOptions = {
 // Singleton state for sharing between tabs
 let sharedState: ReturnType<typeof createJsonFormatterState> | null = null
 
+interface TraverseResult {
+  keys: number
+  values: number
+  maxDepth: number
+}
+
+// Recursively count keys, values, and max depth of a parsed JSON value
+const traverse = (item: unknown, currentDepth: number): TraverseResult => {
+  if (Array.isArray(item)) {
+    const childResults = item.map(i => traverse(i, currentDepth + 1))
+    return childResults.reduce(
+      (acc, result) => ({
+        keys: acc.keys + result.keys,
+        values: acc.values + result.values,
+        maxDepth: Math.max(acc.maxDepth, result.maxDepth),
+      }),
+      { keys: 0, values: item.length, maxDepth: currentDepth },
+    )
+  }
+
+  if (item !== null && typeof item === 'object') {
+    const entries = Object.entries(item as Record<string, unknown>)
+    const childResults = entries.map(([, v]) => traverse(v, currentDepth + 1))
+    return childResults.reduce(
+      (acc, result) => ({
+        keys: acc.keys + result.keys,
+        values: acc.values + result.values,
+        maxDepth: Math.max(acc.maxDepth, result.maxDepth),
+      }),
+      { keys: entries.length, values: 0, maxDepth: currentDepth },
+    )
+  }
+
+  return { keys: 0, values: 1, maxDepth: currentDepth }
+}
+
+/**
+ * Pure transformation functions for JSON post-processing
+ */
+const escapeUnicodeTransform = (s: string): string =>
+  s.replace(/[\u0080-\uFFFF]/g, char => `\\u${`0000${char.charCodeAt(0).toString(16)}`.slice(-4)}`)
+
+const singleQuoteTransform = (s: string): string =>
+  s.replace(/"([^"\\]*)"/g, (match, content: string) =>
+    content.includes("'") ? match : `'${content}'`,
+  )
+
+const arrayBracketSpacingTransform = (s: string): string =>
+  s.replace(/\[(?!\s*\n)/g, '[ ').replace(/(?<!\n\s*)\]/g, ' ]')
+
+const objectBracketSpacingTransform = (s: string): string =>
+  s.replace(/\{(?!\s*\n)/g, '{ ').replace(/(?<!\n\s*)\}/g, ' }')
+
+const removeColonSpacingTransform = (s: string): string => s.replace(/:\s+/g, ':')
+
+const compactArraysTransform = (s: string): string =>
+  s.replace(
+    /\[\s*\n(\s*)((?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null)(?:,\s*\n\s*(?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null))*)\s*\n\s*\]/g,
+    (_, _indent, content: string) => `[${content.split(/,\s*\n\s*/).join(', ')}]`,
+  )
+
+const trailingCommaTransform = (s: string): string => s.replace(/([}\]])\n(\s*[}\]])/g, '$1,\n$2')
+
 function createJsonFormatterState() {
   const persistedOptions = useLocalStorage<JsonFormatOptions>(
     'json-formatter-advanced-options',
@@ -113,41 +176,6 @@ function createJsonFormatterState() {
 
   // Calculate JSON statistics using pure recursive approach
   const calculateJsonStats = (obj: unknown, _depth = 0): JsonStats => {
-    interface TraverseResult {
-      keys: number
-      values: number
-      maxDepth: number
-    }
-
-    const traverse = (item: unknown, currentDepth: number): TraverseResult => {
-      if (Array.isArray(item)) {
-        const childResults = item.map(i => traverse(i, currentDepth + 1))
-        return childResults.reduce(
-          (acc, result) => ({
-            keys: acc.keys + result.keys,
-            values: acc.values + result.values,
-            maxDepth: Math.max(acc.maxDepth, result.maxDepth),
-          }),
-          { keys: 0, values: item.length, maxDepth: currentDepth },
-        )
-      }
-
-      if (item !== null && typeof item === 'object') {
-        const entries = Object.entries(item as Record<string, unknown>)
-        const childResults = entries.map(([, v]) => traverse(v, currentDepth + 1))
-        return childResults.reduce(
-          (acc, result) => ({
-            keys: acc.keys + result.keys,
-            values: acc.values + result.values,
-            maxDepth: Math.max(acc.maxDepth, result.maxDepth),
-          }),
-          { keys: entries.length, values: 0, maxDepth: currentDepth },
-        )
-      }
-
-      return { keys: 0, values: 1, maxDepth: currentDepth }
-    }
-
     const result = traverse(obj, 0)
 
     const bytes = new Blob([state.input]).size
@@ -227,7 +255,8 @@ function createJsonFormatterState() {
     if (typeof obj === 'object') {
       const entries = Object.entries(obj)
       const sortedEntries = state.sortKeys
-        ? entries.sort((a, b) => a[0].localeCompare(b[0]))
+        ? // oxlint-disable-next-line unicorn/no-array-sort -- entries is Object.entries(obj) above, a fresh local array; nothing external is mutated
+          entries.sort((a, b) => a[0].localeCompare(b[0]))
         : entries
 
       const processed = sortedEntries.reduce<Record<string, unknown>>((acc, [key, value]) => {
@@ -254,36 +283,6 @@ function createJsonFormatterState() {
 
     return obj
   }
-
-  /**
-   * Pure transformation functions for JSON post-processing
-   */
-  const escapeUnicodeTransform = (s: string): string =>
-    s.replace(
-      /[\u0080-\uFFFF]/g,
-      char => `\\u${`0000${char.charCodeAt(0).toString(16)}`.slice(-4)}`,
-    )
-
-  const singleQuoteTransform = (s: string): string =>
-    s.replace(/"([^"\\]*)"/g, (match, content: string) =>
-      content.includes("'") ? match : `'${content}'`,
-    )
-
-  const arrayBracketSpacingTransform = (s: string): string =>
-    s.replace(/\[(?!\s*\n)/g, '[ ').replace(/(?<!\n\s*)\]/g, ' ]')
-
-  const objectBracketSpacingTransform = (s: string): string =>
-    s.replace(/\{(?!\s*\n)/g, '{ ').replace(/(?<!\n\s*)\}/g, ' }')
-
-  const removeColonSpacingTransform = (s: string): string => s.replace(/:\s+/g, ':')
-
-  const compactArraysTransform = (s: string): string =>
-    s.replace(
-      /\[\s*\n(\s*)((?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null)(?:,\s*\n\s*(?:"[^"]*"|'[^']*'|[\d.eE+-]+|true|false|null))*)\s*\n\s*\]/g,
-      (_, _indent, content: string) => `[${content.split(/,\s*\n\s*/).join(', ')}]`,
-    )
-
-  const trailingCommaTransform = (s: string): string => s.replace(/([}\]])\n(\s*[}\]])/g, '$1,\n$2')
 
   // Custom JSON stringify with options
   const customStringify = (obj: unknown, indent: string): string => {
@@ -472,6 +471,95 @@ export function useJsonQuery(inputRef: Ref<string>) {
   }
 }
 
+// Recursively find differences between two parsed JSON values
+const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
+  // Type mismatch - early return
+  if (typeof obj1 !== typeof obj2) {
+    return [
+      {
+        path,
+        type: 'changed',
+        oldValue: JSON.stringify(obj1),
+        newValue: JSON.stringify(obj2),
+      },
+    ]
+  }
+
+  // Array comparison
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    const maxLen = Math.max(obj1.length, obj2.length)
+    return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
+      if (i >= obj1.length) {
+        return [
+          {
+            path: `${path}[${i}]`,
+            type: 'added' as const,
+            newValue: JSON.stringify(obj2[i]),
+          },
+        ]
+      }
+      if (i >= obj2.length) {
+        return [
+          {
+            path: `${path}[${i}]`,
+            type: 'removed' as const,
+            oldValue: JSON.stringify(obj1[i]),
+          },
+        ]
+      }
+      return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
+    })
+  }
+
+  // Object comparison
+  if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
+    const keys1 = Object.keys(obj1)
+    const keys2 = Object.keys(obj2)
+    const allKeys = [...new Set([...keys1, ...keys2])]
+
+    return allKeys.flatMap(key => {
+      const newPath = `${path}.${key}`
+      if (!(key in obj1)) {
+        return [
+          {
+            path: newPath,
+            type: 'added' as const,
+            newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
+          },
+        ]
+      }
+      if (!(key in obj2)) {
+        return [
+          {
+            path: newPath,
+            type: 'removed' as const,
+            oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+          },
+        ]
+      }
+      return findDifferences(
+        (obj1 as Record<string, unknown>)[key],
+        (obj2 as Record<string, unknown>)[key],
+        newPath,
+      )
+    })
+  }
+
+  // Primitive comparison
+  if (obj1 !== obj2) {
+    return [
+      {
+        path,
+        type: 'changed',
+        oldValue: JSON.stringify(obj1),
+        newValue: JSON.stringify(obj2),
+      },
+    ]
+  }
+
+  return []
+}
+
 // Compare Tab
 export function useJsonCompare(inputRef: Ref<string>) {
   const compareJson1 = ref('')
@@ -487,94 +575,6 @@ export function useJsonCompare(inputRef: Ref<string>) {
       return e instanceof Error ? e.message : 'Invalid JSON'
     }
   })
-
-  const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] => {
-    // Type mismatch - early return
-    if (typeof obj1 !== typeof obj2) {
-      return [
-        {
-          path,
-          type: 'changed',
-          oldValue: JSON.stringify(obj1),
-          newValue: JSON.stringify(obj2),
-        },
-      ]
-    }
-
-    // Array comparison
-    if (Array.isArray(obj1) && Array.isArray(obj2)) {
-      const maxLen = Math.max(obj1.length, obj2.length)
-      return Array.from({ length: maxLen }, (_, i) => i).flatMap(i => {
-        if (i >= obj1.length) {
-          return [
-            {
-              path: `${path}[${i}]`,
-              type: 'added' as const,
-              newValue: JSON.stringify(obj2[i]),
-            },
-          ]
-        }
-        if (i >= obj2.length) {
-          return [
-            {
-              path: `${path}[${i}]`,
-              type: 'removed' as const,
-              oldValue: JSON.stringify(obj1[i]),
-            },
-          ]
-        }
-        return findDifferences(obj1[i], obj2[i], `${path}[${i}]`)
-      })
-    }
-
-    // Object comparison
-    if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
-      const keys1 = Object.keys(obj1)
-      const keys2 = Object.keys(obj2)
-      const allKeys = [...new Set([...keys1, ...keys2])]
-
-      return allKeys.flatMap(key => {
-        const newPath = `${path}.${key}`
-        if (!(key in obj1)) {
-          return [
-            {
-              path: newPath,
-              type: 'added' as const,
-              newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
-            },
-          ]
-        }
-        if (!(key in obj2)) {
-          return [
-            {
-              path: newPath,
-              type: 'removed' as const,
-              oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
-            },
-          ]
-        }
-        return findDifferences(
-          (obj1 as Record<string, unknown>)[key],
-          (obj2 as Record<string, unknown>)[key],
-          newPath,
-        )
-      })
-    }
-
-    // Primitive comparison
-    if (obj1 !== obj2) {
-      return [
-        {
-          path,
-          type: 'changed',
-          oldValue: JSON.stringify(obj1),
-          newValue: JSON.stringify(obj2),
-        },
-      ]
-    }
-
-    return []
-  }
 
   const compareJsonDiff = computed((): DiffItem[] => {
     if (!compareJson1.value.trim() || !compareJson2.value.trim() || jsonCompareError.value)
@@ -607,31 +607,33 @@ export function useJsonCompare(inputRef: Ref<string>) {
   }
 }
 
+// Recursively render a parsed value's children as XML elements named `name`
+const convert = (data: unknown, name: string): string => {
+  if (data === null || data === undefined) {
+    return `<${name}/>`
+  }
+  if (Array.isArray(data)) {
+    return data.map(item => convert(item, name)).join('')
+  }
+  if (typeof data === 'object') {
+    const entries = Object.entries(data as Record<string, unknown>)
+    const children = entries.map(([key, value]) => convert(value, key)).join('')
+    return `<${name}>${children}</${name}>`
+  }
+  const primitiveValue = typeof data === 'string' ? data : JSON.stringify(data)
+  return `<${name}>${primitiveValue}</${name}>`
+}
+
+// Convert a parsed JSON value to an XML string
+const jsonToXml = (obj: unknown, rootName = 'root'): string => {
+  return convert(obj, rootName)
+}
+
 // Convert Tab
 export function useJsonConvert(inputRef: Ref<string>) {
   const convertOutput = ref('')
   const convertError = ref('')
   const convertFormat = ref<'xml' | 'yaml'>('yaml')
-
-  const jsonToXml = (obj: unknown, rootName = 'root'): string => {
-    const convert = (data: unknown, name: string): string => {
-      if (data === null || data === undefined) {
-        return `<${name}/>`
-      }
-      if (Array.isArray(data)) {
-        return data.map(item => convert(item, name)).join('')
-      }
-      if (typeof data === 'object') {
-        const entries = Object.entries(data as Record<string, unknown>)
-        const children = entries.map(([key, value]) => convert(value, key)).join('')
-        return `<${name}>${children}</${name}>`
-      }
-      const primitiveValue = typeof data === 'string' ? data : JSON.stringify(data)
-      return `<${name}>${primitiveValue}</${name}>`
-    }
-
-    return convert(obj, rootName)
-  }
 
   const convertTo = (format: 'xml' | 'yaml') => {
     convertOutput.value = ''
@@ -669,6 +671,61 @@ export function useJsonConvert(inputRef: Ref<string>) {
     convertOutputMode,
     convertTo,
   }
+}
+
+// Recursively infer a JSON Schema shape from sample data
+const inferSchema = (data: unknown): Record<string, unknown> => {
+  if (data === null) {
+    return { type: 'null' }
+  }
+
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      return { type: 'array', items: {} }
+    }
+    return {
+      type: 'array',
+      items: inferSchema(data[0]),
+    }
+  }
+
+  if (typeof data === 'object') {
+    const entries = Object.entries(data)
+    const properties = Object.fromEntries(entries.map(([key, value]) => [key, inferSchema(value)]))
+    const required = entries.map(([key]) => key)
+
+    return {
+      type: 'object',
+      properties,
+      required,
+    }
+  }
+
+  if (typeof data === 'string') {
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data)) {
+      return { type: 'string', format: 'email' }
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+      return { type: 'string', format: 'date' }
+    }
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(data)) {
+      return { type: 'string', format: 'date-time' }
+    }
+    if (/^https?:\/\//.test(data)) {
+      return { type: 'string', format: 'uri' }
+    }
+    return { type: 'string' }
+  }
+
+  if (typeof data === 'number') {
+    return Number.isInteger(data) ? { type: 'integer' } : { type: 'number' }
+  }
+
+  if (typeof data === 'boolean') {
+    return { type: 'boolean' }
+  }
+
+  return {}
 }
 
 // Schema Tab
@@ -784,62 +841,6 @@ export function useJsonSchema(inputRef: Ref<string>) {
       null,
       2,
     )
-  }
-
-  const inferSchema = (data: unknown): Record<string, unknown> => {
-    if (data === null) {
-      return { type: 'null' }
-    }
-
-    if (Array.isArray(data)) {
-      if (data.length === 0) {
-        return { type: 'array', items: {} }
-      }
-      return {
-        type: 'array',
-        items: inferSchema(data[0]),
-      }
-    }
-
-    if (typeof data === 'object') {
-      const entries = Object.entries(data)
-      const properties = Object.fromEntries(
-        entries.map(([key, value]) => [key, inferSchema(value)]),
-      )
-      const required = entries.map(([key]) => key)
-
-      return {
-        type: 'object',
-        properties,
-        required,
-      }
-    }
-
-    if (typeof data === 'string') {
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data)) {
-        return { type: 'string', format: 'email' }
-      }
-      if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-        return { type: 'string', format: 'date' }
-      }
-      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(data)) {
-        return { type: 'string', format: 'date-time' }
-      }
-      if (/^https?:\/\//.test(data)) {
-        return { type: 'string', format: 'uri' }
-      }
-      return { type: 'string' }
-    }
-
-    if (typeof data === 'number') {
-      return Number.isInteger(data) ? { type: 'integer' } : { type: 'number' }
-    }
-
-    if (typeof data === 'boolean') {
-      return { type: 'boolean' }
-    }
-
-    return {}
   }
 
   const generateSchemaFromData = (): { success: boolean; error?: string } => {

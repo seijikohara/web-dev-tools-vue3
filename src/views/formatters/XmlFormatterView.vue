@@ -124,38 +124,39 @@ const convertFormat = ref<'json' | 'yaml'>('json')
 const compareXml1 = ref('')
 const compareXml2 = ref('')
 
+// Recursively count elements, attributes, and max depth of a parsed XML document
+const traverse = (
+  node: Node,
+  depth: number,
+): { elements: number; attributes: number; maxDepth: number } => {
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return { elements: 0, attributes: 0, maxDepth: depth }
+  }
+
+  const element = node as Element
+  const childResults = Array.from(node.childNodes).reduce(
+    (acc, child) => {
+      const result = traverse(child, depth + 1)
+      return {
+        elements: acc.elements + result.elements,
+        attributes: acc.attributes + result.attributes,
+        maxDepth: Math.max(acc.maxDepth, result.maxDepth),
+      }
+    },
+    { elements: 0, attributes: 0, maxDepth: depth },
+  )
+
+  return {
+    elements: 1 + childResults.elements,
+    attributes: element.attributes.length + childResults.attributes,
+    maxDepth: childResults.maxDepth,
+  }
+}
+
 // Calculate XML statistics
 const calculateXmlStats = (
   doc: Document,
 ): { elements: number; attributes: number; depth: number; size: string } => {
-  const traverse = (
-    node: Node,
-    depth: number,
-  ): { elements: number; attributes: number; maxDepth: number } => {
-    if (node.nodeType !== Node.ELEMENT_NODE) {
-      return { elements: 0, attributes: 0, maxDepth: depth }
-    }
-
-    const element = node as Element
-    const childResults = Array.from(node.childNodes).reduce(
-      (acc, child) => {
-        const result = traverse(child, depth + 1)
-        return {
-          elements: acc.elements + result.elements,
-          attributes: acc.attributes + result.attributes,
-          maxDepth: Math.max(acc.maxDepth, result.maxDepth),
-        }
-      },
-      { elements: 0, attributes: 0, maxDepth: depth },
-    )
-
-    return {
-      elements: 1 + childResults.elements,
-      attributes: element.attributes.length + childResults.attributes,
-      maxDepth: childResults.maxDepth,
-    }
-  }
-
   const stats = traverse(doc.documentElement, 0)
 
   const bytes = new Blob([state.input]).size
@@ -226,6 +227,7 @@ const sortAttributesTransform = (s: string): string =>
         return m ? { name: m[1], value: m[2] } : null
       })
       .filter((a): a is { name: string; value: string } => a !== null)
+      // oxlint-disable-next-line unicorn/no-array-sort -- sorts the array just built by the map/filter chain above, not a shared/original array
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(a => ` ${a.name}="${a.value}"`)
       .join('')

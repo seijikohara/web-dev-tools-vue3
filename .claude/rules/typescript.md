@@ -79,9 +79,7 @@ type AsyncState<T> =
 ### Result Pattern
 
 ```typescript
-type Result<T, E = string> =
-  | { ok: true; value: T }
-  | { ok: false; error: E }
+type Result<T, E = string> = { ok: true; value: T } | { ok: false; error: E }
 
 const parse = <T>(input: string): Result<T> => {
   try {
@@ -98,8 +96,7 @@ const parse = <T>(input: string): Result<T> => {
 
 ```typescript
 // Prefer type guards over assertions
-const isString = (value: unknown): value is string =>
-  typeof value === 'string'
+const isString = (value: unknown): value is string => typeof value === 'string'
 
 // Use satisfies for inference + checking
 const config = {
@@ -139,8 +136,7 @@ return (map as Record<string, number>)[key] ?? 0
 
 ```typescript
 // Export functions with explicit return types
-export const transform = (input: string): string =>
-  input.toUpperCase()
+export const transform = (input: string): string => input.toUpperCase()
 
 // Internal functions can use inference
 const helper = (x: number) => x * 2
@@ -149,19 +145,21 @@ const helper = (x: number) => x * 2
 ### Higher-Order Functions
 
 ```typescript
-const withErrorHandling = <T extends unknown[], R>(
-  fn: (...args: T) => R,
-  errorRef: Ref<string | null>,
-  defaultMessage: string,
-) => (...args: T): R => {
-  errorRef.value = null
-  try {
-    return fn(...args)
-  } catch (e) {
-    errorRef.value = e instanceof Error ? e.message : defaultMessage
-    throw e
+const withErrorHandling =
+  <T extends unknown[], R>(
+    fn: (...args: T) => R,
+    errorRef: Ref<string | null>,
+    defaultMessage: string,
+  ) =>
+  (...args: T): R => {
+    errorRef.value = null
+    try {
+      return fn(...args)
+    } catch (e) {
+      errorRef.value = e instanceof Error ? e.message : defaultMessage
+      throw e
+    }
   }
-}
 ```
 
 ### Early Returns (Mandatory)
@@ -204,14 +202,10 @@ for (const item of items) {
 }
 
 // ✅ Use method chaining for transformation
-const result = items
-  .filter(item => item.active)
-  .map(item => item.value * 2)
+const result = items.filter(item => item.active).map(item => item.value * 2)
 
 // ✅ Use reduce for aggregation
-const total = items
-  .filter(item => item.active)
-  .reduce((sum, item) => sum + item.value, 0)
+const total = items.filter(item => item.active).reduce((sum, item) => sum + item.value, 0)
 ```
 
 ### forEach for Side Effects
@@ -356,11 +350,7 @@ const sql = `
 `
 
 // ✅ For dynamic multiline content, use array join
-const lines = [
-  `Name: ${user.name}`,
-  `Email: ${user.email}`,
-  `Role: ${user.role}`,
-].join('\n')
+const lines = [`Name: ${user.name}`, `Email: ${user.email}`, `Role: ${user.role}`].join('\n')
 ```
 
 ### Tagged Template Literals
@@ -394,13 +384,13 @@ All code comments, commit messages, and documentation must follow:
 
 ## Naming Conventions
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Variables | camelCase | `userName` |
-| Constants | UPPER_SNAKE_CASE | `API_BASE_URL` |
-| Functions | camelCase | `transformData` |
-| Types/Interfaces | PascalCase | `ApiResponse` |
-| Components | PascalCase | `MyComponent.vue` |
-| Composables | use + PascalCase | `useFeature.ts` |
-| Stores | camelCase or use + PascalCase | `ui.ts`, `useSettingsStore.ts` |
-| Other Files | kebab-case | `api-client.ts` |
+| Type             | Convention                    | Example                        |
+| ---------------- | ----------------------------- | ------------------------------ |
+| Variables        | camelCase                     | `userName`                     |
+| Constants        | UPPER_SNAKE_CASE              | `API_BASE_URL`                 |
+| Functions        | camelCase                     | `transformData`                |
+| Types/Interfaces | PascalCase                    | `ApiResponse`                  |
+| Components       | PascalCase                    | `MyComponent.vue`              |
+| Composables      | use + PascalCase              | `useFeature.ts`                |
+| Stores           | camelCase or use + PascalCase | `ui.ts`, `useSettingsStore.ts` |
+| Other Files      | kebab-case                    | `api-client.ts`                |

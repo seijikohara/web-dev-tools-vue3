@@ -238,7 +238,8 @@ const processYamlWithOptions = (obj: unknown): unknown => {
 
     // Sort keys if enabled
     const sortedEntries = state.sortKeys
-      ? entries.sort((a, b) => a[0].localeCompare(b[0]))
+      ? // oxlint-disable-next-line unicorn/no-array-sort -- entries is Object.entries(obj) above, a fresh local array; nothing external is mutated
+        entries.sort((a, b) => a[0].localeCompare(b[0]))
       : entries
 
     return sortedEntries.reduce<Record<string, unknown>>((acc, [key, value]) => {
@@ -384,25 +385,26 @@ const copyOutput = () => {
   void copy(state.output, { detail: 'Output copied to clipboard' })
 }
 
+// Recursively render a parsed value's children as XML elements named `name`
+const convert = (data: unknown, name: string): string => {
+  if (data === null || data === undefined) {
+    return `<${name}/>`
+  }
+  if (Array.isArray(data)) {
+    return data.map(item => convert(item, name)).join('')
+  }
+  if (typeof data === 'object') {
+    const entries = Object.entries(data as Record<string, unknown>)
+    const children = entries.map(([key, value]) => convert(value, key)).join('')
+    return `<${name}>${children}</${name}>`
+  }
+  // Primitive types: string, number, boolean, bigint, symbol
+  const primitiveValue = typeof data === 'string' ? data : JSON.stringify(data)
+  return `<${name}>${primitiveValue}</${name}>`
+}
+
 // Convert to JSON helper
 const jsonToXml = (obj: unknown, rootName = 'root'): string => {
-  const convert = (data: unknown, name: string): string => {
-    if (data === null || data === undefined) {
-      return `<${name}/>`
-    }
-    if (Array.isArray(data)) {
-      return data.map(item => convert(item, name)).join('')
-    }
-    if (typeof data === 'object') {
-      const entries = Object.entries(data as Record<string, unknown>)
-      const children = entries.map(([key, value]) => convert(value, key)).join('')
-      return `<${name}>${children}</${name}>`
-    }
-    // Primitive types: string, number, boolean, bigint, symbol
-    const primitiveValue = typeof data === 'string' ? data : JSON.stringify(data)
-    return `<${name}>${primitiveValue}</${name}>`
-  }
-
   return convert(obj, rootName)
 }
 

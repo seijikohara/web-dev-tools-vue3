@@ -66,7 +66,7 @@ describe('useUuidGenerator', () => {
       const ts1 = uuid1.replace(/-/g, '').substring(0, 12)
       const ts2 = uuid2.replace(/-/g, '').substring(0, 12)
 
-      expect(BigInt('0x' + ts2)).toBeGreaterThanOrEqual(BigInt('0x' + ts1))
+      expect(BigInt(`0x${ts2}`)).toBeGreaterThanOrEqual(BigInt(`0x${ts1}`))
     })
   })
 

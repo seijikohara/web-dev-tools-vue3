@@ -210,26 +210,27 @@ export const generateCurlCommand = (
   ].join(` \\
   `)
 
+// Strip a single matching pair of surrounding quotes from a token value
+const cleanValue = (val: string): string => {
+  if (!val) return ''
+  if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
+    return val.slice(1, -1)
+  }
+  return val
+}
+
 export const parseCurlString = (input: string): ParseResult => {
   const tokens = input.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? []
 
-  const cleanValue = (val: string): string => {
-    if (!val) return ''
-    if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
-      return val.slice(1, -1)
-    }
-    return val
-  }
+  const processTokens = (tokenList: string[], index: number, state: ParseResult): ParseResult => {
+    if (index >= tokenList.length) return state
 
-  const processTokens = (tokens: string[], index: number, state: ParseResult): ParseResult => {
-    if (index >= tokens.length) return state
-
-    const token = tokens[index]
-    const nextToken = tokens[index + 1]
+    const token = tokenList[index]
+    const nextToken = tokenList[index + 1]
 
     if (token === '-X' || token === '--request') {
       const methodValue = cleanValue(nextToken ?? '') as HttpMethod
-      return processTokens(tokens, index + 2, { ...state, method: methodValue })
+      return processTokens(tokenList, index + 2, { ...state, method: methodValue })
     }
 
     if (token === '-H' || token === '--header') {
@@ -238,27 +239,27 @@ export const parseCurlString = (input: string): ParseResult => {
       if (colonIndex > 0) {
         const key = headerValue.slice(0, colonIndex).trim()
         const value = headerValue.slice(colonIndex + 1).trim()
-        return processTokens(tokens, index + 2, {
+        return processTokens(tokenList, index + 2, {
           ...state,
           headers: [...state.headers, { key, value, enabled: true }],
         })
       }
-      return processTokens(tokens, index + 2, state)
+      return processTokens(tokenList, index + 2, state)
     }
 
     if (token === '-d' || token === '--data' || token === '--data-raw') {
-      return processTokens(tokens, index + 2, { ...state, body: cleanValue(nextToken ?? '') })
+      return processTokens(tokenList, index + 2, { ...state, body: cleanValue(nextToken ?? '') })
     }
 
     if (token?.startsWith('http://') || token?.startsWith('https://')) {
-      return processTokens(tokens, index + 1, { ...state, url: cleanValue(token) })
+      return processTokens(tokenList, index + 1, { ...state, url: cleanValue(token) })
     }
 
-    if (!token?.startsWith('-') && !token?.startsWith('curl') && index === tokens.length - 1) {
-      return processTokens(tokens, index + 1, { ...state, url: cleanValue(token ?? '') })
+    if (!token?.startsWith('-') && !token?.startsWith('curl') && index === tokenList.length - 1) {
+      return processTokens(tokenList, index + 1, { ...state, url: cleanValue(token ?? '') })
     }
 
-    return processTokens(tokens, index + 1, state)
+    return processTokens(tokenList, index + 1, state)
   }
 
   return processTokens(tokens, 0, { headers: [], method: 'GET', url: '', body: '' })

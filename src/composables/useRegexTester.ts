@@ -94,7 +94,7 @@ export const buildFlagsString = (flags: RegexFlags): string =>
 export const validateRegex = (pattern: string, flags: string): string => {
   if (!pattern) return ''
   try {
-    new RegExp(pattern, flags)
+    void new RegExp(pattern, flags)
     return ''
   } catch (e) {
     return e instanceof Error ? e.message : 'Invalid regular expression'

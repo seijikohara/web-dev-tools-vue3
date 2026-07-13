@@ -18,7 +18,7 @@ defineProps<{
     <div class="panel-label">
       <i v-if="icon" :class="`pi pi-${icon}`"></i>
       <span>{{ label }}</span>
-      <slot name="stats" />
+      <slot name="stats"></slot>
     </div>
     <CodeEditor
       v-model="modelValue"
@@ -28,15 +28,15 @@ defineProps<{
     />
     <Toolbar v-if="$slots.toolbar" class="editor-toolbar">
       <template #start>
-        <slot name="toolbar-start" />
+        <slot name="toolbar-start"></slot>
       </template>
       <template #center>
-        <slot name="toolbar-center" />
+        <slot name="toolbar-center"></slot>
       </template>
       <template #end>
-        <slot name="toolbar-end" />
+        <slot name="toolbar-end"></slot>
       </template>
     </Toolbar>
-    <slot name="toolbar" />
+    <slot name="toolbar"></slot>
   </div>
 </template>

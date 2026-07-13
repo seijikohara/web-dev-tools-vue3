@@ -112,6 +112,19 @@ export const downloadBlob = (blob: Blob, filename: string): void => {
   URL.revokeObjectURL(url)
 }
 
+// Read a File as a base64 string (strips the data URL prefix)
+export const processFile = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      const result = reader.result as string
+      resolve(result.split(',')[1] ?? result)
+    })
+    reader.addEventListener('error', () => reject(new Error('Failed to read file')))
+    reader.readAsDataURL(file)
+  })
+}
+
 // Composable
 export const useBase64Encoder = () => {
   // Text encode/decode state
@@ -168,18 +181,6 @@ export const useBase64Encoder = () => {
   const isImage = computed(() => isImageMimeType(fileMimeType.value))
 
   // File actions
-  const processFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const result = reader.result as string
-        resolve(result.split(',')[1] ?? result)
-      }
-      reader.onerror = () => reject(new Error('Failed to read file'))
-      reader.readAsDataURL(file)
-    })
-  }
-
   const setFileInfo = (file: File, base64: string) => {
     fileName.value = file.name
     fileMimeType.value = file.type
