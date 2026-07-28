@@ -99,8 +99,8 @@ importers:
         specifier: ^3.4.12
         version: 3.4.12
       json-tree-view-vue3:
-        specifier: ^1.1.2
-        version: 1.1.2(vue@3.5.40(typescript@6.0.3))
+        specifier: ^2.0.0
+        version: 2.0.0(vue@3.5.40(typescript@6.0.3))
       marked:
         specifier: ^18.0.0
         version: 18.0.7
@@ -1646,8 +1646,9 @@ packages:
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
-  json-tree-view-vue3@1.1.2:
-    resolution: {integrity: sha512-qjc9TlTgySh2nsBPzhyoOPZH9hkcd5tY5rmf8EGcL/yFk3vSdvpm4sXhMSV1DYbT0KFafbkGJ97CV5JSRO1qzw==}
+  json-tree-view-vue3@2.0.0:
+    resolution: {integrity: sha512-Ad314AYTQjOQK6lDivJA/u5MrfGExDn8YiS01FnNbGYrkeiID7LJJpMnkJxrQZsmP0MIs4irts3IPMMX+cs22w==}
+    engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       vue: '>=3.2.0'
 
@@ -3926,7 +3927,7 @@ snapshots:
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
-  json-tree-view-vue3@1.1.2(vue@3.5.40(typescript@6.0.3)):
+  json-tree-view-vue3@2.0.0(vue@3.5.40(typescript@6.0.3)):
     dependencies:
       vue: 3.5.40(typescript@6.0.3)
 
