@@ -87,12 +87,18 @@ const copyHash = () => {
         <span>BCrypt Generator</span>
       </div>
     </template>
-    <template #subtitle> Generate and verify BCrypt password hashes </template>
+    <template #subtitle>
+      Generate and verify BCrypt password hashes
+    </template>
     <template #content>
       <Tabs value="0">
         <TabList>
-          <Tab value="0">Generate</Tab>
-          <Tab value="1">Verify</Tab>
+          <Tab value="0">
+            Generate
+          </Tab>
+          <Tab value="1">
+            Verify
+          </Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="0">
@@ -114,7 +120,10 @@ const copyHash = () => {
                     placeholder="Enter password to hash"
                   />
                   <InputGroupAddon v-if="passwordStrength">
-                    <Tag :value="passwordStrength.label" :severity="passwordStrength.severity" />
+                    <Tag
+                      :value="passwordStrength.label"
+                      :severity="passwordStrength.severity"
+                    />
                   </InputGroupAddon>
                 </InputGroup>
               </div>
@@ -126,9 +135,18 @@ const copyHash = () => {
                     Cost Factor (Rounds)
                   </label>
                   <div class="rounds-info">
-                    <Tag :value="`${generateState.rounds} rounds`" severity="secondary" />
-                    <Tag :value="roundInfo.time" severity="info" />
-                    <Tag :value="roundInfo.security" :severity="roundInfo.severity" />
+                    <Tag
+                      :value="`${generateState.rounds} rounds`"
+                      severity="secondary"
+                    />
+                    <Tag
+                      :value="roundInfo.time"
+                      severity="info"
+                    />
+                    <Tag
+                      :value="roundInfo.security"
+                      :severity="roundInfo.severity"
+                    />
                   </div>
                 </div>
                 <div class="rounds-control">
@@ -154,11 +172,20 @@ const copyHash = () => {
               </Divider>
 
               <div class="hash-output">
-                <div v-if="isComputing && !overlay.showOverlay.value" class="computing-state">
-                  <ProgressSpinner style="width: 30px; height: 30px" stroke-width="4" />
+                <div
+                  v-if="isComputing && !overlay.showOverlay.value"
+                  class="computing-state"
+                >
+                  <ProgressSpinner
+                    style="width: 30px; height: 30px"
+                    :stroke-width="4"
+                  />
                   <span>Computing hash...</span>
                 </div>
-                <div v-else-if="hashedValue" class="hash-result">
+                <div
+                  v-else-if="hashedValue"
+                  class="hash-result"
+                >
                   <code class="hash-value">{{ hashedValue }}</code>
                   <div class="hash-meta">
                     <Tag
@@ -167,11 +194,22 @@ const copyHash = () => {
                       severity="info"
                       icon="pi pi-clock"
                     />
-                    <Tag value="60 chars" severity="secondary" />
-                    <Button icon="pi pi-copy" label="Copy" severity="secondary" @click="copyHash" />
+                    <Tag
+                      value="60 chars"
+                      severity="secondary"
+                    />
+                    <Button
+                      icon="pi pi-copy"
+                      label="Copy"
+                      severity="secondary"
+                      @click="copyHash"
+                    />
                   </div>
                 </div>
-                <div v-else class="placeholder-state">
+                <div
+                  v-else
+                  class="placeholder-state"
+                >
                   <i class="pi pi-info-circle"></i>
                   <span>Enter a password above to generate hash</span>
                 </div>
@@ -227,23 +265,40 @@ const copyHash = () => {
               </Divider>
 
               <div class="verify-result">
-                <div v-if="isVerifying && !overlay.showOverlay.value" class="verifying-state">
-                  <ProgressSpinner style="width: 30px; height: 30px" stroke-width="4" />
+                <div
+                  v-if="isVerifying && !overlay.showOverlay.value"
+                  class="verifying-state"
+                >
+                  <ProgressSpinner
+                    style="width: 30px; height: 30px"
+                    :stroke-width="4"
+                  />
                   <span>Verifying...</span>
                 </div>
-                <Message v-else-if="verifyResult === true" severity="success" :closable="false">
+                <Message
+                  v-else-if="verifyResult === true"
+                  severity="success"
+                  :closable="false"
+                >
                   <div class="result-content">
                     <i class="pi pi-check-circle"></i>
                     <span>Password matches the hash!</span>
                   </div>
                 </Message>
-                <Message v-else-if="verifyResult === false" severity="error" :closable="false">
+                <Message
+                  v-else-if="verifyResult === false"
+                  severity="error"
+                  :closable="false"
+                >
                   <div class="result-content">
                     <i class="pi pi-times-circle"></i>
                     <span>Password does not match the hash</span>
                   </div>
                 </Message>
-                <div v-else class="placeholder-state">
+                <div
+                  v-else
+                  class="placeholder-state"
+                >
                   <i class="pi pi-info-circle"></i>
                   <span>Enter password and hash to verify</span>
                 </div>
@@ -264,7 +319,10 @@ const copyHash = () => {
         class="computing-dialog"
       >
         <div class="overlay-content">
-          <ProgressSpinner style="width: 50px; height: 50px" stroke-width="4" />
+          <ProgressSpinner
+            style="width: 50px; height: 50px"
+            :stroke-width="4"
+          />
           <div class="overlay-info">
             <p class="overlay-message">
               {{ isVerifying ? 'Verifying password...' : 'Generating hash...' }}
@@ -288,7 +346,12 @@ const copyHash = () => {
           </div>
         </div>
         <template #footer>
-          <Button label="Cancel" icon="pi pi-times" severity="danger" @click="cancelComputation" />
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            severity="danger"
+            @click="cancelComputation"
+          />
         </template>
       </Dialog>
     </template>

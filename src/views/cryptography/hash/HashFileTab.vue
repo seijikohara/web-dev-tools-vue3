@@ -65,15 +65,26 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
   </div>
 
   <Transition name="fade">
-    <div v-if="isProcessingFile" class="processing-section">
-      <ProgressSpinner style="width: 40px; height: 40px" stroke-width="4" />
+    <div
+      v-if="isProcessingFile"
+      class="processing-section"
+    >
+      <ProgressSpinner
+        style="width: 40px; height: 40px"
+        :stroke-width="4"
+      />
       <span>Calculating hashes...</span>
     </div>
   </Transition>
 
   <Transition name="fade-slide">
-    <div v-if="fileName && !isProcessingFile" class="file-info">
-      <SectionDivider icon="file">File Information</SectionDivider>
+    <div
+      v-if="fileName && !isProcessingFile"
+      class="file-info"
+    >
+      <SectionDivider icon="file">
+        File Information
+      </SectionDivider>
 
       <div class="file-details">
         <div class="detail-item">
@@ -84,26 +95,48 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
         <div class="detail-item">
           <i class="pi pi-database"></i>
           <span class="detail-label">Size:</span>
-          <Tag :value="formatFileSize(fileSize)" severity="info" />
+          <Tag
+            :value="formatFileSize(fileSize)"
+            severity="info"
+          />
         </div>
       </div>
     </div>
   </Transition>
 
   <Transition name="fade-slide">
-    <div v-if="fileHashedValues.length > 0" class="file-hashes">
-      <SectionDivider icon="lock">Hash Results</SectionDivider>
+    <div
+      v-if="fileHashedValues.length > 0"
+      class="file-hashes"
+    >
+      <SectionDivider icon="lock">
+        Hash Results
+      </SectionDivider>
 
-      <DataTable :value="fileHashedValues" striped-rows size="small" class="hash-table">
-        <Column header="Algorithm" :header-style="{ width: '130px' }">
+      <DataTable
+        :value="fileHashedValues"
+        striped-rows
+        size="small"
+        class="hash-table"
+      >
+        <Column
+          header="Algorithm"
+          :header-style="{ width: '130px' }"
+        >
           <template #body="slotProps">
             <div class="algorithm-cell">
-              <Tag :value="slotProps.data.method" :severity="slotProps.data.severity" />
+              <Tag
+                :value="slotProps.data.method"
+                :severity="slotProps.data.severity"
+              />
               <span class="bits-label">{{ slotProps.data.bits }} bits</span>
             </div>
           </template>
         </Column>
-        <Column field="value" header="Hash Value">
+        <Column
+          field="value"
+          header="Hash Value"
+        >
           <template #body="slotProps">
             <code class="hash-value">{{ slotProps.data.value }}</code>
           </template>

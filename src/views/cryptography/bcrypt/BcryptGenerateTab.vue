@@ -72,7 +72,10 @@ setOnCancelled(() => {
           placeholder="Enter password to hash"
         />
         <InputGroupAddon v-if="passwordStrength">
-          <Tag :value="passwordStrength.label" :severity="passwordStrength.severity" />
+          <Tag
+            :value="passwordStrength.label"
+            :severity="passwordStrength.severity"
+          />
         </InputGroupAddon>
       </InputGroup>
     </div>
@@ -84,13 +87,28 @@ setOnCancelled(() => {
           Cost Factor (Rounds)
         </label>
         <div class="rounds-info">
-          <Tag :value="`${generateState.rounds} rounds`" severity="secondary" />
-          <Tag :value="roundInfo.time" severity="info" />
-          <Tag :value="roundInfo.security" :severity="roundInfo.severity" />
+          <Tag
+            :value="`${generateState.rounds} rounds`"
+            severity="secondary"
+          />
+          <Tag
+            :value="roundInfo.time"
+            severity="info"
+          />
+          <Tag
+            :value="roundInfo.security"
+            :severity="roundInfo.severity"
+          />
         </div>
       </div>
       <div class="rounds-control">
-        <InputNumber id="rounds" v-model="generateState.rounds" :min="4" :max="20" show-buttons />
+        <InputNumber
+          id="rounds"
+          v-model="generateState.rounds"
+          :min="4"
+          :max="20"
+          show-buttons
+        />
       </div>
       <small class="hint-text">
         <i class="pi pi-info-circle"></i>
@@ -98,14 +116,25 @@ setOnCancelled(() => {
       </small>
     </div>
 
-    <SectionDivider icon="hashtag">Generated Hash</SectionDivider>
+    <SectionDivider icon="hashtag">
+      Generated Hash
+    </SectionDivider>
 
     <div class="hash-output">
-      <div v-if="isComputing && !overlay.showOverlay.value" class="computing-state">
-        <ProgressSpinner style="width: 30px; height: 30px" stroke-width="4" />
+      <div
+        v-if="isComputing && !overlay.showOverlay.value"
+        class="computing-state"
+      >
+        <ProgressSpinner
+          style="width: 30px; height: 30px"
+          :stroke-width="4"
+        />
         <span>Computing hash...</span>
       </div>
-      <div v-else-if="hashedValue" class="hash-result">
+      <div
+        v-else-if="hashedValue"
+        class="hash-result"
+      >
         <code class="hash-value">{{ hashedValue }}</code>
         <div class="hash-meta">
           <Tag
@@ -114,11 +143,21 @@ setOnCancelled(() => {
             severity="info"
             icon="pi pi-clock"
           />
-          <Tag value="60 chars" severity="secondary" />
-          <CopyButton :value="hashedValue" label="Copy" tooltip="Hash copied to clipboard" />
+          <Tag
+            value="60 chars"
+            severity="secondary"
+          />
+          <CopyButton
+            :value="hashedValue"
+            label="Copy"
+            tooltip="Hash copied to clipboard"
+          />
         </div>
       </div>
-      <div v-else class="placeholder-state">
+      <div
+        v-else
+        class="placeholder-state"
+      >
         <i class="pi pi-info-circle"></i>
         <span>Enter a password above to generate hash</span>
       </div>
@@ -135,16 +174,24 @@ setOnCancelled(() => {
       class="computing-dialog"
     >
       <div class="overlay-content">
-        <ProgressSpinner style="width: 50px; height: 50px" stroke-width="4" />
+        <ProgressSpinner
+          style="width: 50px; height: 50px"
+          :stroke-width="4"
+        />
         <div class="overlay-info">
-          <p class="overlay-message">Generating hash...</p>
+          <p class="overlay-message">
+            Generating hash...
+          </p>
           <div class="overlay-stats">
             <Tag
               :value="`Elapsed: ${overlay.formattedElapsedTime.value}`"
               severity="info"
               icon="pi pi-clock"
             />
-            <Tag :value="`${generateState.rounds} rounds`" severity="secondary" />
+            <Tag
+              :value="`${generateState.rounds} rounds`"
+              severity="secondary"
+            />
           </div>
           <p class="overlay-hint">
             <i class="pi pi-info-circle"></i>
@@ -153,7 +200,12 @@ setOnCancelled(() => {
         </div>
       </div>
       <template #footer>
-        <Button label="Cancel" icon="pi pi-times" severity="danger" @click="cancelComputation" />
+        <Button
+          label="Cancel"
+          icon="pi pi-times"
+          severity="danger"
+          @click="cancelComputation"
+        />
       </template>
     </Dialog>
   </div>

@@ -422,7 +422,9 @@ const clearKeys = () => {
         <span>GPG Key Generator</span>
       </div>
     </template>
-    <template #subtitle> Generate GPG/PGP key pairs for encryption and signing </template>
+    <template #subtitle>
+      Generate GPG/PGP key pairs for encryption and signing
+    </template>
     <template #content>
       <div class="generator-panel">
         <!-- User Information -->
@@ -440,7 +442,12 @@ const clearKeys = () => {
             <InputGroupAddon>
               <i class="pi pi-user"></i>
             </InputGroupAddon>
-            <InputText id="name" v-model="state.name" class="w-full" placeholder="John Doe" />
+            <InputText
+              id="name"
+              v-model="state.name"
+              class="w-full"
+              placeholder="John Doe"
+            />
           </InputGroup>
         </div>
 
@@ -477,8 +484,14 @@ const clearKeys = () => {
         </div>
 
         <!-- User ID Preview -->
-        <div v-if="state.name || state.email" class="user-id-preview">
-          <Tag value="User ID" severity="secondary" />
+        <div
+          v-if="state.name || state.email"
+          class="user-id-preview"
+        >
+          <Tag
+            value="User ID"
+            severity="secondary"
+          />
           <code>{{ userId || '(Enter name and email)' }}</code>
         </div>
 
@@ -508,8 +521,14 @@ const clearKeys = () => {
                 <div class="algorithm-header">
                   <span class="algorithm-label">{{ slotProps.option.label }}</span>
                   <div class="algorithm-tags">
-                    <Tag :value="slotProps.option.usage" severity="info" />
-                    <Tag :value="slotProps.option.security" :severity="slotProps.option.severity" />
+                    <Tag
+                      :value="slotProps.option.usage"
+                      severity="info"
+                    />
+                    <Tag
+                      :value="slotProps.option.security"
+                      :severity="slotProps.option.severity"
+                    />
                   </div>
                 </div>
                 <span class="algorithm-description">{{ slotProps.option.description }}</span>
@@ -517,8 +536,14 @@ const clearKeys = () => {
             </template>
           </Select>
           <div class="algorithm-info">
-            <Tag :value="selectedAlgorithm.usage" severity="info" />
-            <Tag :value="selectedAlgorithm.security" :severity="selectedAlgorithm.severity" />
+            <Tag
+              :value="selectedAlgorithm.usage"
+              severity="info"
+            />
+            <Tag
+              :value="selectedAlgorithm.security"
+              :severity="selectedAlgorithm.severity"
+            />
             <span class="algorithm-desc">{{ selectedAlgorithm.description }}</span>
           </div>
         </div>
@@ -542,7 +567,11 @@ const clearKeys = () => {
         </div>
 
         <!-- Validation Message -->
-        <Message v-if="!isValid && (state.name || state.email)" severity="warn" :closable="false">
+        <Message
+          v-if="!isValid && (state.name || state.email)"
+          severity="warn"
+          :closable="false"
+        >
           <div class="message-content">
             <i class="pi pi-exclamation-triangle"></i>
             <span>Please enter a valid name and email address</span>
@@ -550,7 +579,12 @@ const clearKeys = () => {
         </Message>
 
         <!-- Error Message -->
-        <Message v-if="error" severity="error" :closable="false" class="error-message">
+        <Message
+          v-if="error"
+          severity="error"
+          :closable="false"
+          class="error-message"
+        >
           <div class="message-content">
             <i class="pi pi-exclamation-triangle"></i>
             <span>{{ error }}</span>
@@ -558,7 +592,11 @@ const clearKeys = () => {
         </Message>
 
         <!-- Info Message -->
-        <Message severity="info" :closable="false" class="info-message">
+        <Message
+          severity="info"
+          :closable="false"
+          class="info-message"
+        >
           <div class="message-content">
             <i class="pi pi-info-circle"></i>
             <span>Keys are generated entirely in your browser. No data is sent to any server.</span>
@@ -574,7 +612,11 @@ const clearKeys = () => {
         </Divider>
 
         <div class="command-section">
-          <Message severity="warn" :closable="false" class="command-notice">
+          <Message
+            severity="warn"
+            :closable="false"
+            class="command-notice"
+          >
             <div class="message-content">
               <i class="pi pi-info-circle"></i>
               <span>For production use, we recommend using the native GPG command:</span>
@@ -583,7 +625,10 @@ const clearKeys = () => {
 
           <div class="command-group">
             <div class="command-label">
-              <Tag value="Interactive" severity="info" />
+              <Tag
+                value="Interactive"
+                severity="info"
+              />
               <span>Simple interactive key generation</span>
             </div>
             <div class="command-container">
@@ -601,7 +646,10 @@ const clearKeys = () => {
 
           <div class="command-group">
             <div class="command-label">
-              <Tag value="Batch" severity="secondary" />
+              <Tag
+                value="Batch"
+                severity="secondary"
+              />
               <span>Non-interactive batch mode (with current settings)</span>
             </div>
             <div class="command-container batch-command">
@@ -621,7 +669,10 @@ const clearKeys = () => {
 
       <!-- Generated Keys -->
       <Transition name="fade-slide">
-        <div v-if="generatedKeys" class="keys-section">
+        <div
+          v-if="generatedKeys"
+          class="keys-section"
+        >
           <!-- Fingerprint -->
           <Divider align="left">
             <span class="divider-text">
@@ -632,7 +683,13 @@ const clearKeys = () => {
 
           <div class="fingerprint-container">
             <code class="fingerprint">{{ generatedKeys.fingerprint }}</code>
-            <Button icon="pi pi-copy" severity="secondary" text rounded @click="copyFingerprint" />
+            <Button
+              icon="pi pi-copy"
+              severity="secondary"
+              text
+              rounded
+              @click="copyFingerprint"
+            />
           </div>
 
           <!-- Public Key -->
@@ -652,8 +709,16 @@ const clearKeys = () => {
               class="key-textarea"
             />
             <div class="key-actions">
-              <Tag value="Share this key to receive encrypted messages" severity="secondary" />
-              <Button icon="pi pi-copy" label="Copy" severity="secondary" @click="copyPublicKey" />
+              <Tag
+                value="Share this key to receive encrypted messages"
+                severity="secondary"
+              />
+              <Button
+                icon="pi pi-copy"
+                label="Copy"
+                severity="secondary"
+                @click="copyPublicKey"
+              />
               <Button
                 icon="pi pi-download"
                 label="Download"
@@ -672,7 +737,11 @@ const clearKeys = () => {
           </Divider>
 
           <div class="key-container">
-            <Message severity="warn" :closable="false" class="warning-message">
+            <Message
+              severity="warn"
+              :closable="false"
+              class="warning-message"
+            >
               <div class="message-content">
                 <i class="pi pi-exclamation-triangle"></i>
                 <span>Keep this private key secure! Never share it with anyone.</span>
@@ -686,8 +755,16 @@ const clearKeys = () => {
               class="key-textarea private-key"
             />
             <div class="key-actions">
-              <Tag value="Keep secure - never share!" severity="warn" />
-              <Button icon="pi pi-copy" label="Copy" severity="secondary" @click="copyPrivateKey" />
+              <Tag
+                value="Keep secure - never share!"
+                severity="warn"
+              />
+              <Button
+                icon="pi pi-copy"
+                label="Copy"
+                severity="secondary"
+                @click="copyPrivateKey"
+              />
               <Button
                 icon="pi pi-download"
                 label="Download"
@@ -707,32 +784,54 @@ const clearKeys = () => {
 
           <div class="usage-instructions">
             <div class="instruction-item">
-              <Tag value="1" severity="info" rounded />
+              <Tag
+                value="1"
+                severity="info"
+                rounded
+              />
               <span>Import the private key: <code>gpg --import private.asc</code></span>
             </div>
             <div class="instruction-item">
-              <Tag value="2" severity="info" rounded />
+              <Tag
+                value="2"
+                severity="info"
+                rounded
+              />
               <span>Import the public key: <code>gpg --import public.asc</code></span>
             </div>
             <div class="instruction-item">
-              <Tag value="3" severity="info" rounded />
+              <Tag
+                value="3"
+                severity="info"
+                rounded
+              />
               <span>List your keys: <code>gpg --list-keys</code></span>
             </div>
             <div class="instruction-item">
-              <Tag value="4" severity="info" rounded />
+              <Tag
+                value="4"
+                severity="info"
+                rounded
+              />
               <span>Sign a file: <code>gpg --sign file.txt</code></span>
             </div>
             <div class="instruction-item">
-              <Tag value="5" severity="info" rounded />
-              <span
-                >Encrypt for recipient:
-                <code>gpg --encrypt --recipient email@example.com file.txt</code></span
-              >
+              <Tag
+                value="5"
+                severity="info"
+                rounded
+              />
+              <span>Encrypt for recipient:
+                <code>gpg --encrypt --recipient email@example.com file.txt</code></span>
             </div>
           </div>
 
           <!-- Note about Web Crypto -->
-          <Message severity="info" :closable="false" class="note-message">
+          <Message
+            severity="info"
+            :closable="false"
+            class="note-message"
+          >
             <div class="message-content">
               <i class="pi pi-info-circle"></i>
               <span>
@@ -746,8 +845,14 @@ const clearKeys = () => {
       </Transition>
 
       <!-- Loading State -->
-      <div v-if="isGenerating" class="loading-state">
-        <ProgressSpinner style="width: 40px; height: 40px" stroke-width="4" />
+      <div
+        v-if="isGenerating"
+        class="loading-state"
+      >
+        <ProgressSpinner
+          style="width: 40px; height: 40px"
+          :stroke-width="4"
+        />
         <span>Generating key pair...</span>
       </div>
     </template>

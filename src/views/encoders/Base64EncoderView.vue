@@ -111,17 +111,28 @@ const handleDownload = () => {
         <span>Base64 Encoder</span>
       </div>
     </template>
-    <template #subtitle> Encode and decode Base64 for text and files </template>
+    <template #subtitle>
+      Encode and decode Base64 for text and files
+    </template>
     <template #content>
       <Tabs value="0">
         <TabList>
-          <Tab value="0">Encode/Decode</Tab>
-          <Tab value="1">File to Base64</Tab>
-          <Tab value="2">Base64 to File</Tab>
+          <Tab value="0">
+            Encode/Decode
+          </Tab>
+          <Tab value="1">
+            File to Base64
+          </Tab>
+          <Tab value="2">
+            Base64 to File
+          </Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="0">
-            <Panel toggleable class="options-panel">
+            <Panel
+              toggleable
+              class="options-panel"
+            >
               <template #header>
                 <div class="panel-header">
                   <i class="pi pi-cog"></i>
@@ -152,7 +163,12 @@ const handleDownload = () => {
                     severity="info"
                     icon="pi pi-lock"
                   />
-                  <Tag v-else value="Base64 → Text" severity="success" icon="pi pi-unlock" />
+                  <Tag
+                    v-else
+                    value="Base64 → Text"
+                    severity="success"
+                    icon="pi pi-unlock"
+                  />
                   <span class="info-text">
                     {{
                       encodingMode === 'encode'
@@ -165,7 +181,12 @@ const handleDownload = () => {
             </Panel>
 
             <Transition name="fade-slide">
-              <Message v-if="encodeError" severity="error" :closable="false" class="error-message">
+              <Message
+                v-if="encodeError"
+                severity="error"
+                :closable="false"
+                class="error-message"
+              >
                 <i class="pi pi-times-circle"></i>
                 {{ encodeError }}
               </Message>
@@ -257,12 +278,19 @@ const handleDownload = () => {
           </TabPanel>
 
           <TabPanel value="1">
-            <Panel toggleable class="upload-panel">
+            <Panel
+              toggleable
+              class="upload-panel"
+            >
               <template #header>
                 <div class="panel-header">
                   <i class="pi pi-upload"></i>
                   <span>Upload File</span>
-                  <Tag v-if="fileName" :value="fileName" severity="info" />
+                  <Tag
+                    v-if="fileName"
+                    :value="fileName"
+                    severity="info"
+                  />
                 </div>
               </template>
 
@@ -286,14 +314,23 @@ const handleDownload = () => {
             </Panel>
 
             <Transition name="fade">
-              <div v-if="isProcessingFile" class="processing-section">
-                <ProgressSpinner style="width: 40px; height: 40px" stroke-width="4" />
+              <div
+                v-if="isProcessingFile"
+                class="processing-section"
+              >
+                <ProgressSpinner
+                  style="width: 40px; height: 40px"
+                  :stroke-width="4"
+                />
                 <span>Processing file...</span>
               </div>
             </Transition>
 
             <Transition name="fade-slide">
-              <div v-if="fileBase64 && !isProcessingFile" class="file-result">
+              <div
+                v-if="fileBase64 && !isProcessingFile"
+                class="file-result"
+              >
                 <Divider align="left">
                   <span class="divider-text">
                     <i class="pi pi-info-circle"></i>
@@ -313,7 +350,10 @@ const handleDownload = () => {
                     <i class="pi pi-tag"></i>
                     <div class="info-content">
                       <span class="info-label">MIME Type</span>
-                      <Tag :value="fileMimeType" severity="info" />
+                      <Tag
+                        :value="fileMimeType"
+                        severity="info"
+                      />
                     </div>
                   </div>
                   <div class="info-item">
@@ -332,14 +372,21 @@ const handleDownload = () => {
                   </div>
                 </div>
 
-                <div v-if="isImage" class="image-preview">
+                <div
+                  v-if="isImage"
+                  class="image-preview"
+                >
                   <Divider align="left">
                     <span class="divider-text">
                       <i class="pi pi-image"></i>
                       Preview
                     </span>
                   </Divider>
-                  <img :src="dataUrl" alt="Preview" class="preview-image" />
+                  <img
+                    :src="dataUrl"
+                    alt="Preview"
+                    class="preview-image"
+                  />
                 </div>
 
                 <Divider align="left">
@@ -358,7 +405,11 @@ const handleDownload = () => {
 
                 <Toolbar class="editor-toolbar">
                   <template #start>
-                    <Button label="Copy Base64" icon="pi pi-copy" @click="copyFileBase64" />
+                    <Button
+                      label="Copy Base64"
+                      icon="pi pi-copy"
+                      @click="copyFileBase64"
+                    />
                     <Button
                       label="Copy Data URL"
                       icon="pi pi-link"
@@ -372,7 +423,10 @@ const handleDownload = () => {
           </TabPanel>
 
           <TabPanel value="2">
-            <Panel toggleable class="decode-panel">
+            <Panel
+              toggleable
+              class="decode-panel"
+            >
               <template #header>
                 <div class="panel-header">
                   <i class="pi pi-download"></i>
@@ -450,7 +504,12 @@ const handleDownload = () => {
             </div>
 
             <Transition name="fade-slide">
-              <Message v-if="decodeError" severity="error" :closable="false" class="error-message">
+              <Message
+                v-if="decodeError"
+                severity="error"
+                :closable="false"
+                class="error-message"
+              >
                 <i class="pi pi-times-circle"></i>
                 {{ decodeError }}
               </Message>

@@ -79,13 +79,21 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
         <span>Hash Generator</span>
       </div>
     </template>
-    <template #subtitle> Calculate cryptographic hashes with file support and comparison </template>
+    <template #subtitle>
+      Calculate cryptographic hashes with file support and comparison
+    </template>
     <template #content>
       <Tabs value="0">
         <TabList>
-          <Tab value="0">Text Hash</Tab>
-          <Tab value="1">File Hash</Tab>
-          <Tab value="2">Compare</Tab>
+          <Tab value="0">
+            Text Hash
+          </Tab>
+          <Tab value="1">
+            File Hash
+          </Tab>
+          <Tab value="2">
+            Compare
+          </Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="0">
@@ -93,11 +101,21 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
               <div class="section-header">
                 <label>Input Text</label>
                 <div class="stats-tags">
-                  <Tag severity="secondary" :value="`${textStats.chars} chars`" />
-                  <Tag severity="info" :value="`${textStats.bytes} bytes`" />
+                  <Tag
+                    severity="secondary"
+                    :value="`${textStats.chars} chars`"
+                  />
+                  <Tag
+                    severity="info"
+                    :value="`${textStats.bytes} bytes`"
+                  />
                 </div>
               </div>
-              <CodeEditor v-model="text" mode="plain_text" height="180px" />
+              <CodeEditor
+                v-model="text"
+                mode="plain_text"
+                height="180px"
+              />
             </div>
 
             <Divider align="left">
@@ -107,16 +125,30 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
               </span>
             </Divider>
 
-            <DataTable :value="hashedValues" striped-rows size="small" class="hash-table">
-              <Column header="Algorithm" :header-style="{ width: '130px' }">
+            <DataTable
+              :value="hashedValues"
+              striped-rows
+              size="small"
+              class="hash-table"
+            >
+              <Column
+                header="Algorithm"
+                :header-style="{ width: '130px' }"
+              >
                 <template #body="slotProps">
                   <div class="algorithm-cell">
-                    <Tag :value="slotProps.data.method" :severity="slotProps.data.severity" />
+                    <Tag
+                      :value="slotProps.data.method"
+                      :severity="slotProps.data.severity"
+                    />
                     <span class="bits-label">{{ slotProps.data.bits }} bits</span>
                   </div>
                 </template>
               </Column>
-              <Column field="value" header="Hash Value">
+              <Column
+                field="value"
+                header="Hash Value"
+              >
                 <template #body="slotProps">
                   <code class="hash-value">{{ slotProps.data.value }}</code>
                 </template>
@@ -157,14 +189,23 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
             </div>
 
             <Transition name="fade">
-              <div v-if="isProcessingFile" class="processing-section">
-                <ProgressSpinner style="width: 40px; height: 40px" stroke-width="4" />
+              <div
+                v-if="isProcessingFile"
+                class="processing-section"
+              >
+                <ProgressSpinner
+                  style="width: 40px; height: 40px"
+                  :stroke-width="4"
+                />
                 <span>Calculating hashes...</span>
               </div>
             </Transition>
 
             <Transition name="fade-slide">
-              <div v-if="fileName && !isProcessingFile" class="file-info">
+              <div
+                v-if="fileName && !isProcessingFile"
+                class="file-info"
+              >
                 <Divider align="left">
                   <span class="divider-text">
                     <i class="pi pi-file"></i>
@@ -181,14 +222,20 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
                   <div class="detail-item">
                     <i class="pi pi-database"></i>
                     <span class="detail-label">Size:</span>
-                    <Tag :value="formatFileSize(fileSize)" severity="info" />
+                    <Tag
+                      :value="formatFileSize(fileSize)"
+                      severity="info"
+                    />
                   </div>
                 </div>
               </div>
             </Transition>
 
             <Transition name="fade-slide">
-              <div v-if="fileHashedValues.length > 0" class="file-hashes">
+              <div
+                v-if="fileHashedValues.length > 0"
+                class="file-hashes"
+              >
                 <Divider align="left">
                   <span class="divider-text">
                     <i class="pi pi-lock"></i>
@@ -196,16 +243,30 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
                   </span>
                 </Divider>
 
-                <DataTable :value="fileHashedValues" striped-rows size="small" class="hash-table">
-                  <Column header="Algorithm" :header-style="{ width: '130px' }">
+                <DataTable
+                  :value="fileHashedValues"
+                  striped-rows
+                  size="small"
+                  class="hash-table"
+                >
+                  <Column
+                    header="Algorithm"
+                    :header-style="{ width: '130px' }"
+                  >
                     <template #body="slotProps">
                       <div class="algorithm-cell">
-                        <Tag :value="slotProps.data.method" :severity="slotProps.data.severity" />
+                        <Tag
+                          :value="slotProps.data.method"
+                          :severity="slotProps.data.severity"
+                        />
                         <span class="bits-label">{{ slotProps.data.bits }} bits</span>
                       </div>
                     </template>
                   </Column>
-                  <Column field="value" header="Hash Value">
+                  <Column
+                    field="value"
+                    header="Hash Value"
+                  >
                     <template #body="slotProps">
                       <code class="hash-value">{{ slotProps.data.value }}</code>
                     </template>
@@ -258,14 +319,25 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
               </div>
 
               <Transition name="fade-slide">
-                <div v-if="compareResult !== null" class="compare-result">
-                  <Message v-if="compareResult" severity="success" :closable="false">
+                <div
+                  v-if="compareResult !== null"
+                  class="compare-result"
+                >
+                  <Message
+                    v-if="compareResult"
+                    severity="success"
+                    :closable="false"
+                  >
                     <div class="result-content">
                       <i class="pi pi-check-circle"></i>
                       <span>Hashes match!</span>
                     </div>
                   </Message>
-                  <Message v-else severity="error" :closable="false">
+                  <Message
+                    v-else
+                    severity="error"
+                    :closable="false"
+                  >
                     <div class="result-content">
                       <i class="pi pi-times-circle"></i>
                       <span>Hashes do not match</span>
