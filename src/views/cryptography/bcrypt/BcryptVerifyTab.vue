@@ -89,45 +89,26 @@ setOnCancelled(() => {
       </InputGroup>
     </div>
 
-    <SectionDivider icon="check-circle">
-      Verification Result
-    </SectionDivider>
+    <SectionDivider icon="check-circle">Verification Result</SectionDivider>
 
     <div class="verify-result">
-      <div
-        v-if="isVerifying && !overlay.showOverlay.value"
-        class="verifying-state"
-      >
-        <ProgressSpinner
-          style="width: 30px; height: 30px"
-          :stroke-width="4"
-        />
+      <div v-if="isVerifying && !overlay.showOverlay.value" class="verifying-state">
+        <ProgressSpinner style="width: 30px; height: 30px" :stroke-width="4" />
         <span>Verifying...</span>
       </div>
-      <Message
-        v-else-if="verifyResult === true"
-        severity="success"
-        :closable="false"
-      >
+      <Message v-else-if="verifyResult === true" severity="success" :closable="false">
         <div class="result-content">
           <i class="pi pi-check-circle"></i>
           <span>Password matches the hash!</span>
         </div>
       </Message>
-      <Message
-        v-else-if="verifyResult === false"
-        severity="error"
-        :closable="false"
-      >
+      <Message v-else-if="verifyResult === false" severity="error" :closable="false">
         <div class="result-content">
           <i class="pi pi-times-circle"></i>
           <span>Password does not match the hash</span>
         </div>
       </Message>
-      <div
-        v-else
-        class="placeholder-state"
-      >
+      <div v-else class="placeholder-state">
         <i class="pi pi-info-circle"></i>
         <span>Enter password and hash to verify</span>
       </div>
@@ -144,14 +125,9 @@ setOnCancelled(() => {
       class="computing-dialog"
     >
       <div class="overlay-content">
-        <ProgressSpinner
-          style="width: 50px; height: 50px"
-          :stroke-width="4"
-        />
+        <ProgressSpinner style="width: 50px; height: 50px" :stroke-width="4" />
         <div class="overlay-info">
-          <p class="overlay-message">
-            Verifying password...
-          </p>
+          <p class="overlay-message">Verifying password...</p>
           <div class="overlay-stats">
             <Tag
               :value="`Elapsed: ${overlay.formattedElapsedTime.value}`"
@@ -166,12 +142,7 @@ setOnCancelled(() => {
         </div>
       </div>
       <template #footer>
-        <Button
-          label="Cancel"
-          icon="pi pi-times"
-          severity="danger"
-          @click="cancelComputation"
-        />
+        <Button label="Cancel" icon="pi pi-times" severity="danger" @click="cancelComputation" />
       </template>
     </Dialog>
   </div>

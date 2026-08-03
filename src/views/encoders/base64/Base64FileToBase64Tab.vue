@@ -55,20 +55,10 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
 </script>
 
 <template>
-  <Panel
-    toggleable
-    class="upload-panel"
-  >
+  <Panel toggleable class="upload-panel">
     <template #header>
-      <PanelHeader
-        icon="upload"
-        label="Upload File"
-      >
-        <Tag
-          v-if="fileName"
-          :value="fileName"
-          severity="info"
-        />
+      <PanelHeader icon="upload" label="Upload File">
+        <Tag v-if="fileName" :value="fileName" severity="info" />
       </PanelHeader>
     </template>
 
@@ -92,28 +82,15 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
   </Panel>
 
   <Transition name="fade">
-    <div
-      v-if="isProcessingFile"
-      class="processing-section"
-    >
-      <ProgressSpinner
-        style="width: 40px; height: 40px"
-        :stroke-width="4"
-      />
+    <div v-if="isProcessingFile" class="processing-section">
+      <ProgressSpinner style="width: 40px; height: 40px" :stroke-width="4" />
       <span>Processing file...</span>
     </div>
   </Transition>
 
   <Transition name="fade-slide">
-    <div
-      v-if="fileBase64 && !isProcessingFile"
-      class="file-result"
-    >
-      <SectionDivider
-        icon="info-circle"
-        label="File Information"
-        align="left"
-      />
+    <div v-if="fileBase64 && !isProcessingFile" class="file-result">
+      <SectionDivider icon="info-circle" label="File Information" align="left" />
 
       <div class="file-info-grid">
         <div class="info-item">
@@ -127,10 +104,7 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
           <i class="pi pi-tag"></i>
           <div class="info-content">
             <span class="info-label">MIME Type</span>
-            <Tag
-              :value="fileMimeType"
-              severity="info"
-            />
+            <Tag :value="fileMimeType" severity="info" />
           </div>
         </div>
         <div class="info-item">
@@ -149,27 +123,12 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
         </div>
       </div>
 
-      <div
-        v-if="isImage"
-        class="image-preview"
-      >
-        <SectionDivider
-          icon="image"
-          label="Preview"
-          align="left"
-        />
-        <img
-          :src="dataUrl"
-          alt="Preview"
-          class="preview-image"
-        />
+      <div v-if="isImage" class="image-preview">
+        <SectionDivider icon="image" label="Preview" align="left" />
+        <img :src="dataUrl" alt="Preview" class="preview-image" />
       </div>
 
-      <SectionDivider
-        icon="code"
-        label="Base64 Output"
-        align="left"
-      />
+      <SectionDivider icon="code" label="Base64 Output" align="left" />
 
       <CodeEditor
         :model-value="fileBase64"
@@ -180,11 +139,7 @@ const onFileSelect = async (event: FileUploadSelectEvent) => {
 
       <Toolbar class="editor-toolbar">
         <template #start>
-          <Button
-            label="Copy Base64"
-            icon="pi pi-copy"
-            @click="copyFileBase64"
-          />
+          <Button label="Copy Base64" icon="pi pi-copy" @click="copyFileBase64" />
           <Button
             label="Copy Data URL"
             icon="pi pi-link"
