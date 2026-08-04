@@ -747,7 +747,7 @@ const clearKeys = () => {
 
       <!-- Loading State -->
       <div v-if="isGenerating" class="loading-state">
-        <ProgressSpinner style="width: 40px; height: 40px" stroke-width="4" />
+        <ProgressSpinner style="width: 40px; height: 40px" :stroke-width="4" />
         <span>Generating key pair...</span>
       </div>
     </template>

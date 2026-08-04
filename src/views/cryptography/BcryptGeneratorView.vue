@@ -155,7 +155,7 @@ const copyHash = () => {
 
               <div class="hash-output">
                 <div v-if="isComputing && !overlay.showOverlay.value" class="computing-state">
-                  <ProgressSpinner style="width: 30px; height: 30px" stroke-width="4" />
+                  <ProgressSpinner style="width: 30px; height: 30px" :stroke-width="4" />
                   <span>Computing hash...</span>
                 </div>
                 <div v-else-if="hashedValue" class="hash-result">
@@ -228,7 +228,7 @@ const copyHash = () => {
 
               <div class="verify-result">
                 <div v-if="isVerifying && !overlay.showOverlay.value" class="verifying-state">
-                  <ProgressSpinner style="width: 30px; height: 30px" stroke-width="4" />
+                  <ProgressSpinner style="width: 30px; height: 30px" :stroke-width="4" />
                   <span>Verifying...</span>
                 </div>
                 <Message v-else-if="verifyResult === true" severity="success" :closable="false">
@@ -264,7 +264,7 @@ const copyHash = () => {
         class="computing-dialog"
       >
         <div class="overlay-content">
-          <ProgressSpinner style="width: 50px; height: 50px" stroke-width="4" />
+          <ProgressSpinner style="width: 50px; height: 50px" :stroke-width="4" />
           <div class="overlay-info">
             <p class="overlay-message">
               {{ isVerifying ? 'Verifying password...' : 'Generating hash...' }}

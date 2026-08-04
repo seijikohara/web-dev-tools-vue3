@@ -287,7 +287,7 @@ const handleDownload = () => {
 
             <Transition name="fade">
               <div v-if="isProcessingFile" class="processing-section">
-                <ProgressSpinner style="width: 40px; height: 40px" stroke-width="4" />
+                <ProgressSpinner style="width: 40px; height: 40px" :stroke-width="4" />
                 <span>Processing file...</span>
               </div>
             </Transition>
