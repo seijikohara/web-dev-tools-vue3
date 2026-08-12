@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
-import type CryptoJS from 'crypto-js'
-import * as CryptoJSLib from 'crypto-js'
+import { md5, sha1 } from '@noble/hashes/legacy.js'
+import { sha224, sha256, sha384, sha512 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 
 // Types
 export type HashMethod = 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha384' | 'sha512'
@@ -23,16 +24,16 @@ export interface TextStats {
 }
 
 // Hash function type
-type HashFunction = (message: string | CryptoJS.lib.WordArray) => CryptoJS.lib.WordArray
+type HashFunction = (message: Uint8Array) => Uint8Array
 
 // Constants
 export const HASH_FUNCTIONS: Record<HashMethod, HashFunction> = {
-  md5: CryptoJSLib.MD5,
-  sha1: CryptoJSLib.SHA1,
-  sha224: CryptoJSLib.SHA224,
-  sha256: CryptoJSLib.SHA256,
-  sha384: CryptoJSLib.SHA384,
-  sha512: CryptoJSLib.SHA512,
+  md5,
+  sha1,
+  sha224,
+  sha256,
+  sha384,
+  sha512,
 }
 
 export const HASH_INFO: Record<HashMethod, HashInfo> = {
@@ -47,29 +48,22 @@ export const HASH_INFO: Record<HashMethod, HashInfo> = {
 export const HASH_METHODS = Object.keys(HASH_FUNCTIONS) as HashMethod[]
 
 // Pure functions
-export const computeHash = (method: HashMethod, value: string): string =>
-  HASH_FUNCTIONS[method](value).toString()
+export const computeHashFromBytes = (method: HashMethod, bytes: Uint8Array): string =>
+  bytesToHex(HASH_FUNCTIONS[method](bytes))
 
-export const computeHashFromWordArray = (
-  method: HashMethod,
-  wordArray: CryptoJS.lib.WordArray,
-): string => HASH_FUNCTIONS[method](wordArray).toString()
+export const computeHash = (method: HashMethod, value: string): string =>
+  computeHashFromBytes(method, utf8ToBytes(value))
+
+export const computeAllHashesFromBytes = (bytes: Uint8Array): HashResult[] =>
+  HASH_METHODS.map(method => ({
+    method: method.toUpperCase(),
+    value: computeHashFromBytes(method, bytes),
+    bits: HASH_INFO[method].bits,
+    severity: HASH_INFO[method].color,
+  }))
 
 export const computeAllHashes = (value: string): HashResult[] =>
-  HASH_METHODS.map(method => ({
-    method: method.toUpperCase(),
-    value: computeHash(method, value),
-    bits: HASH_INFO[method].bits,
-    severity: HASH_INFO[method].color,
-  }))
-
-export const computeAllHashesFromWordArray = (wordArray: CryptoJS.lib.WordArray): HashResult[] =>
-  HASH_METHODS.map(method => ({
-    method: method.toUpperCase(),
-    value: computeHashFromWordArray(method, wordArray),
-    bits: HASH_INFO[method].bits,
-    severity: HASH_INFO[method].color,
-  }))
+  computeAllHashesFromBytes(utf8ToBytes(value))
 
 export const compareHashes = (hash1: string, hash2: string): boolean => {
   if (!hash1 || !hash2) return false
@@ -90,10 +84,8 @@ export const formatFileSize = (bytes: number): string => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${unit}`
 }
 
-export const fileToWordArray = async (file: File): Promise<CryptoJS.lib.WordArray> => {
-  const arrayBuffer = await file.arrayBuffer()
-  return CryptoJSLib.lib.WordArray.create(arrayBuffer as unknown as number[])
-}
+export const fileToBytes = async (file: File): Promise<Uint8Array> =>
+  new Uint8Array(await file.arrayBuffer())
 
 // Composable
 export const useHashGenerator = () => {
@@ -115,8 +107,8 @@ export const useHashGenerator = () => {
 
   // File Hash actions
   const processFile = async (file: File): Promise<HashResult[]> => {
-    const wordArray = await fileToWordArray(file)
-    return computeAllHashesFromWordArray(wordArray)
+    const bytes = await fileToBytes(file)
+    return computeAllHashesFromBytes(bytes)
   }
 
   const setFileInfo = (file: File, hashes: HashResult[]) => {

@@ -90,7 +90,7 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 
 - **HTTP Client**: Axios
 - **Date/Time**: Day.js
-- **Security**: DOMPurify (XSS prevention), bcryptjs (password hashing), crypto-js
+- **Security**: DOMPurify (XSS prevention), bcryptjs (password hashing), @noble/hashes (message digests)
 - **Code Editor**: vue-codemirror6 (CodeMirror 6 integration)
 - **Markdown**: marked (parsing and rendering)
 - **XML**: xml-formatter
