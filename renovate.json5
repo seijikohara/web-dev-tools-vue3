@@ -128,7 +128,7 @@
     {
       description: 'Group crypto and utility libraries',
       groupName: 'crypto and utilities',
-      matchPackageNames: ['bcryptjs', 'crypto-js', 'dayjs', 'qrcode', 'ua-parser-js'],
+      matchPackageNames: ['@noble/hashes', 'bcryptjs', 'dayjs', 'qrcode', 'ua-parser-js'],
     },
   ],
   vulnerabilityAlerts: {

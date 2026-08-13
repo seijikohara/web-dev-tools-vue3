@@ -49,7 +49,7 @@ e2e/                  # Playwright E2E tests
 - **Testing**: Vitest (unit), Playwright (E2E)
 - **Linting**: ESLint + Prettier
 - **HTTP Client**: Axios
-- **Utilities**: @vueuse/core, dayjs, crypto-js
+- **Utilities**: @vueuse/core, dayjs, @noble/hashes
 
 ## Rules Reference
 
