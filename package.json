@@ -63,7 +63,7 @@
     "bcryptjs": "^3.0.3",
     "codemirror": "^6.0.2",
     "dayjs": "^1.11.20",
-    "dompurify": "^3.4.12",
+    "dompurify": "^3.4.16",
     "json-tree-view-vue3": "^2.0.0",
     "marked": "^18.0.0",
     "pinia": "^4.0.0",
