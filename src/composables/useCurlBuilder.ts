@@ -210,6 +210,10 @@ export const generateCurlCommand = (
   ].join(` \\
   `)
 
+// Narrow a parsed token to one of the supported HTTP methods
+const isHttpMethod = (value: string): value is HttpMethod =>
+  METHOD_OPTIONS.some(option => option.value === value)
+
 // Strip a single matching pair of surrounding quotes from a token value
 const cleanValue = (val: string): string => {
   if (!val) return ''
@@ -229,8 +233,11 @@ export const parseCurlString = (input: string): ParseResult => {
     const nextToken = tokenList[index + 1]
 
     if (token === '-X' || token === '--request') {
-      const methodValue = cleanValue(nextToken ?? '') as HttpMethod
-      return processTokens(tokenList, index + 2, { ...state, method: methodValue })
+      // HTTP methods are case-sensitive on the wire, but the builder only models upper-case
+      // methods; keep the current method when the token is not one of them.
+      const methodValue = cleanValue(nextToken ?? '').toUpperCase()
+      const nextState = isHttpMethod(methodValue) ? { ...state, method: methodValue } : state
+      return processTokens(tokenList, index + 2, nextState)
     }
 
     if (token === '-H' || token === '--header') {

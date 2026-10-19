@@ -3,6 +3,8 @@ import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import format from 'xml-formatter'
 import * as YAML from 'yaml'
 
+import { isRecord } from '@/utils/typeGuards'
+
 // Types
 export interface XmlFormatOptions {
   indentSize: number
@@ -50,6 +52,26 @@ export interface SchemaRule {
   maxOccurs?: number
 }
 
+const isOptionalOf = (value: unknown, type: 'boolean' | 'number'): boolean =>
+  value === undefined || typeof value === type
+
+// Validate a user-supplied schema rule before the validator reads its fields
+const isSchemaRule = (value: unknown): value is SchemaRule =>
+  isRecord(value) &&
+  typeof value.element === 'string' &&
+  isOptionalOf(value.required, 'boolean') &&
+  isOptionalOf(value.minOccurs, 'number') &&
+  isOptionalOf(value.maxOccurs, 'number') &&
+  (value.attributes === undefined ||
+    (Array.isArray(value.attributes) &&
+      value.attributes.every(
+        (attr: unknown) =>
+          isRecord(attr) && typeof attr.name === 'string' && isOptionalOf(attr.required, 'boolean'),
+      ))) &&
+  (value.children === undefined ||
+    (Array.isArray(value.children) &&
+      value.children.every((child: unknown) => typeof child === 'string')))
+
 export interface XmlSchemaValidationError {
   path: string
   message: string
@@ -83,11 +105,11 @@ const traverse = (
   node: Node,
   depth: number,
 ): { elements: number; attributes: number; maxDepth: number } => {
-  if (node.nodeType !== Node.ELEMENT_NODE) {
+  if (node.nodeType !== Node.ELEMENT_NODE || !(node instanceof Element)) {
     return { elements: 0, attributes: 0, maxDepth: depth }
   }
 
-  const element = node as Element
+  const element = node
   const childResults = Array.from(node.childNodes).reduce(
     (acc, child) => {
       const result = traverse(child, depth + 1)
@@ -111,9 +133,9 @@ const traverse = (
  * Pure transformation functions for XML post-processing
  */
 const sortAttributesTransform = (s: string): string =>
-  s.replace(/<(\w+)((?:\s+[\w:]+="[^"]*")+)/g, (_match, tagName, attrs) => {
+  s.replace(/<(\w+)((?:\s+[\w:]+="[^"]*")+)/g, (_match, tagName: string, attrs: string) => {
     const attrRegex = /\s+([\w:]+)="([^"]*)"/g
-    const attrMatches = (attrs as string).match(attrRegex) ?? []
+    const attrMatches = attrs.match(attrRegex) ?? []
     const sortedAttrs = attrMatches
       .map(attr => {
         const m = /\s+([\w:]+)="([^"]*)"/.exec(attr)
@@ -130,7 +152,7 @@ const sortAttributesTransform = (s: string): string =>
 const normalizeAttributeValuesTransform = (s: string): string =>
   s.replace(
     /([\w:]+)="([^"]*)"/g,
-    (_match, name, value) => `${name}="${(value as string).trim().replace(/\s+/g, ' ')}"`,
+    (_match, name: string, value: string) => `${name}="${value.trim().replace(/\s+/g, ' ')}"`,
   )
 
 const removeEmptyElementsTransform = (str: string): string => {
@@ -457,8 +479,8 @@ export function useXmlQuery(inputRef: Ref<string>) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const serializer = new XMLSerializer()
           return serializer.serializeToString(node)
-        } else if (node.nodeType === Node.ATTRIBUTE_NODE) {
-          return `${(node as Attr).name}="${(node as Attr).value}"`
+        } else if (node.nodeType === Node.ATTRIBUTE_NODE && node instanceof Attr) {
+          return `${node.name}="${node.value}"`
         }
         return node.textContent ?? ''
       }).filter(Boolean)
@@ -503,17 +525,17 @@ const xmlToJson = (xml: Element): unknown => {
   // Handle child nodes using reduce
   if (xml.hasChildNodes()) {
     Array.from(xml.childNodes).reduce((acc, item) => {
-      if (item.nodeType === Node.ELEMENT_NODE) {
+      if (item.nodeType === Node.ELEMENT_NODE && item instanceof Element) {
         const nodeName = item.nodeName
-        const nodeValue = xmlToJson(item as Element)
+        const nodeValue = xmlToJson(item)
+        const existing = acc[nodeName]
 
-        if (acc[nodeName] === undefined) {
+        if (existing === undefined) {
           acc[nodeName] = nodeValue
+        } else if (Array.isArray(existing)) {
+          existing.push(nodeValue)
         } else {
-          if (!Array.isArray(acc[nodeName])) {
-            acc[nodeName] = [acc[nodeName]]
-          }
-          ;(acc[nodeName] as unknown[]).push(nodeValue)
+          acc[nodeName] = [existing, nodeValue]
         }
       } else if (item.nodeType === Node.TEXT_NODE) {
         const text = item.nodeValue?.trim()
@@ -543,10 +565,7 @@ const parseXmlToObject = (xmlString: string): Record<string, unknown> | null => 
     const doc = parser.parseFromString(xmlString, 'application/xml')
     const parserError = doc.querySelector('parsererror')
     if (parserError) return null
-    return { [doc.documentElement.nodeName]: xmlToJson(doc.documentElement) } as Record<
-      string,
-      unknown
-    >
+    return { [doc.documentElement.nodeName]: xmlToJson(doc.documentElement) }
   } catch {
     return null
   }
@@ -593,7 +612,7 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
   }
 
   // Object comparison
-  if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
+  if (isRecord(obj1) && isRecord(obj2)) {
     const keys1 = Object.keys(obj1)
     const keys2 = Object.keys(obj2)
     const allKeys = [...new Set([...keys1, ...keys2])]
@@ -605,7 +624,7 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
           {
             path: newPath,
             type: 'added' as const,
-            newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
+            newValue: JSON.stringify(obj2[key]),
           },
         ]
       }
@@ -614,15 +633,11 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
           {
             path: newPath,
             type: 'removed' as const,
-            oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+            oldValue: JSON.stringify(obj1[key]),
           },
         ]
       }
-      return findDifferences(
-        (obj1 as Record<string, unknown>)[key],
-        (obj2 as Record<string, unknown>)[key],
-        newPath,
-      )
+      return findDifferences(obj1[key], obj2[key], newPath)
     })
   }
 
@@ -734,6 +749,42 @@ export function useXmlConvert(inputRef: Ref<string>) {
   }
 }
 
+// Infer XML schema rules from element
+const inferXmlSchema = (element: Element, visited = new Set<string>()): SchemaRule[] => {
+  const elementName = element.nodeName
+
+  // Avoid duplicates - early return
+  if (visited.has(elementName)) {
+    return []
+  }
+  visited.add(elementName)
+
+  // Collect attributes
+  const attributes =
+    element.attributes.length > 0
+      ? Array.from(element.attributes).map(attr => ({
+          name: attr.name,
+          required: true, // Assume required if present
+        }))
+      : undefined
+
+  // Collect unique child element names
+  const childElements = Array.from(element.children)
+  const childNames = [...new Set(childElements.map(child => child.nodeName))]
+
+  // Create rule for this element
+  const rule: SchemaRule = {
+    element: elementName,
+    ...(attributes && { attributes }),
+    ...(childNames.length > 0 && { children: childNames }),
+  }
+
+  // Recursively process child elements and combine with current rule
+  const childRules = childElements.flatMap(child => inferXmlSchema(child, visited))
+
+  return [rule, ...childRules]
+}
+
 // Schema Tab
 export function useXmlSchema(inputRef: Ref<string>) {
   const schemaInput = ref('')
@@ -786,7 +837,14 @@ export function useXmlSchema(inputRef: Ref<string>) {
         if (!Array.isArray(parsed)) {
           return { success: false as const, error: 'Schema must be a JSON array of rules' }
         }
-        return { success: true as const, data: parsed as SchemaRule[] }
+        if (!parsed.every(isSchemaRule)) {
+          return {
+            success: false as const,
+            error:
+              'Each schema rule must have an "element" name and correctly typed optional fields',
+          }
+        }
+        return { success: true as const, data: parsed }
       } catch (e) {
         return { success: false as const, error: e instanceof Error ? e.message : 'Parse error' }
       }
@@ -910,42 +968,6 @@ export function useXmlSchema(inputRef: Ref<string>) {
       null,
       2,
     )
-  }
-
-  // Infer XML schema rules from element
-  const inferXmlSchema = (element: Element, visited = new Set<string>()): SchemaRule[] => {
-    const elementName = element.nodeName
-
-    // Avoid duplicates - early return
-    if (visited.has(elementName)) {
-      return []
-    }
-    visited.add(elementName)
-
-    // Collect attributes
-    const attributes =
-      element.attributes.length > 0
-        ? Array.from(element.attributes).map(attr => ({
-            name: attr.name,
-            required: true, // Assume required if present
-          }))
-        : undefined
-
-    // Collect unique child element names
-    const childElements = Array.from(element.children)
-    const childNames = [...new Set(childElements.map(child => child.nodeName))]
-
-    // Create rule for this element
-    const rule: SchemaRule = {
-      element: elementName,
-      ...(attributes && { attributes }),
-      ...(childNames.length > 0 && { children: childNames }),
-    }
-
-    // Recursively process child elements and combine with current rule
-    const childRules = childElements.flatMap(child => inferXmlSchema(child, visited))
-
-    return [rule, ...childRules]
   }
 
   const generateSchemaFromData = (): { success: boolean; error?: string } => {

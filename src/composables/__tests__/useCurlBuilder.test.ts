@@ -427,6 +427,16 @@ describe('useCurlBuilder', () => {
       expect(result.method).toBe('PUT')
     })
 
+    it('should normalize a lower-case method', () => {
+      const result = parseCurlString('curl -X delete https://example.com')
+      expect(result.method).toBe('DELETE')
+    })
+
+    it('should keep the default method for an unsupported method', () => {
+      const result = parseCurlString('curl -X PURGE https://example.com')
+      expect(result.method).toBe('GET')
+    })
+
     it('should parse headers with -H flag', () => {
       const result = parseCurlString("curl -H 'Content-Type: application/json' https://example.com")
       expect.soft(result.headers.length).toBe(1)

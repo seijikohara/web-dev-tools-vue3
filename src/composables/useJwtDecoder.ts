@@ -80,7 +80,11 @@ export const decodeJwt = (token: string): DecodedJwt => {
   }
 
   try {
+    // The decoder must display whatever JSON a token carries, including non-conforming claims, so
+    // the segments are typed by the registered fields they may contain instead of being validated.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- see the comment above
     const header = JSON.parse(base64UrlDecode(headerPart)) as JwtHeader
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- see the comment above
     const payload = JSON.parse(base64UrlDecode(payloadPart)) as JwtPayload
 
     return { header, payload, signature: signaturePart }

@@ -112,7 +112,7 @@ return (map as Record<string, string>)[key] ?? 'default'
 ### Avoid These Patterns
 
 ```typescript
-// ❌ Non-null assertion (forbidden: @typescript-eslint/no-non-null-assertion)
+// ❌ Non-null assertion (forbidden by convention; oxlint rule `typescript/no-non-null-assertion`, not enabled)
 const value = array.find(x => x.id === id)!
 
 // ✅ Use fallback
@@ -122,7 +122,7 @@ const value = array.find(x => x.id === id) ?? defaultValue
 const value = array.find(x => x.id === id)
 if (!value) throw new Error(`Item not found`)
 
-// ❌ Unnecessary condition (forbidden: @typescript-eslint/no-unnecessary-condition)
+// ❌ Unnecessary condition (forbidden by convention; type-aware oxlint rule `typescript/no-unnecessary-condition`, not enabled)
 const map = { a: 1 } as const
 return map[key as keyof typeof map] ?? 'default'
 

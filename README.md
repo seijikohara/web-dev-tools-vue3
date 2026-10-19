@@ -83,8 +83,9 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 
 - **Unit Testing**: Vitest 4.x with coverage support
 - **E2E Testing**: Playwright 1.x (end-to-end)
-- **Linting**: oxlint with ESLint retained for Vue template rules (`eslint-plugin-vue`, scoped to `.vue` files)
-- **Code Formatting**: oxfmt
+- **Linting**: oxlint, including its native `vue` plugin for `<script>` blocks in `.vue` files (oxlint does not lint `<template>` blocks)
+- **Type-Aware Linting**: oxlint-tsgolint runs oxlint's type-aware rules on `.ts` files (`.vue` files are not type-checked by the linter)
+- **Code Formatting**: oxfmt (TypeScript, JavaScript, Vue, SCSS, CSS, HTML, JSON, YAML, Markdown)
 
 ### Utilities and Libraries
 

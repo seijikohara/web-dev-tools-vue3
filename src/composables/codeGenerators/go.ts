@@ -1,4 +1,4 @@
-import type { CodeGenerator, GoOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, GoOptions, TypeInfo } from './types'
 import { inferType, toPascalCase, generateWithNestedTypes } from './utils'
 
 export const defaultGoOptions = {
@@ -62,7 +62,7 @@ ${fields.join('\n')}
 
 export const goGenerator = {
   generate(data: unknown, options: GoOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const definitions = generateWithNestedTypes(rootType, typeInfo =>
       generateStructDefinition(typeInfo, options),
     )

@@ -1,5 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "typeAware": true
+  },
+  "plugins": ["typescript", "unicorn", "oxc", "vue"],
   "categories": {
     "correctness": "error",
     "suspicious": "error"
@@ -8,7 +12,16 @@
     "no-else-return": "error",
     "prefer-template": "error",
     "no-param-reassign": "error",
-    "typescript/consistent-type-imports": "error"
+    "typescript/consistent-type-imports": "error",
+    "vue/component-definition-name-casing": "error",
+    "vue/prop-name-casing": "error",
+    "vue/require-prop-types": "error"
   },
-  "ignorePatterns": ["node_modules/**", "dist/**", "coverage/**"]
+  "ignorePatterns": [
+    "node_modules/**",
+    "dist/**",
+    "coverage/**",
+    "playwright-report/**",
+    ".vite/**"
+  ]
 }

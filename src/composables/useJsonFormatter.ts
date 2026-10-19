@@ -5,6 +5,8 @@ import xmlFormatter from 'xml-formatter'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 
+import { isRecord } from '@/utils/typeGuards'
+
 // Initialize AJV with formats support
 const ajv = new Ajv({ allErrors: true, verbose: true })
 addFormats(ajv)
@@ -97,7 +99,7 @@ const traverse = (item: unknown, currentDepth: number): TraverseResult => {
   }
 
   if (item !== null && typeof item === 'object') {
-    const entries = Object.entries(item as Record<string, unknown>)
+    const entries = Object.entries(item)
     const childResults = entries.map(([, v]) => traverse(v, currentDepth + 1))
     return childResults.reduce(
       (acc, result) => ({
@@ -436,8 +438,8 @@ export function useJsonQuery(inputRef: Ref<string>) {
             throw new Error(`Invalid array index: ${part}`)
           }
           return current[index]
-        } else if (typeof current === 'object') {
-          return (current as Record<string, unknown>)[part]
+        } else if (isRecord(current)) {
+          return current[part]
         }
         throw new Error(`Cannot access property of non-object: ${part}`)
       }, parsed)
@@ -512,7 +514,7 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
   }
 
   // Object comparison
-  if (obj1 !== null && obj2 !== null && typeof obj1 === 'object' && typeof obj2 === 'object') {
+  if (isRecord(obj1) && isRecord(obj2)) {
     const keys1 = Object.keys(obj1)
     const keys2 = Object.keys(obj2)
     const allKeys = [...new Set([...keys1, ...keys2])]
@@ -524,7 +526,7 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
           {
             path: newPath,
             type: 'added' as const,
-            newValue: JSON.stringify((obj2 as Record<string, unknown>)[key]),
+            newValue: JSON.stringify(obj2[key]),
           },
         ]
       }
@@ -533,15 +535,11 @@ const findDifferences = (obj1: unknown, obj2: unknown, path = '$'): DiffItem[] =
           {
             path: newPath,
             type: 'removed' as const,
-            oldValue: JSON.stringify((obj1 as Record<string, unknown>)[key]),
+            oldValue: JSON.stringify(obj1[key]),
           },
         ]
       }
-      return findDifferences(
-        (obj1 as Record<string, unknown>)[key],
-        (obj2 as Record<string, unknown>)[key],
-        newPath,
-      )
+      return findDifferences(obj1[key], obj2[key], newPath)
     })
   }
 
@@ -616,7 +614,7 @@ const convert = (data: unknown, name: string): string => {
     return data.map(item => convert(item, name)).join('')
   }
   if (typeof data === 'object') {
-    const entries = Object.entries(data as Record<string, unknown>)
+    const entries = Object.entries(data)
     const children = entries.map(([key, value]) => convert(value, key)).join('')
     return `<${name}>${children}</${name}>`
   }
@@ -646,8 +644,7 @@ export function useJsonConvert(inputRef: Ref<string>) {
       if (format === 'yaml') {
         convertOutput.value = YAML.stringify(parsed, { indent: 2 })
       } else {
-        const parsedObj =
-          typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : null
+        const parsedObj = isRecord(parsed) ? parsed : null
         const rootName = parsedObj ? (Object.keys(parsedObj)[0] ?? 'root') : 'root'
         const xmlContent =
           parsedObj && Object.keys(parsedObj).length === 1
@@ -769,10 +766,10 @@ export function useJsonSchema(inputRef: Ref<string>) {
     const parseSchemaResult = (() => {
       try {
         const parsed: unknown = JSON.parse(schemaInput.value)
-        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        if (!isRecord(parsed) || Array.isArray(parsed)) {
           return { success: false as const, error: 'Schema must be a JSON object' }
         }
-        return { success: true as const, data: parsed as Record<string, unknown> }
+        return { success: true as const, data: parsed }
       } catch (e) {
         return { success: false as const, error: e instanceof Error ? e.message : 'Parse error' }
       }

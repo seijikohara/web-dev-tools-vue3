@@ -304,7 +304,7 @@ describe('useClipboardToast', () => {
       const { toast } = useClipboardToast()
 
       expect(toast).toBeDefined()
-      expect(toast.add).toBe(mockToastAdd)
+      expect(toast).toHaveProperty('add', mockToastAdd)
     })
   })
 })

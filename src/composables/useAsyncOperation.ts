@@ -69,6 +69,7 @@ const getErrorMessage = (err: Error, fallback?: string): string => fallback ?? e
  * ```
  */
 export const useAsyncOperation = <T>(): UseAsyncOperationReturn<T> => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ref<T>() returns Ref<UnwrapRef<T>>, which TypeScript cannot reduce for a generic T; the cast is Vue's documented workaround, and shallowRef would change reactivity depth
   const data = ref<T | null>(null) as Ref<T | null>
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -178,6 +179,7 @@ export const useMultipleAsyncOperations = <
     hasAnyError.value = checkAnyError(operations)
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries returns { [k: string]: V }; the entries map every key of T to a proxied operation of the same shape, which TypeScript cannot express for a generic T
   const proxiedOperations = Object.fromEntries(
     Object.entries(operations).map(([key, op]) => [
       key,
