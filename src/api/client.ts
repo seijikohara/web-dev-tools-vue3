@@ -1,6 +1,8 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosError } from 'axios'
 
+import { isRecord } from '@/utils/typeGuards'
+
 /**
  * Custom error class for API errors
  */
@@ -29,8 +31,10 @@ const API_CONFIG = {
 /**
  * Extract error message from axios error
  */
-const extractErrorMessage = (error: AxiosError): string =>
-  (error.response?.data as { message?: string } | undefined)?.message ?? error.message
+const extractErrorMessage = (error: AxiosError): string => {
+  const data: unknown = error.response?.data
+  return isRecord(data) && typeof data.message === 'string' ? data.message : error.message
+}
 
 /**
  * Handle API errors consistently

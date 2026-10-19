@@ -1,5 +1,5 @@
-import type { CodeGenerator, CSharpOptions, JsonValue, TypeInfo } from './types'
-import { inferType, toPascalCase, generateWithNestedTypes } from './utils'
+import type { CodeGenerator, CSharpOptions, TypeInfo } from './types'
+import { compactStrings, inferType, toPascalCase, generateWithNestedTypes } from './utils'
 
 export const defaultCSharpOptions = {
   rootName: 'Root',
@@ -46,11 +46,11 @@ const buildAnnotations = (
   options: CSharpOptions,
   indent = '',
 ): string[] => {
-  const annotations = [
+  const annotations = compactStrings([
     options.useSystemTextJson && propName !== key && `${indent}[JsonPropertyName("${key}")]`,
     options.useNewtonsoft && propName !== key && `${indent}[JsonProperty("${key}")]`,
     options.generateDataContract && `${indent}[DataMember(Name = "${key}")]`,
-  ].filter(Boolean) as string[]
+  ])
 
   return annotations
 }
@@ -119,17 +119,17 @@ const generateTypeDefinitionCSharp = (typeInfo: TypeInfo, options: CSharpOptions
 }
 
 const buildImports = (options: CSharpOptions): string[] =>
-  [
+  compactStrings([
     'using System.Collections.Generic;',
     options.useSystemTextJson && 'using System.Text.Json.Serialization;',
     options.useNewtonsoft && 'using Newtonsoft.Json;',
     options.generateDataContract && 'using System.Runtime.Serialization;',
     ...(options.useNullableReferenceTypes ? ['', '#nullable enable'] : []),
-  ].filter(Boolean) as string[]
+  ])
 
 export const csharpGenerator = {
   generate(data: unknown, options: CSharpOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const classes = generateWithNestedTypes(rootType, typeInfo =>
       generateTypeDefinitionCSharp(typeInfo, options),
     )

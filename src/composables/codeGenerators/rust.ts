@@ -1,5 +1,5 @@
-import type { CodeGenerator, RustOptions, JsonValue, TypeInfo } from './types'
-import { inferType, toSnakeCase, generateWithNestedTypes } from './utils'
+import type { CodeGenerator, RustOptions, TypeInfo } from './types'
+import { compactStrings, inferType, toSnakeCase, generateWithNestedTypes } from './utils'
 
 export const defaultRustOptions = {
   rootName: 'Root',
@@ -35,14 +35,12 @@ const rustType = (typeInfo: TypeInfo, options: RustOptions): string => {
 
 // Build derive attributes array based on options
 const buildDerives = (options: RustOptions): string[] => {
-  const derives = [
-    options.deriveSerde && ['Serialize', 'Deserialize'],
+  const derives = compactStrings([
+    ...(options.deriveSerde ? ['Serialize', 'Deserialize'] : []),
     options.deriveDebug && 'Debug',
     options.deriveClone && 'Clone',
     options.deriveDefault && 'Default',
-  ]
-    .filter(Boolean)
-    .flat() as string[]
+  ])
 
   return derives
 }
@@ -50,10 +48,10 @@ const buildDerives = (options: RustOptions): string[] => {
 const buildFieldAttributes = (key: string, fieldName: string, options: RustOptions): string[] => {
   if (!options.deriveSerde) return []
 
-  const attributes = [
+  const attributes = compactStrings([
     fieldName !== key && `    #[serde(rename = "${key}")]`,
     options.optionalProperties && `    #[serde(skip_serializing_if = "Option::is_none")]`,
-  ].filter(Boolean) as string[]
+  ])
 
   return attributes
 }
@@ -95,7 +93,7 @@ ${fields.join('\n')}
 export const rustGenerator = {
   generate(data: unknown, options: RustOptions): string {
     const derives = buildDerives(options)
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const definitions = generateWithNestedTypes(rootType, typeInfo =>
       generateStructDefinition(typeInfo, options, derives),
     )

@@ -117,7 +117,12 @@ export const processFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.addEventListener('load', () => {
-      const result = reader.result as string
+      const { result } = reader
+      // readAsDataURL always yields a string; reject defensively if the result has another type.
+      if (typeof result !== 'string') {
+        reject(new Error('Failed to read file'))
+        return
+      }
       resolve(result.split(',')[1] ?? result)
     })
     reader.addEventListener('error', () => reject(new Error('Failed to read file')))

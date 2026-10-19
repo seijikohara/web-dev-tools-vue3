@@ -1,4 +1,4 @@
-import type { CodeGenerator, KotlinOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, KotlinOptions, TypeInfo } from './types'
 import { inferType, toCamelCase, generateWithNestedTypes } from './utils'
 
 export const defaultKotlinOptions = {
@@ -120,7 +120,7 @@ const generateClassDefinitionKotlin = (typeInfo: TypeInfo, options: KotlinOption
 
 export const kotlinGenerator = {
   generate(data: unknown, options: KotlinOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const classes = generateWithNestedTypes(rootType, typeInfo =>
       generateClassDefinitionKotlin(typeInfo, options),
     )

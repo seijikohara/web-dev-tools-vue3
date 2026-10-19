@@ -176,6 +176,7 @@ export function generateCode(
     php: phpGenerator,
   } as const
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the overloads pair each language with its options type, but TypeScript cannot correlate generatorMap[language] with options inside the implementation (microsoft/TypeScript#30581)
   return generatorMap[language].generate(data, options as never)
 }
 

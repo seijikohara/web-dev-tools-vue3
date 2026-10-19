@@ -1,4 +1,4 @@
-import type { CodeGenerator, PythonOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, PythonOptions, TypeInfo } from './types'
 import { inferType, toSnakeCase, generateWithNestedTypes } from './utils'
 
 // Default options for unified Python generator
@@ -90,7 +90,7 @@ ${fields.join('\n')}`
 export const pythonDataclassGenerator = {
   generate(data: unknown, options: PythonOptions): string {
     const imports = 'from dataclasses import dataclass'
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const definitions = generateWithNestedTypes(rootType, typeInfo =>
       generateDataclassDefinition(typeInfo, options),
     )
@@ -137,7 +137,7 @@ const buildTypedDictImports = (options: PythonOptions): string =>
 export const pythonTypedDictGenerator = {
   generate(data: unknown, options: PythonOptions): string {
     const imports = buildTypedDictImports(options)
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const definitions = generateWithNestedTypes(rootType, typeInfo =>
       generateTypedDictDefinition(typeInfo, options),
     )

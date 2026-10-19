@@ -1,10 +1,8 @@
-import { createApp, type Component } from 'vue'
+import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import AppComponent from './App.vue'
+import App from './App.vue'
 import router from './router'
-
-const App = AppComponent as Component
 
 import { createGtag } from 'vue-gtag'
 import PrimeVue from 'primevue/config'

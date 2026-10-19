@@ -1,5 +1,11 @@
-import type { CodeGenerator, JavaOptions, JsonValue, TypeInfo } from './types'
-import { inferType, toPascalCase, toCamelCase, generateWithNestedTypes } from './utils'
+import type { CodeGenerator, JavaOptions, TypeInfo } from './types'
+import {
+  compactStrings,
+  inferType,
+  toPascalCase,
+  toCamelCase,
+  generateWithNestedTypes,
+} from './utils'
 
 export const defaultJavaOptions = {
   rootName: 'Root',
@@ -124,12 +130,12 @@ const buildLombokField = (key: string, childType: TypeInfo, options: JavaOptions
 }
 
 const buildLombokAnnotations = (options: JavaOptions): string[] => {
-  const annotations = [
+  const annotations = compactStrings([
     '@Data',
     options.generateBuilder && '@Builder',
     '@NoArgsConstructor',
     '@AllArgsConstructor',
-  ].filter(Boolean) as string[]
+  ])
 
   return annotations
 }
@@ -284,12 +290,12 @@ const buildSerializationImports = (library: JavaOptions['serializationLibrary'])
 const buildLombokImports = (options: JavaOptions): string[] => {
   if (options.classStyle !== 'lombok') return []
 
-  const imports = [
+  const imports = compactStrings([
     'import lombok.Data;',
     'import lombok.NoArgsConstructor;',
     'import lombok.AllArgsConstructor;',
     options.generateBuilder && 'import lombok.Builder;',
-  ].filter(Boolean) as string[]
+  ])
 
   return imports
 }
@@ -322,7 +328,7 @@ const buildAllImports = (options: JavaOptions): string[] => {
 
 export const javaGenerator = {
   generate(data: unknown, options: JavaOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const classes = generateWithNestedTypes(rootType, typeInfo =>
       generateClassDefinition(typeInfo, options),
     )

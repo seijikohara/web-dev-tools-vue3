@@ -45,7 +45,9 @@ export const HASH_INFO: Record<HashMethod, HashInfo> = {
   sha512: { bits: 512, color: 'contrast' },
 }
 
-export const HASH_METHODS = Object.keys(HASH_FUNCTIONS) as HashMethod[]
+export const HASH_METHODS = Object.keys(HASH_FUNCTIONS).filter((key): key is HashMethod =>
+  Object.hasOwn(HASH_FUNCTIONS, key),
+)
 
 // Pure functions
 export const computeHashFromBytes = (method: HashMethod, bytes: Uint8Array): string =>

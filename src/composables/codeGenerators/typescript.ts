@@ -1,4 +1,4 @@
-import type { CodeGenerator, TypeScriptOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, TypeScriptOptions, TypeInfo } from './types'
 import { inferType, generateWithNestedTypes } from './utils'
 
 export const defaultTypeScriptOptions = {
@@ -75,7 +75,7 @@ ${properties.join('\n')}
 
 export const typeScriptGenerator = {
   generate(data: unknown, options: TypeScriptOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const definitions = generateWithNestedTypes(rootType, typeInfo =>
       generateTypeDefinition(typeInfo, options),
     )

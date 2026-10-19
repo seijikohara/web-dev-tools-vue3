@@ -1,4 +1,4 @@
-import type { CodeGenerator, JavaScriptOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, JavaScriptOptions, TypeInfo } from './types'
 import { inferType, toCamelCase, generateWithNestedTypes } from './utils'
 
 export const defaultJavaScriptOptions = {
@@ -206,7 +206,7 @@ const generateSingleType = (typeInfo: TypeInfo, options: JavaScriptOptions): str
 
 export const javaScriptGenerator = {
   generate(data: unknown, options: JavaScriptOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const allCode = generateWithNestedTypes(rootType, typeInfo =>
       generateSingleType(typeInfo, options),
     )

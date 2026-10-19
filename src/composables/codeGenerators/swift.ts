@@ -1,4 +1,4 @@
-import type { CodeGenerator, SwiftOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, SwiftOptions, TypeInfo } from './types'
 import { inferType, toCamelCase, generateWithNestedTypes } from './utils'
 
 export const defaultSwiftOptions = {
@@ -92,7 +92,7 @@ ${propertiesSection}${codingKeysSection}
 
 export const swiftGenerator = {
   generate(data: unknown, options: SwiftOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const structs = generateWithNestedTypes(rootType, typeInfo =>
       generateStructDefinitionSwift(typeInfo, options),
     )

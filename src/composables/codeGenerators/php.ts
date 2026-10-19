@@ -1,4 +1,4 @@
-import type { CodeGenerator, PhpOptions, JsonValue, TypeInfo } from './types'
+import type { CodeGenerator, PhpOptions, TypeInfo } from './types'
 import { inferType, toCamelCase, generateWithNestedTypes } from './utils'
 
 export const defaultPhpOptions = {
@@ -141,7 +141,7 @@ const buildHeader = (options: PhpOptions): string[] => [
 
 export const phpGenerator = {
   generate(data: unknown, options: PhpOptions): string {
-    const rootType = inferType(data as JsonValue, options.rootName)
+    const rootType = inferType(data, options.rootName)
     const classes = generateWithNestedTypes(rootType, typeInfo =>
       generateClassDefinitionPhp(typeInfo, options),
     )

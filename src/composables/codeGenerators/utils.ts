@@ -1,4 +1,4 @@
-import type { JsonValue, TypeInfo } from './types'
+import type { TypeInfo } from './types'
 
 // Case conversion utilities
 export const toPascalCase = (str: string): string =>
@@ -27,8 +27,14 @@ export const toKebabCase = (str: string): string =>
 
 export const toUpperSnakeCase = (str: string): string => toSnakeCase(str).toUpperCase()
 
+// Keep the non-empty strings of a list built with `condition && value` entries.
+// Mirrors `.filter(Boolean)` for (string | false)[] without a type assertion.
+export const compactStrings = (items: readonly (string | false)[]): string[] =>
+  items.filter((item): item is string => typeof item === 'string' && item !== '')
+
 // Type inference from JSON value
-export const inferType = (value: JsonValue, name: string): TypeInfo => {
+// Accept unknown because callers pass JSON.parse output; every branch narrows the value at runtime.
+export const inferType = (value: unknown, name: string): TypeInfo => {
   // Early return for null
   if (value === null) {
     return { name: 'null', isArray: false, isObject: false, isPrimitive: true }
