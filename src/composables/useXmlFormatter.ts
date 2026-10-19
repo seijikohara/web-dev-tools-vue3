@@ -734,6 +734,42 @@ export function useXmlConvert(inputRef: Ref<string>) {
   }
 }
 
+// Infer XML schema rules from element
+const inferXmlSchema = (element: Element, visited = new Set<string>()): SchemaRule[] => {
+  const elementName = element.nodeName
+
+  // Avoid duplicates - early return
+  if (visited.has(elementName)) {
+    return []
+  }
+  visited.add(elementName)
+
+  // Collect attributes
+  const attributes =
+    element.attributes.length > 0
+      ? Array.from(element.attributes).map(attr => ({
+          name: attr.name,
+          required: true, // Assume required if present
+        }))
+      : undefined
+
+  // Collect unique child element names
+  const childElements = Array.from(element.children)
+  const childNames = [...new Set(childElements.map(child => child.nodeName))]
+
+  // Create rule for this element
+  const rule: SchemaRule = {
+    element: elementName,
+    ...(attributes && { attributes }),
+    ...(childNames.length > 0 && { children: childNames }),
+  }
+
+  // Recursively process child elements and combine with current rule
+  const childRules = childElements.flatMap(child => inferXmlSchema(child, visited))
+
+  return [rule, ...childRules]
+}
+
 // Schema Tab
 export function useXmlSchema(inputRef: Ref<string>) {
   const schemaInput = ref('')
@@ -910,42 +946,6 @@ export function useXmlSchema(inputRef: Ref<string>) {
       null,
       2,
     )
-  }
-
-  // Infer XML schema rules from element
-  const inferXmlSchema = (element: Element, visited = new Set<string>()): SchemaRule[] => {
-    const elementName = element.nodeName
-
-    // Avoid duplicates - early return
-    if (visited.has(elementName)) {
-      return []
-    }
-    visited.add(elementName)
-
-    // Collect attributes
-    const attributes =
-      element.attributes.length > 0
-        ? Array.from(element.attributes).map(attr => ({
-            name: attr.name,
-            required: true, // Assume required if present
-          }))
-        : undefined
-
-    // Collect unique child element names
-    const childElements = Array.from(element.children)
-    const childNames = [...new Set(childElements.map(child => child.nodeName))]
-
-    // Create rule for this element
-    const rule: SchemaRule = {
-      element: elementName,
-      ...(attributes && { attributes }),
-      ...(childNames.length > 0 && { children: childNames }),
-    }
-
-    // Recursively process child elements and combine with current rule
-    const childRules = childElements.flatMap(child => inferXmlSchema(child, visited))
-
-    return [rule, ...childRules]
   }
 
   const generateSchemaFromData = (): { success: boolean; error?: string } => {

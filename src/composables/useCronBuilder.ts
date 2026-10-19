@@ -314,21 +314,20 @@ export const useCronBuilder = () => {
     return parts.length > 0 ? parts.join(', ') : 'Every minute'
   })
 
+  const matchesCron = (date: Date): boolean => {
+    if (useSeconds.value && !matchesCronField(date.getSeconds(), seconds.value, 0, 59)) return false
+    if (!matchesCronField(date.getMinutes(), minutes.value, 0, 59)) return false
+    if (!matchesCronField(date.getHours(), hours.value, 0, 23)) return false
+    if (!matchesCronField(date.getDate(), dayOfMonth.value, 1, 31)) return false
+    if (!matchesCronField(date.getMonth() + 1, month.value, 1, 12)) return false
+    if (!matchesCronField(date.getDay(), dayOfWeek.value, 0, 6)) return false
+    return true
+  }
+
   // Next executions
   const nextExecutions = computed(() => {
     const now = new Date()
     const maxIterations = 1000
-
-    const matchesCron = (date: Date): boolean => {
-      if (useSeconds.value && !matchesCronField(date.getSeconds(), seconds.value, 0, 59))
-        return false
-      if (!matchesCronField(date.getMinutes(), minutes.value, 0, 59)) return false
-      if (!matchesCronField(date.getHours(), hours.value, 0, 23)) return false
-      if (!matchesCronField(date.getDate(), dayOfMonth.value, 1, 31)) return false
-      if (!matchesCronField(date.getMonth() + 1, month.value, 1, 12)) return false
-      if (!matchesCronField(date.getDay(), dayOfWeek.value, 0, 6)) return false
-      return true
-    }
 
     const findNextExecutions = (
       current: Date,

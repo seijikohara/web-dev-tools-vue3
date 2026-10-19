@@ -87,6 +87,11 @@ export const formatFileSize = (bytes: number): string => {
 export const fileToBytes = async (file: File): Promise<Uint8Array> =>
   new Uint8Array(await file.arrayBuffer())
 
+const processFile = async (file: File): Promise<HashResult[]> => {
+  const bytes = await fileToBytes(file)
+  return computeAllHashesFromBytes(bytes)
+}
+
 // Composable
 export const useHashGenerator = () => {
   // Text Hash state
@@ -106,11 +111,6 @@ export const useHashGenerator = () => {
   const hasFile = computed(() => fileName.value.length > 0)
 
   // File Hash actions
-  const processFile = async (file: File): Promise<HashResult[]> => {
-    const bytes = await fileToBytes(file)
-    return computeAllHashesFromBytes(bytes)
-  }
-
   const setFileInfo = (file: File, hashes: HashResult[]) => {
     fileName.value = file.name
     fileSize.value = file.size
