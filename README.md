@@ -69,9 +69,9 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 ### UI and Styling
 
 - **Component Library**: PrimeVue 4.x
-- **CSS Framework**: PrimeFlex 4.x
 - **Icons**: PrimeIcons 7.x
 - **Theme System**: PrimeUix Themes
+- **Utility Classes**: project SCSS (`src/assets/scss/layout.scss`)
 
 ### Architecture
 
@@ -248,12 +248,11 @@ pnpm run format:check
 # Remove build artifacts and cache files
 pnpm run clean
 
-# Audit for available dependency updates
-pnpm run deps:check
-
-# Update all dependencies to latest versions
-pnpm run deps:update
+# List outdated dependencies
+pnpm outdated
 ```
+
+Renovate opens dependency update pull requests on a weekly schedule (see `renovate.json5`).
 
 ## Project Structure
 
