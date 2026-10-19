@@ -87,6 +87,7 @@
     "@vitejs/plugin-vue": "^6.0.5",
     "@vitest/browser-playwright": "^5.0.0",
     "@vitest/coverage-v8": "^5.0.0",
+    "@vitest/ui": "^5.0.1",
     "@vue/tsconfig": "^0.9.1",
     "lefthook": "^2.1.10",
     "oxfmt": "^0.73.0",
