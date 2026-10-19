@@ -12,14 +12,15 @@ See @package.json for available npm commands and dependencies.
 ### Development Commands
 
 ```bash
-npm run dev          # Start development server (Vite)
-npm run build        # Type-check and build for production
-npm run type-check   # Run TypeScript type checking
-npm run lint         # Run ESLint with auto-fix
-npm run format       # Run Prettier formatting
-npm run test         # Run unit tests in watch mode (Vitest)
-npm run test:run     # Run unit tests once
-npm run test:e2e     # Run Playwright E2E tests
+pnpm run dev          # Start development server (Vite)
+pnpm run build        # Type-check and build for production
+pnpm run typecheck    # Run TypeScript type checking (vue-tsc)
+pnpm run lint         # Run oxlint
+pnpm run lint:fix     # Run oxlint with auto-fix
+pnpm run format       # Run oxfmt formatting
+pnpm run test         # Run unit tests in watch mode (Vitest)
+pnpm run test:run     # Run unit tests once
+pnpm run test:e2e     # Run Playwright E2E tests
 ```
 
 ### Project Structure
@@ -47,7 +48,7 @@ e2e/                  # Playwright E2E tests
 - **State**: Pinia
 - **Router**: Vue Router
 - **Testing**: Vitest (unit), Playwright (E2E)
-- **Linting**: ESLint + Prettier
+- **Linting and Formatting**: oxlint + oxfmt
 - **HTTP Client**: Axios
 - **Utilities**: @vueuse/core, dayjs, @noble/hashes
 
