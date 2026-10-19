@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test'
+import { test as base, expect, type Page } from '@playwright/test'
 import { setupApiMocks } from './api-mocks'
 
 /**
@@ -6,7 +6,7 @@ import { setupApiMocks } from './api-mocks'
  */
 
 type CustomFixtures = {
-  pageWithMocks: typeof base.prototype.page
+  pageWithMocks: Page
 }
 
 /**
