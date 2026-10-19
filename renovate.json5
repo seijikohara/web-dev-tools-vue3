@@ -78,7 +78,15 @@
     {
       description: 'Group the build toolchain',
       groupName: 'build toolchain',
-      matchPackageNames: ['vite', '@vitejs/*', 'vite-plugin-*', 'typescript', 'sass', 'lefthook'],
+      matchPackageNames: ['vite', '@vitejs/*', 'vite-plugin-*', 'sass', 'lefthook'],
+    },
+    {
+      // TypeScript 7.0 ships no JS API, and vue-tsc and the Vue language tools still load the
+      // TypeScript 6 API. Unblock when TypeScript 7.1 is stable and either vue-tsc supports it
+      // (vuejs/language-tools#6170, content mapper) or golar 1.0 is released.
+      description: 'Hold TypeScript on 6.x until vue-tsc supports TypeScript 7',
+      matchPackageNames: ['typescript'],
+      allowedVersions: '<7',
     },
     {
       description: 'Group TypeScript type definitions',
