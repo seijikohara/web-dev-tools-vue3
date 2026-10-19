@@ -248,12 +248,11 @@ pnpm run format:check
 # Remove build artifacts and cache files
 pnpm run clean
 
-# Audit for available dependency updates
-pnpm run deps:check
-
-# Update all dependencies to latest versions
-pnpm run deps:update
+# List outdated dependencies
+pnpm outdated
 ```
+
+Renovate opens dependency update pull requests on a weekly schedule (see `renovate.json5`).
 
 ## Project Structure
 
