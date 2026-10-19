@@ -53,7 +53,7 @@
     {
       description: 'Group PrimeVue packages',
       groupName: 'primevue',
-      matchPackageNames: ['primevue', '@primeuix/*', 'primeflex', 'primeicons'],
+      matchPackageNames: ['primevue', '@primeuix/*', 'primeicons'],
     },
     {
       description: 'Group CodeMirror packages',

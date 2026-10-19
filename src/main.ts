@@ -10,7 +10,6 @@ import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
 import Aura from '@primeuix/themes/aura'
 
-import 'primeflex/primeflex.css'
 import 'primeicons/primeicons.css'
 
 const app = createApp(App)

@@ -69,9 +69,9 @@ A comprehensive collection of web development utilities built with Vue 3, TypeSc
 ### UI and Styling
 
 - **Component Library**: PrimeVue 4.x
-- **CSS Framework**: PrimeFlex 4.x
 - **Icons**: PrimeIcons 7.x
 - **Theme System**: PrimeUix Themes
+- **Utility Classes**: project SCSS (`src/assets/scss/layout.scss`)
 
 ### Architecture
 
