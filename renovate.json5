@@ -112,6 +112,11 @@
       groupName: 'crypto and utilities',
       matchPackageNames: ['@noble/hashes', 'bcryptjs', 'dayjs', 'qrcode', 'ua-parser-js'],
     },
+    {
+      description: 'Keep ua-parser-js on the MIT-licensed 1.x line; 2.x is licensed AGPL-3.0-or-later',
+      matchPackageNames: ['ua-parser-js'],
+      allowedVersions: '<2',
+    },
   ],
   vulnerabilityAlerts: {
     description: 'Raise security fixes immediately and require manual review',

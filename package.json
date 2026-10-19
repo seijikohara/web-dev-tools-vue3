@@ -70,7 +70,7 @@
     "qrcode": "^1.5.4",
     "regexp-tree": "^0.1.27",
     "sql-formatter": "^15.7.3",
-    "ua-parser-js": "^2.0.9",
+    "ua-parser-js": "^1.0.41",
     "vue": "^3.5.32",
     "vue-codemirror6": "^1.5.1",
     "vue-gtag": "^3.7.0",
