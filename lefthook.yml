@@ -1,11 +1,15 @@
 pre-commit:
   jobs:
     - name: format staged files
-      run: pnpm exec oxfmt {staged_files}
+      # The glob also matches files that .oxfmtrc.json ignores (pnpm-lock.yaml). When every
+      # staged file is ignored, oxfmt has no target and exits non-zero without the flag.
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
       glob: '*.{ts,vue,js,mjs,cjs,json,jsonc,md,yml,yaml,scss,css,html,toml}'
       stage_fixed: true
     - name: lint staged files (oxlint)
-      run: pnpm exec oxlint --fix {staged_files}
+      # Same for files that .oxlintrc.json ignores (for example .vite/), where oxlint
+      # otherwise exits non-zero with "No files found to lint".
+      run: pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files}
       glob: '*.{ts,js,mjs,cjs,vue}'
       stage_fixed: true
 
