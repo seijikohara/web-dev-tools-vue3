@@ -198,14 +198,7 @@ ${indent}  ${a.trim()}`,
 const lineSeparatorTransform =
   (separator: string) =>
   (s: string): string =>
-    s.replace(
-      new RegExp(
-        `
-`,
-        'g',
-      ),
-      separator,
-    )
+    s.replaceAll('\n', separator)
 
 function createXmlFormatterState() {
   const persistedOptions = useLocalStorage<XmlFormatOptions>(
