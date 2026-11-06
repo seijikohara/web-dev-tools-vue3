@@ -14,6 +14,7 @@ import PanelHeader from '@/components/layout/PanelHeader.vue'
 import CopyButton from '@/components/display/CopyButton.vue'
 
 import { useXmlFormatter, useXmlQuery } from '@/composables/useXmlFormatter'
+import { PLACEHOLDERS } from '@/constants/placeholders'
 
 const { state } = useXmlFormatter()
 const inputRef = toRef(state, 'input')
@@ -34,7 +35,7 @@ const { xpathQuery, xpathResults, xpathError, xpathExamples, executeXPath, apply
         </InputGroupAddon>
         <InputText
           v-model="xpathQuery"
-          placeholder="e.g., //element[@attribute='value']"
+          :placeholder="PLACEHOLDERS.XPATH_QUERY"
           @keyup.enter="executeXPath"
         />
         <Button
