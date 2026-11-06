@@ -10,7 +10,10 @@ concurrency:
 jobs:
   e2e-test:
     name: E2E (${{ matrix.browser }}${{ matrix.shardIndex && format(' {0}/{1}', matrix.shardIndex, matrix.shardTotal) || '' }})
-    timeout-minutes: 15
+    # A degraded apt mirror serves archives at 40-75 kB/s, so the 114 MB of WebKit dependencies
+    # can take about 50 minutes. The test step keeps a shorter limit of its own.
+    # See https://github.com/actions/runner-images/issues/14823
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -91,6 +94,7 @@ jobs:
         run: pnpm exec playwright install --with-deps ${{ matrix.binary }}
 
       - name: Run Playwright tests
+        timeout-minutes: 15
         run: pnpm run test:e2e --project=${{ matrix.browser }} --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report
