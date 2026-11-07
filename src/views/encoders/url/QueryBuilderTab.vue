@@ -13,6 +13,7 @@ import SectionDivider from '@/components/layout/SectionDivider.vue'
 
 import { useUrlEncoder } from '@/composables/useUrlEncoder'
 import { useClipboardToast } from '@/composables/useClipboardToast'
+import { PLACEHOLDERS } from '@/constants/placeholders'
 
 const { copy } = useClipboardToast()
 
@@ -40,11 +41,7 @@ const copyBuiltUrl = () => {
           <InputGroupAddon>
             <i class="pi pi-link"></i>
           </InputGroupAddon>
-          <InputText
-            id="baseUrl"
-            v-model="builderBaseUrl"
-            placeholder="https://example.com/api/endpoint"
-          />
+          <InputText id="baseUrl" v-model="builderBaseUrl" :placeholder="PLACEHOLDERS.BASE_URL" />
         </InputGroup>
       </div>
 

@@ -29,6 +29,7 @@ import CodeEditor from '@/components/editors/CodeEditor.vue'
 import CodeGeneratorPanel from '@/components/code-generator/CodeGeneratorPanel.vue'
 import { useCodeGenerator } from '@/composables/useCodeGenerator'
 import { useClipboardToast } from '@/composables/useClipboardToast'
+import { PLACEHOLDERS } from '@/constants/placeholders'
 
 const { copy, showSuccess, showError, showInfo, showWarning } = useClipboardToast()
 
@@ -1335,7 +1336,7 @@ watchDebounced(() => state.input, validateXml, { immediate: true, debounce: 300 
                   </InputGroupAddon>
                   <InputText
                     v-model="xpathQuery"
-                    placeholder="e.g., //element[@attribute='value']"
+                    :placeholder="PLACEHOLDERS.XPATH_QUERY"
                     @keyup.enter="executeXPath"
                   />
                   <Button

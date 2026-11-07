@@ -26,6 +26,7 @@ import {
   ENCODING_EXAMPLES,
 } from '@/composables/useUrlEncoder'
 import { useClipboardToast } from '@/composables/useClipboardToast'
+import { PLACEHOLDERS } from '@/constants/placeholders'
 
 const { copy, showError } = useClipboardToast()
 
@@ -255,10 +256,7 @@ const handleLoadUrlToBuilder = () => {
                 <InputGroupAddon>
                   <i class="pi pi-link"></i>
                 </InputGroupAddon>
-                <InputText
-                  v-model="urlInput"
-                  placeholder="https://example.com/path?query=value#hash"
-                />
+                <InputText v-model="urlInput" :placeholder="PLACEHOLDERS.URL_WITH_QUERY" />
                 <Button
                   v-tooltip.top="'Load Sample'"
                   icon="pi pi-file"
@@ -464,7 +462,7 @@ const handleLoadUrlToBuilder = () => {
                     <InputText
                       id="baseUrl"
                       v-model="builderBaseUrl"
-                      placeholder="https://example.com/api/endpoint"
+                      :placeholder="PLACEHOLDERS.BASE_URL"
                     />
                   </InputGroup>
                 </div>

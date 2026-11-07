@@ -25,6 +25,7 @@ import {
   COMMON_HEADERS,
 } from '@/composables/useCurlBuilder'
 import { useClipboardToast } from '@/composables/useClipboardToast'
+import { PLACEHOLDERS } from '@/constants/placeholders'
 
 const { copy, showSuccess } = useClipboardToast()
 
@@ -93,7 +94,7 @@ const parseCurlCommand = () => {
                   />
                   <InputText
                     v-model="url"
-                    placeholder="https://api.example.com/endpoint"
+                    :placeholder="PLACEHOLDERS.REQUEST_URL"
                     class="url-input"
                   />
                   <Button icon="pi pi-send" label="Copy" :disabled="!url" @click="copyCommand" />
@@ -260,7 +261,10 @@ const parseCurlCommand = () => {
                         </div>
                         <div class="option-input-row">
                           <label>Proxy (-x)</label>
-                          <InputText v-model="options.proxy" placeholder="http://proxy:8080" />
+                          <InputText
+                            v-model="options.proxy"
+                            :placeholder="PLACEHOLDERS.PROXY_URL"
+                          />
                         </div>
                         <div class="option-input-row">
                           <label>User Agent (-A)</label>

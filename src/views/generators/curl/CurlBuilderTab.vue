@@ -25,6 +25,7 @@ import {
   COMMON_HEADERS,
 } from '@/composables/useCurlBuilder'
 import { useClipboardToast } from '@/composables/useClipboardToast'
+import { PLACEHOLDERS } from '@/constants/placeholders'
 
 const { showSuccess } = useClipboardToast()
 
@@ -72,7 +73,7 @@ const onClickSample = () => {
           option-value="value"
           class="method-select"
         />
-        <InputText v-model="url" placeholder="https://api.example.com/endpoint" class="url-input" />
+        <InputText v-model="url" :placeholder="PLACEHOLDERS.REQUEST_URL" class="url-input" />
         <Button icon="pi pi-send" label="Copy" :disabled="!url" @click="onClickCopy" />
       </div>
 
@@ -218,7 +219,7 @@ const onClickSample = () => {
               </div>
               <div class="option-input-row">
                 <label>Proxy (-x)</label>
-                <InputText v-model="options.proxy" placeholder="http://proxy:8080" />
+                <InputText v-model="options.proxy" :placeholder="PLACEHOLDERS.PROXY_URL" />
               </div>
               <div class="option-input-row">
                 <label>User Agent (-A)</label>
